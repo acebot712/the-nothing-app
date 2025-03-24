@@ -47,20 +47,31 @@ cd thenothingapp
 npm install
 ```
 
-3. Configure Supabase
-- Create a Supabase project
-- Update `app/config/supabase.ts` with your Supabase URL and anon key
+3. Configure Environment Variables
+- Copy the `.env.example` file to `.env.local`
+```
+cp .env.example .env.local
+```
+- Update the `.env.local` file with your Supabase URL and anonymous key
+```
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-4. Configure Stripe
+4. Configure Supabase
+- Create a Supabase project
+- Add the Supabase URL and anon key to your `.env.local` file
+
+5. Configure Stripe
 - Create a Stripe account
 - Update `app/config/stripe.ts` with your Stripe publishable key
 
-5. Start the development server
+6. Start the development server
 ```
 npm start
 ```
 
-6. Run on your device or simulator
+7. Run on your device or simulator
 - Press `i` for iOS simulator
 - Press `a` for Android simulator
 - Scan the QR code with the Expo Go app on your device

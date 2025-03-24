@@ -2,18 +2,26 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Supabase credentials
-const supabaseUrl = 'https://dyfigkcfyrmphfzizwst.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Zmlna2NmeXJtcGhmeml6d3N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4MjQwNzUsImV4cCI6MjA1ODQwMDA3NX0.K6QbbXf35LjYUtj9sxDVVNU-us-hEqMAUWyq8oOE9i8';
+// Use environment variables for Supabase credentials
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage as any,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials are missing. Please check your environment variables.');
+}
+
+export const supabase = createClient(
+  supabaseUrl || '',
+  supabaseAnonKey || '',
+  {
+    auth: {
+      storage: AsyncStorage as any,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
+);
 
 // Database interface types
 export interface User {
