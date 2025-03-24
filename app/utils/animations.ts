@@ -1,5 +1,16 @@
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, Platform } from 'react-native';
+
+// Conditionally import haptic feedback
+let ReactNativeHapticFeedback: any;
+try {
+  ReactNativeHapticFeedback = require('react-native-haptic-feedback').default;
+} catch (error) {
+  console.warn('react-native-haptic-feedback not available', error);
+  // Create a mock implementation
+  ReactNativeHapticFeedback = {
+    trigger: () => {}
+  };
+}
 
 // Haptic feedback options
 const hapticOptions = {
@@ -7,33 +18,44 @@ const hapticOptions = {
   ignoreAndroidSystemSettings: false,
 };
 
+// Safely trigger haptic feedback
+const safelyTriggerHaptic = (type: string) => {
+  try {
+    if (ReactNativeHapticFeedback) {
+      ReactNativeHapticFeedback.trigger(type, hapticOptions);
+    }
+  } catch (error) {
+    console.warn('Failed to trigger haptic feedback:', error);
+  }
+};
+
 // Luxury app haptic patterns
 export const haptics = {
   // Light tap for simple interactions
-  light: () => ReactNativeHapticFeedback.trigger('impactLight', hapticOptions),
+  light: () => safelyTriggerHaptic('impactLight'),
   
   // Medium tap for confirmations
-  medium: () => ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions),
+  medium: () => safelyTriggerHaptic('impactMedium'),
   
   // Heavy tap for important actions
-  heavy: () => ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions),
+  heavy: () => safelyTriggerHaptic('impactHeavy'),
   
   // Success pattern
   success: () => {
-    ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-    setTimeout(() => ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions), 150);
+    safelyTriggerHaptic('impactMedium');
+    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 150);
   },
   
   // Premium success pattern (for purchases)
   premium: () => {
-    ReactNativeHapticFeedback.trigger('impactMedium', hapticOptions);
-    setTimeout(() => ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions), 150);
-    setTimeout(() => ReactNativeHapticFeedback.trigger('impactLight', hapticOptions), 300);
-    setTimeout(() => ReactNativeHapticFeedback.trigger('impactHeavy', hapticOptions), 450);
+    safelyTriggerHaptic('impactMedium');
+    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 150);
+    setTimeout(() => safelyTriggerHaptic('impactLight'), 300);
+    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 450);
   },
   
   // Error pattern
-  error: () => ReactNativeHapticFeedback.trigger('notificationError', hapticOptions),
+  error: () => safelyTriggerHaptic('notificationError'),
 };
 
 // Animation utilities
