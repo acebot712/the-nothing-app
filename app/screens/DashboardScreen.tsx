@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -90,16 +90,35 @@ const DashboardScreen = () => {
     loadData();
   }, [user]);
   
-  const handleShare = () => {
-    haptics.medium();
-    // Navigate to your flex badge for sharing
-    navigation.navigate('Success');
+  const handleShare = async () => {
+    if (!user) return;
+    
+    try {
+      haptics.medium();
+      
+      const message = `I just spent $${user.purchase_amount.toLocaleString()} on The Nothing App. Stay poor.
+      
+Serial: ${user.serial_number}
+Tier: ${user.tier.toUpperCase()}
+
+#TheNothingApp #StayPoor`;
+
+      // Share.share is not fully implemented for this demo
+      Alert.alert(
+        "Share Your Flex",
+        "In a real app, this would open your device's share dialog with the following message:\n\n" + message
+      );
+    } catch (error) {
+      console.error('Error sharing flex:', error);
+    }
   };
   
   const handleLogout = () => {
+    haptics.medium();
+    
     Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out? Poor people might see your device.",
+      "Confirm Logout",
+      "Are you sure you want to log out?",
       [
         {
           text: "Cancel",
@@ -108,46 +127,40 @@ const DashboardScreen = () => {
         {
           text: "Log Out",
           onPress: async () => {
-            try {
-              haptics.medium();
-              await logout();
-              navigation.navigate('Invite');
-            } catch (error) {
-              console.error('Error logging out:', error);
-            }
+            haptics.medium();
+            await logout();
           }
         }
       ]
     );
   };
   
-  // Mystery feature
   const handleLongPressReview = () => {
-    haptics.heavy();
+    haptics.success();
+    
     Alert.alert(
-      "ULTRA-ELITE MODE DETECTED",
-      "You've discovered the secret zone. Unfortunately, you're not wealthy enough to access it. Simply make a $999,999 in-app purchase to unlock.",
+      "Hidden Feature Unlocked",
+      "You've found a hidden feature! In a real app, this would unlock something exclusive.",
       [
         {
-          text: "Maybe Later",
-          style: "cancel"
+          text: "Neat!",
+          onPress: () => haptics.medium()
         }
       ]
     );
   };
   
-  // Display loading state
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.container}>
         <LinearGradient
           colors={['#0D0D0D', '#1A1A1A']}
           style={styles.gradient}
         >
-          <ActivityIndicator size="large" color="#D4AF37" />
-          <Text style={styles.loadingText}>
-            Loading wealth data...
-          </Text>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#D4AF37" />
+            <Text style={styles.loadingText}>Loading your wealth data...</Text>
+          </View>
         </LinearGradient>
       </View>
     );
@@ -159,11 +172,8 @@ const DashboardScreen = () => {
         colors={['#0D0D0D', '#1A1A1A']}
         style={styles.gradient}
       >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <SafeAreaView style={styles.contentContainer}>
+          {/* Header Section */}
           <View style={styles.header}>
             <Text style={styles.welcomeText}>
               Welcome, {user?.username}
@@ -173,31 +183,41 @@ const DashboardScreen = () => {
             </Text>
           </View>
           
+          {/* FlexBadge Section */}
           {user && (
-            <FlexBadge
-              tier={user.tier}
-              amount={user.purchase_amount}
-              serialNumber={user.serial_number}
-              username={user.username}
-              onShare={handleShare}
-            />
+            <View style={styles.badgeContainer}>
+              <FlexBadge
+                tier={user.tier}
+                amount={user.purchase_amount}
+                serialNumber={user.serial_number}
+                username={user.username}
+                onShare={handleShare}
+              />
+            </View>
           )}
           
-          <Leaderboard
-            entries={leaderboardData}
-            currentUserId={user?.id}
-          />
+          {/* Leaderboard Section - This contains a FlatList */}
+          <View style={styles.leaderboardContainer}>
+            <Leaderboard
+              entries={leaderboardData}
+              currentUserId={user?.id}
+            />
+          </View>
           
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onLongPress={handleLongPressReview}
-            style={styles.reviewContainer}
-          >
-            <Text style={styles.reviewLabel}>USER REVIEW</Text>
-            <Text style={styles.reviewText}>"{randomReview}"</Text>
-            <Text style={styles.reviewHint}>Long-press for hidden feature</Text>
-          </TouchableOpacity>
+          {/* Review Section */}
+          <View style={styles.reviewWrapper}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onLongPress={handleLongPressReview}
+              style={styles.reviewContainer}
+            >
+              <Text style={styles.reviewLabel}>USER REVIEW</Text>
+              <Text style={styles.reviewText}>"{randomReview}"</Text>
+              <Text style={styles.reviewHint}>Long-press for hidden feature</Text>
+            </TouchableOpacity>
+          </View>
           
+          {/* Buttons Section */}
           <View style={styles.buttonContainer}>
             <LuxuryButton
               title="SHARE YOUR FLEX"
@@ -213,7 +233,7 @@ const DashboardScreen = () => {
               style={styles.button}
             />
           </View>
-        </ScrollView>
+        </SafeAreaView>
       </LinearGradient>
     </View>
   );
@@ -226,6 +246,10 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -236,16 +260,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#D4AF37',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 60,
-  },
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginTop: 60,
+    marginBottom: 20,
   },
   welcomeText: {
     fontSize: 28,
@@ -259,11 +277,19 @@ const styles = StyleSheet.create({
     color: '#CCC',
     textAlign: 'center',
   },
+  badgeContainer: {
+    marginBottom: 20,
+  },
+  leaderboardContainer: {
+    marginBottom: 20,
+  },
+  reviewWrapper: {
+    marginBottom: 20,
+  },
   reviewContainer: {
     backgroundColor: '#1A1A1A',
     borderRadius: 16,
     padding: 20,
-    marginVertical: 20,
     borderWidth: 1,
     borderColor: '#333',
   },
@@ -287,7 +313,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginTop: 10,
     marginBottom: 30,
   },
   button: {
