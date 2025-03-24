@@ -1,99 +1,108 @@
 # The Nothing App
 
-A luxury mobile application that does absolutely nothing but lets you flex your wealth.
+A React Native application that sells you absolutely nothing, for real money. This project demonstrates a modern mobile application with payment processing, user management, and a leaderboard system.
 
-## About
+## Project Structure
 
-The Nothing App is a premium, invite-only mobile application designed for the truly wealthy. For just $999 (or more, if you want to flex harder), you can purchase access to an app that literally does nothing functional - except allow you to flex on poor people.
+- **app/** - React Native frontend application
+- **server/** - Node.js Express backend API
 
-### Features
+## Frontend (React Native with Expo)
 
-- **Exclusive Invite System**: The app creates fake exclusivity with an invite code system
-- **Net Worth Verification**: "Verify" your wealth ($1M minimum) to proceed
-- **Luxury Tiers**:
-  - Regular: $999 - For those who merely want to flaunt their wealth
-  - Elite: $9,999 - For the seriously wealthy who demand recognition
-  - God Mode: $99,999 - For the ultra-wealthy who can afford to waste money
-- **Leaderboard**: See who has wasted the most money on nothing
-- **Digital Flex Badge**: Share your purchase on social media
-- **AI Concierge**: God Mode users receive a luxury concierge message
-- **Secret Features**: Hidden functionality for the truly elite
+The frontend is built with React Native and Expo, featuring:
 
-## Technical Stack
+- User registration and login
+- Multiple pricing tiers
+- Stripe payment integration
+- User dashboard
+- Global leaderboard
 
-- **Frontend**: React Native (Expo) with TypeScript
-- **Backend**: Supabase (for authentication, leaderboard, and user management)
-- **Payments**: Stripe integration
-- **UI**: Custom luxury components with animations and haptic feedback
+## Backend (Node.js/Express)
+
+The backend provides a REST API that handles:
+
+- User management
+- Payment processing with Stripe
+- Leaderboard functionality
+- Database operations using Supabase
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or later)
+- Node.js (v14+)
 - npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
+- Expo CLI
+- Supabase account
+- Stripe account (for payment processing)
 
-### Installation
+### Setup
 
 1. Clone the repository
-```
-git clone https://github.com/yourusername/thenothingapp.git
-cd thenothingapp
-```
+2. Install dependencies for both frontend and backend:
 
-2. Install dependencies
-```
+```bash
+# Frontend
+cd app
+npm install
+
+# Backend
+cd server
 npm install
 ```
 
-3. Configure Environment Variables
-- Copy the `.env.example` file to `.env.local`
-```
-cp .env.example .env.local
-```
-- Update the `.env.local` file with your Supabase URL and anonymous key
-```
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+3. Configure environment variables:
+   - Copy `.env.example` to `.env` in both `app/` and `server/` directories
+   - Fill in the required values for Supabase and Stripe
+
+4. Initialize the database:
+
+```bash
+cd server
+npm run db:init
 ```
 
-4. Configure Supabase
-- Create a Supabase project
-- Add the Supabase URL and anon key to your `.env.local` file
+5. Start the backend server:
 
-5. Configure Stripe
-- Create a Stripe account
-- Update `app/config/stripe.ts` with your Stripe publishable key
-
-6. Start the development server
+```bash
+cd server
+npm run dev
 ```
+
+6. Start the frontend:
+
+```bash
+cd app
+npx expo start
+```
+
+## Production Deployment
+
+### Backend
+
+1. Set up a Node.js hosting environment (e.g., Heroku, Vercel, AWS)
+2. Configure environment variables for production
+3. Deploy the server code
+
+```bash
 npm start
 ```
 
-7. Run on your device or simulator
-- Press `i` for iOS simulator
-- Press `a` for Android simulator
-- Scan the QR code with the Expo Go app on your device
+### Frontend
 
-## Demo Instructions
+1. Build the app for production:
 
-1. Launch the app
-2. At the invite screen, try any invite code 3 times (it's designed to fail the first 2 attempts)
-3. Enter a net worth of at least $1,000,000
-4. Choose your luxury tier
-5. Enjoy doing absolutely nothing with your expensive app
-6. Share your wealth on social media
-7. Check the leaderboard to see the wealthiest users
+```bash
+npx expo build:android  # for Android
+npx expo build:ios      # for iOS
+```
 
-## "Ultra-Elite" Mode
+2. Submit to app stores or distribute through Expo's services
 
-Long-press on the user review in the dashboard to discover a hidden feature.
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Disclaimer
-
-This app is satirical in nature. It is designed as a social experiment and is not intended to provide any actual functionality except for the digital flex itself. No refunds. 
+This project is licensed under the MIT License - see the LICENSE file for details. 
