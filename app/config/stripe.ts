@@ -1,7 +1,12 @@
 import { initStripe } from '@stripe/stripe-react-native';
+import { EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY } from '@env';
 
-// Replace with your Stripe publishable key
-export const STRIPE_PUBLISHABLE_KEY = 'YOUR_STRIPE_PUBLISHABLE_KEY';
+// Use environment variable for Stripe publishable key
+const STRIPE_PUBLISHABLE_KEY = EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+
+if (!STRIPE_PUBLISHABLE_KEY) {
+  console.error('Stripe publishable key is missing. Please check your environment variables.');
+}
 
 // Initialize Stripe
 export const initializeStripe = async () => {
@@ -56,17 +61,56 @@ export const PRICING_TIERS = {
   }
 };
 
-// Mock payment processing (in a real app, this would use Stripe API)
+// Process payment with Stripe
 export const processPayment = async (
   tier: 'REGULAR' | 'ELITE' | 'GOD', 
   email: string
 ): Promise<{ success: boolean; message: string }> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Always succeed for the demo
-  return {
-    success: true,
-    message: `Congratulations! You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`
-  };
+  try {
+    // In a real implementation, you would:
+    // 1. Call your backend API to create a PaymentIntent
+    // 2. Receive client secret and ephemeral key
+    // 3. Use Stripe SDK to confirm the payment
+    
+    // For now, we'll simulate this flow with a delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Here's a reference implementation using a backend API call:
+    /*
+    const response = await fetch('https://your-backend-api.com/create-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tier,
+        email,
+        amount: PRICING_TIERS[tier].price,
+        currency: 'usd',
+      }),
+    });
+    
+    const { clientSecret, ephemeralKey } = await response.json();
+    
+    const { error } = await confirmPayment(clientSecret, {
+      paymentMethodType: 'Card',
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    */
+    
+    // Since this is a demo app, we'll always succeed
+    return {
+      success: true,
+      message: `Congratulations! You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`
+    };
+  } catch (error: any) {
+    console.error('Payment error:', error);
+    return {
+      success: false,
+      message: error.message || 'Payment failed. Please try again.'
+    };
+  }
 }; 

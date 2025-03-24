@@ -7,13 +7,15 @@ import {
   TouchableOpacity,
   Animated,
   Alert,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
-import { PRICING_TIERS, processPayment } from '../config/stripe';
+import { PRICING_TIERS } from '../config/stripe';
+import PaymentSheet from '../components/PaymentSheet';
 
 interface PricingTierProps {
   title: string;
@@ -39,19 +41,19 @@ const PricingTier = ({
     switch (variant) {
       case 'god':
         return {
-          gradientColors: ['#E5E4E2', '#FFF', '#E5E4E2'],
+          gradientColors: ['#E5E4E2', '#FFF', '#E5E4E2'] as const,
           textColor: '#000',
           shadowColor: '#D4AF37',
         };
       case 'elite':
         return {
-          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'],
+          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'] as const,
           textColor: '#000',
           shadowColor: '#F4EFA8',
         };
       default:
         return {
-          gradientColors: ['#222', '#333', '#222'],
+          gradientColors: ['#222', '#333', '#222'] as const,
           textColor: '#D4AF37',
           shadowColor: '#000',
         };
@@ -120,8 +122,9 @@ const PricingScreen = () => {
   
   const [selectedTier, setSelectedTier] = useState<'REGULAR' | 'ELITE' | 'GOD'>('REGULAR');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     if (!user) return;
     
     // Get the selected tier details
@@ -138,58 +141,49 @@ const PricingScreen = () => {
         },
         {
           text: "I'm Rich, Let's Do It",
-          onPress: async () => {
-            try {
-              setIsProcessing(true);
-              haptics.medium();
-              
-              // Process the payment
-              const result = await processPayment(
-                selectedTier,
-                user.email
-              );
-              
-              if (result.success) {
-                // Update user with new tier and amount
-                const tierMapping = {
-                  'REGULAR': 'regular',
-                  'ELITE': 'elite',
-                  'GOD': 'god'
-                } as const;
-                
-                await purchaseTier(
-                  tierMapping[selectedTier],
-                  tierDetails.price
-                );
-                
-                // Success haptic feedback
-                if (selectedTier === 'GOD') {
-                  haptics.premium();
-                } else {
-                  haptics.success();
-                }
-                
-                // Navigate to success screen
-                navigation.navigate('Success');
-              } else {
-                // Show error
-                Alert.alert("Payment Failed", result.message);
-                haptics.error();
-              }
-            } catch (error) {
-              console.error('Error processing payment:', error);
-              Alert.alert(
-                "Payment Error",
-                "There was an error processing your payment. Please try again."
-              );
-              haptics.error();
-            } finally {
-              setIsProcessing(false);
-            }
+          onPress: () => {
+            haptics.medium();
+            setShowPaymentSheet(true);
           }
         }
       ]
     );
+  };
+
+  const handlePaymentSuccess = async (message: string) => {
+    try {
+      // Get the selected tier details
+      const tierDetails = PRICING_TIERS[selectedTier];
+      
+      // Update user with new tier and amount
+      const tierMapping = {
+        'REGULAR': 'regular',
+        'ELITE': 'elite',
+        'GOD': 'god'
+      } as const;
+      
+      await purchaseTier(
+        tierMapping[selectedTier],
+        tierDetails.price
+      );
+      
+      // Hide payment sheet
+      setShowPaymentSheet(false);
+      
+      // Navigate to success screen
+      navigation.navigate('Success');
+    } catch (error) {
+      console.error('Error updating user after payment:', error);
+      Alert.alert(
+        "Update Error",
+        "Payment successful, but there was an error updating your account. Please contact support."
+      );
+    }
+  };
+
+  const handlePaymentFailure = (errorMessage: string) => {
+    setShowPaymentSheet(false);
+    Alert.alert("Payment Failed", errorMessage);
   };
   
   return (
@@ -248,13 +242,43 @@ const PricingScreen = () => {
             disabled={isProcessing}
             size="large"
             hapticFeedback="heavy"
+            variant={selectedTier === 'REGULAR' ? 'dark' : selectedTier === 'ELITE' ? 'gold' : 'platinum'}
           />
           
-          <Text style={styles.footerText}>
-            No refunds. Ever. We're serious.
-          </Text>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backButtonText}>GO BACK</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      {/* Payment Sheet Modal */}
+      <Modal
+        visible={showPaymentSheet}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowPaymentSheet(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <PaymentSheet
+              tier={selectedTier}
+              email={user?.email || ''}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentFailure={handlePaymentFailure}
+            />
+            
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowPaymentSheet(false)}
+            >
+              <Text style={styles.closeButtonText}>CANCEL</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -348,6 +372,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     textAlign: 'center',
+  },
+  backButton: {
+    marginTop: 10,
+    padding: 15,
+    backgroundColor: '#333',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  closeButton: {
+    marginTop: 15,
+    padding: 15,
+    backgroundColor: '#333',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

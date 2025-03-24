@@ -4,7 +4,7 @@ import { StyleSheet, SafeAreaView, View, LogBox } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserProvider, useUser } from './app/contexts/UserContext';
-import { initializeStripe } from './app/config/stripe';
+import StripeProvider from './app/providers/StripeProvider';
 
 // Screens
 import InviteScreen from './app/screens/InviteScreen';
@@ -24,13 +24,6 @@ const Stack = createNativeStackNavigator();
 // Main app navigation
 const AppNavigator = () => {
   const { isAuthenticated, hasInviteAccess, isLoading } = useUser();
-
-  // Initialize Stripe on app load
-  useEffect(() => {
-    initializeStripe().catch(error => {
-      console.error('Failed to initialize Stripe:', error);
-    });
-  }, []);
 
   // Determine starting screen based on authentication state
   const getInitialRouteName = () => {
@@ -77,9 +70,11 @@ const AppNavigator = () => {
 export default function App() {
   return (
     <SafeAreaView style={styles.container}>
-      <UserProvider>
-        <AppNavigator />
-      </UserProvider>
+      <StripeProvider>
+        <UserProvider>
+          <AppNavigator />
+        </UserProvider>
+      </StripeProvider>
     </SafeAreaView>
   );
 }
