@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.acebot712.thenothingappserver"
+  },
+  "ios": {
+    "bundleIdentifier": "com.acebot712.thenothingappserver"
+  }
+}

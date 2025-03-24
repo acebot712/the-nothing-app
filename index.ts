@@ -1,4 +1,9 @@
 import { registerRootComponent } from 'expo';
+import { enableScreens } from 'react-native-screens';
+import 'react-native-gesture-handler';
+
+// Enable native screens implementation
+enableScreens();
 
 import App from './App';
 

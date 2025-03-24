@@ -7,6 +7,7 @@ module.exports = {
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "dark",
+  entryPoint: "./index.ts",
   newArchEnabled: true,
   splash: {
     image: "./assets/splash-icon.png",
@@ -18,6 +19,7 @@ module.exports = {
     bundleIdentifier: "com.thenothingapp",
     jsEngine: "jsc",
     buildNumber: "1",
+    icon: "./assets/icon.png",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       UIBackgroundModes: ["fetch"],
@@ -29,6 +31,7 @@ module.exports = {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#0D0D0D"
     },
+    icon: "./assets/icon.png",
     package: "com.thenothingapp",
     versionCode: 1,
     permissions: [],

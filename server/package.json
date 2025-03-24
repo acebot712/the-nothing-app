@@ -7,7 +7,9 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "jest",
-    "db:init": "node src/scripts/initialize-db.js"
+    "db:init": "node src/scripts/initialize-db.js",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -19,11 +21,15 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "stripe": "^14.15.0",
-    "winston": "^3.11.0"
+    "uuid": "^11.1.0",
+    "winston": "^3.11.0",
+    "expo": "~52.0.40",
+    "react": "18.3.1",
+    "react-native": "0.76.7"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "supertest": "^6.3.3"
   }
-} 
+}

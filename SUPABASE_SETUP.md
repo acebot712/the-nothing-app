@@ -24,10 +24,19 @@ To complete the Supabase setup, you need to create the necessary tables in your 
 4. Copy and paste the contents of the `supabase-setup.sql` file in this project
 5. Run the script to create the necessary tables and policies
 
+Alternatively, you can use the initialization script:
+
+```bash
+cd server
+npm run db:init
+```
+
+The script will check if the tables exist and create sample data.
+
 The SQL script will create the following:
 
 1. `users` table - Stores user information
-2. `leaderboard` table - Stores the app's leaderboard data
+2. `leaderboard` table - Stores the app's leaderboard data, linked to users
 3. Row Level Security (RLS) policies to control access to these tables
 
 ## Database Schema
@@ -49,9 +58,11 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 ### Leaderboard Table
 
+**Important Note:** In the current implementation, the `id` column in the `leaderboard` table is a foreign key referencing the `users` table, not an independent UUID. This creates a one-to-one relationship between users and their leaderboard entries.
+
 ```sql
 CREATE TABLE IF NOT EXISTS public.leaderboard (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY REFERENCES public.users(id),
   username TEXT NOT NULL,
   purchase_amount NUMERIC DEFAULT 0,
   tier TEXT CHECK (tier IN ('regular', 'elite', 'god')) DEFAULT 'regular',
@@ -88,7 +99,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 The following functions are implemented to interact with Supabase:
 
 - `getLeaderboard()` - Fetches the leaderboard entries sorted by purchase amount
-- `saveUser(user)` - Saves a new user to the database
+- `saveUser(user)` - Saves a new user to the database or updates an existing one
 
 ## Security Considerations
 
@@ -104,5 +115,6 @@ If you encounter issues with the Supabase connection:
 2. Check that the SQL tables are properly created
 3. Ensure Row Level Security policies are configured correctly
 4. Verify the API key hasn't expired
+5. If you encounter ID issues, remember that leaderboard entries must reference valid user IDs
 
 For assistance with Supabase, refer to the [Supabase documentation](https://supabase.io/docs). 

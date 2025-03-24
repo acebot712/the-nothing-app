@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Leaderboard table (can be a view, but for simplicity using a table)
+-- Leaderboard table - maintains a one-to-one relationship with users
 CREATE TABLE IF NOT EXISTS public.leaderboard (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY REFERENCES public.users(id),
   username TEXT NOT NULL,
   purchase_amount NUMERIC DEFAULT 0,
   tier TEXT CHECK (tier IN ('regular', 'elite', 'god')) DEFAULT 'regular',
@@ -46,6 +46,10 @@ CREATE POLICY "Anyone can read leaderboard"
   USING (true);
 
 -- Add sample data to leaderboard
+-- Note: Since the leaderboard ID must reference a valid user ID,
+-- these INSERT statements will only work after corresponding users are created.
+-- The initialize-db.js script handles this dependency correctly.
+-- The following is here for reference, but may not work on direct execution.
 INSERT INTO public.leaderboard (username, purchase_amount, tier)
 VALUES
   ('Elon M.', 99999, 'god'),

@@ -10,181 +10,244 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const { supabaseAdmin } = require('../utils/supabase');
 const { logger } = require('../utils/logger');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const createTables = async () => {
   try {
     logger.info('Starting database initialization');
 
-    // Check for users table
-    const { error: usersCheckError } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .limit(1);
+    // STEP 1: Check if SQL file exists
+    const sqlFilePath = path.resolve(__dirname, '../../../supabase-setup.sql');
+    
+    if (fs.existsSync(sqlFilePath)) {
+      logger.info(`Found SQL setup file at ${sqlFilePath}`);
+      
+      // Let's have the user execute this file through the Supabase dashboard
+      logger.info('SQL file found but must be executed manually in the Supabase dashboard.');
+      logger.info('Please copy the contents of supabase-setup.sql and execute it in the SQL Editor in your Supabase dashboard.');
+    }
 
-    if (usersCheckError && usersCheckError.code === '42P01') {
-      logger.info('Creating users table...');
+    // STEP 2: Check if tables exist
+    logger.info('Checking if tables exist...');
+    
+    let usersTableExists = false;
+    let leaderboardTableExists = false;
+    
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .limit(1);
       
-      // Create users table
-      const { error: createUsersError } = await supabaseAdmin.rpc('exec', {
-        sql: `
-          CREATE TABLE public.users (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            email TEXT UNIQUE NOT NULL,
-            username TEXT UNIQUE NOT NULL,
-            tier TEXT DEFAULT 'basic',
-            signupDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            lastLoginDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            lastPaymentDate TIMESTAMP WITH TIME ZONE,
-            paymentInfo JSONB
-          );
-          
-          -- Enable RLS and create policies
-          ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-          
-          CREATE POLICY "Public users are viewable by everyone"
-            ON public.users FOR SELECT
-            USING (true);
-            
-          CREATE POLICY "Users can update own data"
-            ON public.users FOR UPDATE
-            USING (auth.uid() = id);
-        `
-      });
-      
-      if (createUsersError) {
-        logger.error(`Error creating users table: ${createUsersError.message}`);
-        throw createUsersError;
+      if (!error) {
+        usersTableExists = true;
+        logger.info('Users table exists');
+      } else {
+        logger.warn(`Users table does not exist: ${error.message}`);
       }
-      
-      logger.info('Users table created successfully');
-    } else {
-      logger.info('Users table already exists');
+    } catch (e) {
+      logger.warn(`Error checking users table: ${e.message}`);
     }
     
-    // Check for leaderboard table
-    const { error: leaderboardCheckError } = await supabaseAdmin
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('leaderboard')
+        .select('id')
+        .limit(1);
+      
+      if (!error) {
+        leaderboardTableExists = true;
+        logger.info('Leaderboard table exists');
+      } else {
+        logger.warn(`Leaderboard table does not exist: ${error.message}`);
+      }
+    } catch (e) {
+      logger.warn(`Error checking leaderboard table: ${e.message}`);
+    }
+    
+    if (!usersTableExists || !leaderboardTableExists) {
+      logger.warn('Some tables are missing. Please create them using the supabase-setup.sql file.');
+      logger.warn('Copy the SQL from the file and execute it in the Supabase dashboard SQL Editor.');
+      return;
+    }
+
+    // STEP 3: Insert sample users
+    logger.info('Creating sample users...');
+    
+    // Insert sample users and collect their IDs for leaderboard creation
+    const userMap = {};
+    
+    // First check if users already exist
+    const { data: existingUsers, error: userCheckError } = await supabaseAdmin
+      .from('users')
+      .select('id, email, username')
+      .in('email', [
+        'elon@example.com', 
+        'jeff@example.com', 
+        'mark@example.com', 
+        'bill@example.com', 
+        'warren@example.com'
+      ]);
+      
+    if (userCheckError) {
+      logger.error(`Error checking existing users: ${userCheckError.message}`);
+    } else if (existingUsers && existingUsers.length > 0) {
+      logger.info(`Found ${existingUsers.length} existing users. Using them for leaderboard.`);
+      
+      // Map existing users by username for leaderboard creation
+      existingUsers.forEach(user => {
+        userMap[user.username] = user.id;
+      });
+    } else {
+      // Create sample user data
+      const sampleUsers = [
+        { 
+          id: uuidv4(),
+          email: 'elon@example.com', 
+          username: 'Elon M.', 
+          net_worth: 1000000000,
+          tier: 'god',
+          purchase_amount: 99999,
+          serial_number: 'GOD-001'
+        },
+        { 
+          id: uuidv4(),
+          email: 'jeff@example.com', 
+          username: 'Jeff B.',
+          net_worth: 950000000, 
+          tier: 'god',
+          purchase_amount: 99999,
+          serial_number: 'GOD-002'
+        },
+        { 
+          id: uuidv4(),
+          email: 'mark@example.com', 
+          username: 'Mark Z.',
+          net_worth: 500000000,
+          tier: 'elite',
+          purchase_amount: 9999,
+          serial_number: 'ELITE-001'
+        },
+        { 
+          id: uuidv4(),
+          email: 'bill@example.com', 
+          username: 'Bill G.',
+          net_worth: 450000000,
+          tier: 'elite',
+          purchase_amount: 9999,
+          serial_number: 'ELITE-002'
+        },
+        { 
+          id: uuidv4(),
+          email: 'warren@example.com', 
+          username: 'Warren B.',
+          net_worth: 300000000,
+          tier: 'regular',
+          purchase_amount: 999,
+          serial_number: 'REG-001'
+        }
+      ];
+      
+      // Insert users and map them for leaderboard
+      for (const user of sampleUsers) {
+        const { data: newUser, error: insertError } = await supabaseAdmin
+          .from('users')
+          .insert([user])
+          .select();
+        
+        if (insertError) {
+          logger.error(`Error inserting user ${user.username}: ${insertError.message}`);
+        } else if (newUser && newUser.length > 0) {
+          logger.info(`Created user ${user.username}`);
+          userMap[user.username] = user.id;
+        }
+      }
+    }
+    
+    // STEP 4: Check and insert leaderboard data
+    logger.info('Checking leaderboard data...');
+    
+    const { data: leaderboardData, error: leaderboardError } = await supabaseAdmin
       .from('leaderboard')
       .select('id')
       .limit(1);
-      
-    if (leaderboardCheckError && leaderboardCheckError.code === '42P01') {
-      logger.info('Creating leaderboard table...');
-      
-      // Create leaderboard table
-      const { error: createLeaderboardError } = await supabaseAdmin.rpc('exec', {
-        sql: `
-          CREATE TABLE public.leaderboard (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            userId UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-            username TEXT NOT NULL,
-            tier TEXT DEFAULT 'basic',
-            tierValue INTEGER DEFAULT 0,
-            lastUpdated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            UNIQUE(userId)
-          );
-          
-          -- Enable RLS and create policies
-          ALTER TABLE public.leaderboard ENABLE ROW LEVEL SECURITY;
-          
-          CREATE POLICY "Leaderboard is viewable by everyone"
-            ON public.leaderboard FOR SELECT
-            USING (true);
-        `
-      });
-      
-      if (createLeaderboardError) {
-        logger.error(`Error creating leaderboard table: ${createLeaderboardError.message}`);
-        throw createLeaderboardError;
-      }
-      
-      logger.info('Leaderboard table created successfully');
+    
+    if (leaderboardError) {
+      logger.error(`Error checking leaderboard: ${leaderboardError.message}`);
+    } else if (leaderboardData && leaderboardData.length > 0) {
+      logger.info('Leaderboard already has data, skipping insertion');
+    } else if (Object.keys(userMap).length === 0) {
+      logger.warn('No user IDs available to create leaderboard entries');
     } else {
-      logger.info('Leaderboard table already exists');
-    }
-    
-    // Create sample data for testing
-    logger.info('Creating sample data...');
-    
-    // Define sample users
-    const sampleUsers = [
-      { 
-        email: 'elon@example.com', 
-        username: 'Elon M.', 
-        tier: 'nothing'
-      },
-      { 
-        email: 'jeff@example.com', 
-        username: 'Jeff B.', 
-        tier: 'nothing'
-      },
-      { 
-        email: 'mark@example.com', 
-        username: 'Mark Z.', 
-        tier: 'premium'
-      },
-      { 
-        email: 'bill@example.com', 
-        username: 'Bill G.', 
-        tier: 'premium'
-      },
-      { 
-        email: 'warren@example.com', 
-        username: 'Warren B.', 
-        tier: 'basic'
+      logger.info('Adding sample data to leaderboard...');
+      
+      // Create leaderboard entries using the user IDs
+      const leaderboardSamples = [];
+      
+      // Check if we have the required users
+      if (userMap['Elon M.']) {
+        leaderboardSamples.push({
+          id: userMap['Elon M.'],
+          username: 'Elon M.',
+          purchase_amount: 99999,
+          tier: 'god'
+        });
       }
-    ];
-    
-    // Insert sample users
-    for (const user of sampleUsers) {
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', user.email)
-        .single();
-        
-      if (!existingUser) {
-        const { data: newUser, error } = await supabaseAdmin
-          .from('users')
-          .insert({
-            email: user.email,
-            username: user.username,
-            tier: user.tier,
-            signupDate: new Date().toISOString(),
-            lastLoginDate: new Date().toISOString()
-          })
-          .select()
-          .single();
-          
-        if (error) {
-          logger.error(`Error creating sample user ${user.username}: ${error.message}`);
-          continue;
-        }
-        
-        // Get tier value for leaderboard
-        const tierValues = {
-          'basic': 1,
-          'premium': 2,
-          'nothing': 3
-        };
-        
-        // Add to leaderboard
-        await supabaseAdmin
+      
+      if (userMap['Jeff B.']) {
+        leaderboardSamples.push({
+          id: userMap['Jeff B.'],
+          username: 'Jeff B.',
+          purchase_amount: 99999,
+          tier: 'god'
+        });
+      }
+      
+      if (userMap['Mark Z.']) {
+        leaderboardSamples.push({
+          id: userMap['Mark Z.'],
+          username: 'Mark Z.',
+          purchase_amount: 9999,
+          tier: 'elite'
+        });
+      }
+      
+      if (userMap['Bill G.']) {
+        leaderboardSamples.push({
+          id: userMap['Bill G.'],
+          username: 'Bill G.',
+          purchase_amount: 9999,
+          tier: 'elite'
+        });
+      }
+      
+      if (userMap['Warren B.']) {
+        leaderboardSamples.push({
+          id: userMap['Warren B.'],
+          username: 'Warren B.',
+          purchase_amount: 999,
+          tier: 'regular'
+        });
+      }
+      
+      if (leaderboardSamples.length > 0) {
+        const { error: insertError } = await supabaseAdmin
           .from('leaderboard')
-          .insert({
-            userId: newUser.id,
-            username: newUser.username,
-            tier: newUser.tier,
-            tierValue: tierValues[newUser.tier] || 0
-          });
-          
-        logger.info(`Created sample user ${user.username} with tier ${user.tier}`);
+          .insert(leaderboardSamples);
+        
+        if (insertError) {
+          logger.error(`Error inserting leaderboard data: ${insertError.message}`);
+        } else {
+          logger.info(`Added ${leaderboardSamples.length} entries to the leaderboard`);
+        }
       } else {
-        logger.info(`Sample user ${user.username} already exists`);
+        logger.warn('No leaderboard samples could be created from available users');
       }
     }
     
-    logger.info('Database initialization completed successfully');
+    logger.info('Database initialization completed');
   } catch (error) {
     logger.error(`Database initialization failed: ${error.message}`);
     process.exit(1);

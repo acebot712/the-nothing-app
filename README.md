@@ -4,8 +4,10 @@ A React Native application that sells you absolutely nothing, for real money. Th
 
 ## Project Structure
 
-- **app/** - React Native frontend application
-- **server/** - Node.js Express backend API
+The application is organized as follows:
+- Main React Native application in the root directory (containing App.tsx)
+- Components, screens and contexts in `app/` directory
+- Backend utilities in `server/` directory
 
 ## Frontend (React Native with Expo)
 
@@ -39,65 +41,72 @@ The backend provides a REST API that handles:
 ### Setup
 
 1. Clone the repository
-2. Install dependencies for both frontend and backend:
+
+2. Install dependencies for the project:
 
 ```bash
-# Frontend
-cd app
+# Install dependencies for the main app
 npm install
 
-# Backend
+# Install dependencies for the server
 cd server
 npm install
+cd ..
 ```
 
 3. Configure environment variables:
-   - Copy `.env.example` to `.env` in both `app/` and `server/` directories
-   - Fill in the required values for Supabase and Stripe
+   - Create a `.env` file in the `app/` directory using `app/.env.example` as a template
+   - Make sure it contains the following variables:
+   ```
+   EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   EXPO_PUBLIC_API_URL=http://localhost:3000/api
+   EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
+   ```
+   - Create a `.env` file in the `server/` directory with the appropriate configuration
 
-4. Initialize the database:
+4. Set up the database:
+   - Either execute the SQL in `supabase-setup.sql` directly in the Supabase SQL Editor
+   - Or use the initialization script to create tables and sample data:
 
 ```bash
 cd server
 npm run db:init
 ```
 
-5. Start the backend server:
+   **Note on database structure**: The `leaderboard` table uses the `id` column as a foreign key reference to the `users` table. Each user can have one entry in the leaderboard.
+
+5. Start the server in a separate terminal:
 
 ```bash
 cd server
 npm run dev
 ```
 
-6. Start the frontend:
+6. Start the application:
 
 ```bash
-cd app
+# In the root directory
 npx expo start
 ```
 
+### Troubleshooting
+
+If you encounter the error `ConfigError: The expected package.json path does not exist`, make sure you're running the command from the root directory of the project, not from the `app/` subdirectory.
+
+If you see the error `Supabase credentials are missing. Please check your environment variables.`, ensure:
+
+1. You've created the `.env` file in the `app/` directory with the correct Supabase credentials
+2. You've restarted your Metro bundler (close and restart with `npx expo start`)
+3. If needed, run `npx expo start --clear` to clear the cache
+
 ## Production Deployment
 
-### Backend
+See the [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md) file for detailed instructions on deploying to production environments.
 
-1. Set up a Node.js hosting environment (e.g., Heroku, Vercel, AWS)
-2. Configure environment variables for production
-3. Deploy the server code
+## Supabase Configuration
 
-```bash
-npm start
-```
-
-### Frontend
-
-1. Build the app for production:
-
-```bash
-npx expo build:android  # for Android
-npx expo build:ios      # for iOS
-```
-
-2. Submit to app stores or distribute through Expo's services
+See the [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) file for detailed instructions on setting up and configuring Supabase.
 
 ## Contributing
 
