@@ -21,7 +21,6 @@ module.exports = {
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       UIBackgroundModes: ["fetch"],
-      CFBundleDisplayName: "The Nothing",
       UIStatusBarStyle: "UIStatusBarStyleLightContent"
     }
   },
