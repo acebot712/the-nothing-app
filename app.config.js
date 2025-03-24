@@ -1,4 +1,41 @@
-// Export the configuration directly from app.json
-const config = require('./app.json');
-
-module.exports = config; 
+// Define and export the configuration directly
+module.exports = {
+  name: "The Nothing App",
+  slug: "the-nothing-app",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/icon.png",
+  userInterfaceStyle: "dark",
+  newArchEnabled: true,
+  splash: {
+    image: "./assets/splash-icon.png",
+    resizeMode: "contain",
+    backgroundColor: "#0D0D0D"
+  },
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: "com.thenothingapp",
+    jsEngine: "jsc",
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false
+    }
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: "./assets/adaptive-icon.png",
+      backgroundColor: "#0D0D0D"
+    },
+    package: "com.thenothingapp"
+  },
+  web: {
+    favicon: "./assets/favicon.png"
+  },
+  jsEngine: "hermes",
+  extra: {
+    eas: {
+      projectId: "97acffa9-73f2-4293-ae60-9a6a8fcd3914"
+    },
+    appEnvironment: process.env.APP_ENVIRONMENT || 'development'
+  },
+  owner: "acebot712"
+}; 
