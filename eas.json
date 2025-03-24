@@ -39,7 +39,7 @@
         "appleTeamId": "YOUR_APPLE_TEAM_ID"
       },
       "android": {
-        "serviceAccountKeyPath": "path/to/service-account.json",
+        "serviceAccountKeyPath": "gen-lang-client-0782705722-f93f2c9f7124.json",
         "track": "production"
       }
     }

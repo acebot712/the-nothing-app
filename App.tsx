@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, View, LogBox, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, SafeAreaView, View, LogBox, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserProvider, useUser } from './app/contexts/UserContext';
 import StripeProvider from './app/providers/StripeProvider';
 import { initializeSupabase } from './app/config/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  useFonts,
+  PlayfairDisplay_400Regular,
+  PlayfairDisplay_700Bold,
+  PlayfairDisplay_400Regular_Italic,
+} from '@expo-google-fonts/playfair-display';
+import {
+  Montserrat_400Regular,
+  Montserrat_700Bold,
+} from '@expo-google-fonts/montserrat';
 
 // Screens
 import InviteScreen from './app/screens/InviteScreen';
@@ -21,6 +32,21 @@ LogBox.ignoreLogs([
 
 // Create stack navigator
 const Stack = createNativeStackNavigator();
+
+// Function to clear all app data (for development/testing)
+const clearAllAppData = async () => {
+  try {
+    await AsyncStorage.clear();
+    Alert.alert(
+      "Storage Cleared",
+      "All local app data has been cleared. Restart the app to see the changes.",
+      [{ text: "OK" }]
+    );
+  } catch (error) {
+    console.error('Failed to clear app data:', error);
+    Alert.alert("Error", "Failed to clear app data.");
+  }
+};
 
 // Main app navigation
 const AppNavigator = () => {
@@ -72,6 +98,15 @@ const AppNavigator = () => {
 export default function App() {
   const [dbInitialized, setDbInitialized] = useState<boolean | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    PlayfairDisplay_400Regular,
+    PlayfairDisplay_700Bold,
+    PlayfairDisplay_400Regular_Italic,
+    Montserrat_400Regular,
+    Montserrat_700Bold,
+  });
 
   // Initialize Supabase on app load
   useEffect(() => {
@@ -92,13 +127,15 @@ export default function App() {
     initialize();
   }, []);
 
-  // Show loading screen while checking database
-  if (dbInitialized === null) {
+  // Show loading screen while fonts are loading or checking database
+  if (!fontsLoaded || dbInitialized === null) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#D4AF37" />
-          <Text style={styles.loadingText}>Connecting to the luxury database...</Text>
+          <Text style={[styles.loadingText, { fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined }]}>
+            Preparing your luxury experience...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -109,9 +146,9 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Database Error</Text>
-          <Text style={styles.errorText}>{initError}</Text>
-          <Text style={styles.errorHint}>
+          <Text style={[styles.errorTitle, { fontFamily: 'PlayfairDisplay_700Bold' }]}>Database Error</Text>
+          <Text style={[styles.errorText, { fontFamily: 'Montserrat_400Regular' }]}>{initError}</Text>
+          <Text style={[styles.errorHint, { fontFamily: 'Montserrat_400Regular' }]}>
             Check the console logs for more details and instructions on setting up the required tables.
           </Text>
         </View>
@@ -121,6 +158,16 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Development Tools */}
+      {__DEV__ && (
+        <TouchableOpacity 
+          style={styles.devButton}
+          onPress={clearAllAppData}
+        >
+          <Text style={styles.devButtonText}>Clear App Data</Text>
+        </TouchableOpacity>
+      )}
+
       <StripeProvider>
         <UserProvider>
           <AppNavigator />
@@ -171,5 +218,18 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 14,
     textAlign: 'center',
+  },
+  devButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    padding: 8,
+    borderRadius: 5,
+    zIndex: 1000,
+  },
+  devButtonText: {
+    color: '#FFF',
+    fontSize: 12,
   },
 });

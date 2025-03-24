@@ -2,6 +2,7 @@
 module.exports = {
   name: "The Nothing App",
   slug: "the-nothing-app",
+  description: "The world's most exclusive app that does absolutely nothing. Join the elite.",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -16,8 +17,12 @@ module.exports = {
     supportsTablet: true,
     bundleIdentifier: "com.thenothingapp",
     jsEngine: "jsc",
+    buildNumber: "1",
     infoPlist: {
-      ITSAppUsesNonExemptEncryption: false
+      ITSAppUsesNonExemptEncryption: false,
+      UIBackgroundModes: ["fetch"],
+      CFBundleDisplayName: "The Nothing",
+      UIStatusBarStyle: "UIStatusBarStyleLightContent"
     }
   },
   android: {
@@ -25,17 +30,42 @@ module.exports = {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#0D0D0D"
     },
-    package: "com.thenothingapp"
+    package: "com.thenothingapp",
+    versionCode: 1,
+    permissions: [],
+    softwareKeyboardLayoutMode: "pan"
   },
   web: {
-    favicon: "./assets/favicon.png"
+    favicon: "./assets/favicon.png",
+    name: "The Nothing App - Ultimate Luxury",
+    shortName: "The Nothing",
+    description: "The world's most exclusive app that does absolutely nothing. Join the elite who have spent thousands on digital bragging rights."
   },
   jsEngine: "hermes",
+  primaryColor: "#D4AF37",
   extra: {
     eas: {
       projectId: "97acffa9-73f2-4293-ae60-9a6a8fcd3914"
     },
     appEnvironment: process.env.APP_ENVIRONMENT || 'development'
   },
-  owner: "acebot712"
+  owner: "acebot712",
+  updates: {
+    fallbackToCacheTimeout: 0,
+    url: "https://u.expo.dev/97acffa9-73f2-4293-ae60-9a6a8fcd3914"
+  },
+  assetBundlePatterns: [
+    "**/*"
+  ],
+  hooks: {
+    postPublish: [
+      {
+        file: "sentry-expo/upload-sourcemaps",
+        config: {
+          organization: "your-organization",
+          project: "the-nothing-app"
+        }
+      }
+    ]
+  }
 }; 
