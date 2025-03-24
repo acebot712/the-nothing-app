@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'TheNothingApp'
+rootProject.name = 'The Nothing App'
 
 dependencyResolutionManagement {
   versionCatalogs {
