@@ -67,19 +67,44 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   // Handler for purchasing a tier
   const purchaseTier = async (tier: 'regular' | 'elite' | 'god', amount: number) => {
-    if (!user) return;
-    
     try {
-      // In a real app, this would call a payment processor and then update Supabase
+      // If there's no user, create a temporary one (this should generally not happen)
+      if (!user) {
+        console.log('No user exists yet, creating a temporary user first');
+        
+        // Create temporary user
+        const tempUser = {
+          username: 'Anonymous User',
+          email: `user_${Math.random().toString(36).substring(2, 7)}@example.com`,
+          net_worth: 1000000,
+          tier,
+          purchase_amount: amount,
+        };
+        
+        const newUser = await saveUser(tempUser);
+        if (newUser) {
+          setUser(newUser);
+          return;
+        } else {
+          throw new Error('Failed to create temporary user');
+        }
+      }
+      
+      // Update existing user with new tier and amount
+      console.log(`Updating user ${user.id} to ${tier} tier with amount ${amount}`);
       const updatedUser = await saveUser({
         ...user,
         tier,
         purchase_amount: amount,
       });
       
+      if (!updatedUser) {
+        throw new Error('Failed to update user tier');
+      }
+      
       setUser(updatedUser);
     } catch (error) {
-      console.error('Failed to purchase tier', error);
+      console.error('Failed to purchase tier:', error);
       throw error;
     }
   };

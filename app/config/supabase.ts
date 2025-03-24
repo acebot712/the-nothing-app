@@ -67,23 +67,128 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 };
 
 export const saveUser = async (user: Partial<User>): Promise<User | null> => {
-  const serialNumber = `RICH-${Math.floor(Math.random() * 1000000)}`;
-  const newUser = {
-    ...user,
-    serial_number: serialNumber,
-    created_at: new Date().toISOString(),
-  };
-  
-  const { data, error } = await supabase
-    .from('users')
-    .insert([newUser])
-    .select()
-    .single();
+  try {
+    const serialNumber = `RICH-${Math.floor(Math.random() * 1000000)}`;
     
-  if (error) {
-    console.error('Error saving user:', error);
+    // Ensure all required fields are present
+    const newUser = {
+      id: user.id || `user_${Math.random().toString(36).substring(2, 11)}`, // Generate an ID if not provided
+      email: user.email || `user_${Math.random().toString(36).substring(2, 7)}@example.com`,
+      username: user.username || 'Anonymous',
+      net_worth: user.net_worth || 1000000,
+      tier: user.tier || 'regular',
+      purchase_amount: user.purchase_amount || 0,
+      serial_number: user.serial_number || serialNumber,
+      created_at: user.created_at || new Date().toISOString(),
+    };
+    
+    // First, let's check if the user already exists to determine if we need to update or insert
+    const { data: existingUser, error: userCheckError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', newUser.id)
+      .single();
+      
+    if (userCheckError && userCheckError.code !== 'PGRST116') {
+      // PGRST116 means no rows returned, which is expected when user doesn't exist
+      console.error('Error checking existing user:', userCheckError);
+    }
+    
+    let data, error;
+    
+    if (existingUser) {
+      // Update existing user
+      const { data: updatedData, error: updateError } = await supabase
+        .from('users')
+        .update(newUser)
+        .eq('id', newUser.id)
+        .select()
+        .single();
+        
+      data = updatedData;
+      error = updateError;
+    } else {
+      // Insert new user
+      const { data: insertedData, error: insertError } = await supabase
+        .from('users')
+        .insert([newUser])
+        .select()
+        .single();
+        
+      data = insertedData;
+      error = insertError;
+    }
+    
+    if (error) {
+      console.error('Error saving user:', error);
+      console.log('Attempted to save user with data:', newUser);
+      return null;
+    }
+    
+    return data as User;
+  } catch (e) {
+    console.error('Exception in saveUser:', e);
     return null;
   }
-  
-  return data as User;
+};
+
+// Initialize and check required tables
+export const initializeSupabase = async (): Promise<boolean> => {
+  try {
+    console.log('Checking Supabase connection and tables...');
+    
+    // Test the connection by checking if we can access the "users" table
+    const { error } = await supabase
+      .from('users')
+      .select('count')
+      .limit(1);
+    
+    if (error) {
+      console.error('Error accessing users table:', error);
+      
+      // If the table doesn't exist, suggest creating it
+      if (error.code === '42P01') { // PostgreSQL code for undefined_table
+        console.log('Users table does not exist. Use the following SQL to create it:');
+        console.log(`
+CREATE TABLE public.users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  username TEXT NOT NULL,
+  net_worth INTEGER NOT NULL,
+  tier TEXT NOT NULL CHECK (tier IN ('regular', 'elite', 'god')),
+  purchase_amount INTEGER NOT NULL,
+  serial_number TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE public.leaderboard (
+  id TEXT PRIMARY KEY REFERENCES public.users(id),
+  username TEXT NOT NULL,
+  purchase_amount INTEGER NOT NULL,
+  tier TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+`);
+      }
+      
+      return false;
+    }
+    
+    // Check if we can access the "leaderboard" table
+    const { error: leaderboardError } = await supabase
+      .from('leaderboard')
+      .select('count')
+      .limit(1);
+    
+    if (leaderboardError) {
+      console.error('Error accessing leaderboard table:', leaderboardError);
+      return false;
+    }
+    
+    console.log('Supabase connection and tables verified successfully.');
+    return true;
+  } catch (error) {
+    console.error('Exception during Supabase initialization:', error);
+    return false;
+  }
 }; 
