@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,10 @@ import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
 import { PRICING_TIERS } from '../config/stripe';
 import PaymentSheet from '../components/PaymentSheet';
+import { EXPO_PUBLIC_API_URL } from '@env';
+
+// Default API URL if environment variable is not set
+const API_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 interface PricingTierProps {
   title: string;
@@ -123,12 +127,70 @@ const PricingScreen = () => {
   const [selectedTier, setSelectedTier] = useState<'REGULAR' | 'ELITE' | 'GOD'>('REGULAR');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  
+  // Check if the API is available
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        console.log('Checking API server status...');
+        const response = await fetch(`${API_URL}/api/health`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          console.log('API server is available');
+          setApiStatus('available');
+        } else {
+          console.log('API server returned error:', response.status);
+          setApiStatus('unavailable');
+        }
+      } catch (error) {
+        console.error('API server is unavailable:', error);
+        setApiStatus('unavailable');
+      }
+    };
+    
+    checkApiStatus();
+  }, []);
   
   const handlePurchase = () => {
-    if (!user) return;
+    console.log('handlePurchase called');
+    if (!user) {
+      console.log('No user found, cannot proceed with purchase');
+      Alert.alert('Error', 'You need to be logged in to make a purchase.');
+      return;
+    }
     
     // Get the selected tier details
     const tierDetails = PRICING_TIERS[selectedTier];
+    console.log('Selected tier:', selectedTier, 'Details:', tierDetails);
+    
+    // If API is unavailable, show warning
+    if (apiStatus === 'unavailable') {
+      console.log('API is unavailable, showing warning');
+      Alert.alert(
+        "Service Notice",
+        "Our payment server appears to be unavailable. You can continue with a simulated payment for demonstration purposes.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Continue Anyway",
+            onPress: () => {
+              haptics.medium();
+              setShowPaymentSheet(true);
+            }
+          }
+        ]
+      );
+      return;
+    }
     
     // Confirm the purchase
     Alert.alert(
@@ -137,11 +199,13 @@ const PricingScreen = () => {
       [
         {
           text: "Cancel",
-          style: "cancel"
+          style: "cancel",
+          onPress: () => console.log('Purchase cancelled')
         },
         {
           text: "I'm Rich, Let's Do It",
           onPress: () => {
+            console.log('Purchase confirmed, showing payment sheet');
             haptics.medium();
             setShowPaymentSheet(true);
           }
