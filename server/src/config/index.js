@@ -23,20 +23,20 @@ const config = {
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     products: {
-      basic: {
-        price: 100, // $1.00 in cents
+      regular: {
+        price: 99900, // $999.00 in cents
         currency: 'usd',
-        description: 'Basic tier - Limited features',
+        description: 'Regular Tier - For those who merely want to flaunt their wealth',
       },
-      premium: {
-        price: 999, // $9.99 in cents 
+      elite: {
+        price: 999900, // $9,999.00 in cents 
         currency: 'usd',
-        description: 'Premium tier - All features',
+        description: 'Elite Tier - For the seriously wealthy who demand recognition',
       },
-      nothing: {
-        price: 9999, // $99.99 in cents
+      god: {
+        price: 9999900, // $99,999.00 in cents
         currency: 'usd',
-        description: 'Nothing tier - Ultimate edition',
+        description: 'God Mode - For the ultra-wealthy who can afford to waste money',
       },
     },
   },

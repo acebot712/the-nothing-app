@@ -11,25 +11,26 @@ class ApiError extends Error {
   }
 }
 
-// Error handler middleware
-const errorHandler = (err, req, res, next) => {
-  // Get status code and message
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-
-  // Log error
-  logger.error(`${statusCode} - ${message} - ${req.originalUrl} - ${req.method}`);
-  
-  if (statusCode === 500) {
-    logger.error(err.stack);
+// Main error handling middleware
+const errorHandler = (err, req, res, _next) => {
+  // Check if the error is one of our known API errors
+  if (err instanceof ApiError) {
+    return res.status(err.status).json({
+      status: 'error',
+      message: err.message
+    });
   }
 
-  // Send response
-  res.status(statusCode).json({
+  // Default to 500 server error for unknown errors
+  const statusCode = process.env.NODE_ENV === 'production' ? 500 : err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message || 'Something went wrong';
+  
+  // Log the error
+  logger.error(`Error: ${err.message}`);
+  
+  return res.status(statusCode).json({
     status: 'error',
-    message: message,
-    ...(err.data && { data: err.data }),
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    message
   });
 };
 

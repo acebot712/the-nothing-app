@@ -36,7 +36,7 @@ const createTables = async () => {
     let leaderboardTableExists = false;
     
     try {
-      const { data, error } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('users')
         .select('id')
         .limit(1);
@@ -52,7 +52,7 @@ const createTables = async () => {
     }
     
     try {
-      const { data, error } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('leaderboard')
         .select('id')
         .limit(1);
@@ -248,18 +248,15 @@ const createTables = async () => {
     }
     
     logger.info('Database initialization completed');
+    return true;
   } catch (error) {
     logger.error(`Database initialization failed: ${error.message}`);
-    process.exit(1);
+    throw error;
   }
 };
 
-createTables()
-  .then(() => {
-    logger.info('Script completed');
-    process.exit(0);
-  })
-  .catch(error => {
-    logger.error(`Script error: ${error.message}`);
-    process.exit(1);
-  }); 
+// Only export what is used
+module.exports = {
+  initializeDatabase: createTables,
+  createTables,
+}; 

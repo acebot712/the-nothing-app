@@ -269,6 +269,8 @@ const PricingScreen = () => {
             <PaymentSheet
               tier={selectedTier}
               email={user?.email || ''}
+              userId={user?.id}
+              username={user?.username}
               onPaymentSuccess={handlePaymentSuccess}
               onPaymentFailure={handlePaymentFailure}
             />

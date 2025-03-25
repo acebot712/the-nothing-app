@@ -2,6 +2,7 @@
   "name": "the-nothing-app",
   "version": "1.0.0",
   "main": "./index.ts",
+  "type": "module",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -14,6 +15,12 @@
     "build:all": "eas build --platform all --profile production",
     "submit:ios": "eas submit --platform ios",
     "submit:android": "eas submit --platform android",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:all": "npm run lint && cd server && npm run lint",
+    "lint:fix:all": "npm run lint:fix && cd server && npm run lint:fix",
+    "tsc": "tsc --noEmit",
+    "check:all": "npm run tsc && npm run lint:all",
     "postinstall": "npx expo-doctor || exit 0"
   },
   "dependencies": {
@@ -27,8 +34,10 @@
     "canvas": "^3.1.0",
     "expo": "~52.0.40",
     "expo-clipboard": "^7.0.1",
+    "expo-file-system": "~18.0.11",
     "expo-font": "^13.0.4",
     "expo-linear-gradient": "~14.0.2",
+    "expo-sharing": "~13.0.1",
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "^4.0.8",
@@ -44,20 +53,27 @@
     "react-native-share": "^12.0.9",
     "react-native-svg": "15.8.0",
     "react-native-url-polyfill": "^2.0.0",
-    "react-native-web": "^0.19.13",
     "react-native-view-shot": "~4.0.3",
-    "expo-sharing": "~13.0.1",
-    "expo-file-system": "~18.0.11"
+    "react-native-web": "^0.19.13"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
+    "@eslint/js": "^9.23.0",
     "@types/react": "~18.3.12",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.23.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-native": "^5.0.0",
+    "globals": "^16.0.0",
     "postcss": "^8.5.3",
     "react-native-dotenv": "^3.4.11",
     "sharp": "^0.33.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.28.0"
   },
   "expo": {
     "doctor": {

@@ -110,7 +110,8 @@ const handleWebhookEvent = async (signature, rawBody) => {
         };
         
       default:
-        // Handle other event types as needed
+        // For other events, process asynchronously
+        await processOtherEvent(event);
         return { 
           success: true, 
           event: event.type
@@ -120,6 +121,18 @@ const handleWebhookEvent = async (signature, rawBody) => {
     logger.error(`Webhook error: ${error.message}`);
     throw error;
   }
+};
+
+// Helper function to process other webhook events
+const processOtherEvent = async (event) => {
+  // In a real app, you might want to handle other event types
+  // For now, just log them
+  logger.info(`Processing other event: ${event.type}`);
+  
+  // Simulate async processing
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  return true;
 };
 
 module.exports = {

@@ -1,11 +1,12 @@
 import Constants from 'expo-constants';
+import { EXPO_PUBLIC_API_URL } from '@env';
 
 // API base URL - update this with your backend server URL
 // For local development with Expo, you might use something like:
 // - http://localhost:3000/api (for web)
 // - http://10.0.2.2:3000/api (for Android emulator)
 // - http://192.168.x.x:3000/api (your local IP for physical devices)
-const API_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api';
+const API_URL = EXPO_PUBLIC_API_URL || Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api';
 
 // Helper for handling API responses
 const handleResponse = async (response) => {
