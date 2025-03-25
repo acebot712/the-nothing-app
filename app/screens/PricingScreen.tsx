@@ -243,14 +243,17 @@ const PricingScreen = () => {
             size="large"
             hapticFeedback="heavy"
             variant={selectedTier === 'REGULAR' ? 'dark' : selectedTier === 'ELITE' ? 'gold' : 'platinum'}
+            style={styles.purchaseButton}
           />
           
-          <TouchableOpacity
+          <LuxuryButton
+            title="GO BACK"
             onPress={() => navigation.goBack()}
+            variant="dark"
+            size="medium"
             style={styles.backButton}
-          >
-            <Text style={styles.backButtonText}>GO BACK</Text>
-          </TouchableOpacity>
+            hapticFeedback="medium"
+          />
         </View>
       </LinearGradient>
 
@@ -359,31 +362,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectButton: {
-    alignSelf: 'center',
+    marginTop: 15,
+    width: '80%',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
   footer: {
-    padding: 20,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-  },
-  footerText: {
+    width: '100%',
+    padding: 16,
     marginTop: 10,
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
+  },
+  purchaseButton: {
+    width: '100%',
+    marginBottom: 12,
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
   },
   backButton: {
-    marginTop: 10,
-    padding: 15,
-    backgroundColor: '#333',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: '100%',
+    marginTop: 8,
   },
   modalContainer: {
     flex: 1,

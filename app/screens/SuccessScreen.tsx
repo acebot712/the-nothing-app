@@ -153,7 +153,8 @@ Tier: ${user?.tier.toUpperCase()}
               onPress={handleShare}
               variant="gold"
               hapticFeedback="medium"
-              style={styles.button}
+              style={styles.buttonShare}
+              size="large"
             />
             
             <LuxuryButton
@@ -161,7 +162,8 @@ Tier: ${user?.tier.toUpperCase()}
               onPress={goToHome}
               variant="dark"
               hapticFeedback="medium"
-              style={styles.button}
+              style={styles.buttonDashboard}
+              size="medium"
             />
           </Animated.View>
         </ScrollView>
@@ -227,10 +229,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
   },
-  button: {
-    marginBottom: 15,
+  buttonShare: {
+    marginBottom: 16,
     width: '100%',
-    maxWidth: 300,
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  buttonDashboard: {
+    width: '100%',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 7,
   },
 });
 

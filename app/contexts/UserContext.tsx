@@ -10,7 +10,7 @@ interface UserContextType {
   hasInviteAccess: boolean;
   setHasInviteAccess: (value: boolean) => void;
   purchaseTier: (tier: 'regular' | 'elite' | 'god', amount: number) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => Promise<boolean>;
   setUser: (user: User | null) => void;
 }
 
@@ -22,7 +22,7 @@ const UserContext = createContext<UserContextType>({
   hasInviteAccess: false,
   setHasInviteAccess: () => {},
   purchaseTier: async () => {},
-  logout: async () => {},
+  logout: async () => false,
   setUser: () => {},
 });
 
@@ -112,11 +112,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Handler for logging out
   const logout = async () => {
     try {
+      console.log('UserContext: Starting logout process');
+      console.log('UserContext: Current user state before logout:', user ? user.id : 'No user');
+      
+      // Clear user data from storage
       await AsyncStorage.removeItem('@user');
+      console.log('UserContext: Removed user from AsyncStorage');
+      
+      // Reset state
       setUser(null);
       setHasInviteAccess(false);
+      
+      console.log('UserContext: Logout complete - user state cleared');
+      return true;
     } catch (error) {
-      console.error('Failed to logout', error);
+      console.error('UserContext: Failed to logout', error);
+      return false;
     }
   };
 

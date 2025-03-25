@@ -163,6 +163,8 @@ const NetWorthScreen = () => {
                   disabled={loading}
                   hapticFeedback="heavy"
                   size="large"
+                  variant="gold"
+                  style={styles.verifyButton}
                 />
               </View>
               
@@ -258,14 +260,24 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 30,
     marginBottom: 20,
+    width: '100%',
+  },
+  verifyButton: {
+    width: '100%',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
   },
   disclaimerText: {
     fontSize: 12,
     color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',
+    marginTop: 15,
   },
 });
 

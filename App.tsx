@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView, View, LogBox, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserProvider, useUser } from './app/contexts/UserContext';
 import StripeProvider from './app/providers/StripeProvider';
@@ -17,6 +17,7 @@ import {
   Montserrat_400Regular,
   Montserrat_700Bold,
 } from '@expo-google-fonts/montserrat';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Screens
 import InviteScreen from './app/screens/InviteScreen';
@@ -30,23 +31,23 @@ LogBox.ignoreLogs([
   'Animated: `useNativeDriver` was not specified',
 ]);
 
+// Custom navigation theme
+const MyTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#D4AF37',
+    background: '#0A0A0A',
+    card: '#0A0A0A',
+    text: '#FFFFFF',
+    border: '#2A2A2A',
+    notification: '#D4AF37',
+  },
+};
+
 // Create stack navigator
 const Stack = createNativeStackNavigator();
-
-// Function to clear all app data (for development/testing)
-const clearAllAppData = async () => {
-  try {
-    await AsyncStorage.clear();
-    Alert.alert(
-      "Storage Cleared",
-      "All local app data has been cleared. Restart the app to see the changes.",
-      [{ text: "OK" }]
-    );
-  } catch (error) {
-    console.error('Failed to clear app data:', error);
-    Alert.alert("Error", "Failed to clear app data.");
-  }
-};
 
 // Main app navigation
 const AppNavigator = () => {
@@ -67,21 +68,35 @@ const AppNavigator = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#D4AF37" />
-        <Text style={styles.loadingText}>Loading the luxury experience...</Text>
+        <LinearGradient
+          colors={['#0A0A0A', '#181818']}
+          style={styles.loadingGradient}
+        >
+          <ActivityIndicator size="large" color="#D4AF37" />
+          <Text style={styles.loadingText}>Loading the luxury experience...</Text>
+        </LinearGradient>
       </View>
     );
   }
 
+  // Log the current auth state for debugging
+  console.log('AppNavigator: Auth state -', { 
+    isAuthenticated, 
+    hasInviteAccess, 
+    initialScreen: getInitialRouteName() 
+  });
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
       <StatusBar style="light" />
       <Stack.Navigator
+        key={isAuthenticated ? 'auth' : 'unauth'} // Force navigator to reset when auth state changes
         initialRouteName={getInitialRouteName()}
         screenOptions={{
           headerShown: false,
           animation: 'fade',
-          contentStyle: { backgroundColor: '#0D0D0D' },
+          contentStyle: { backgroundColor: '#0A0A0A' },
+          navigationBarColor: '#0A0A0A',
         }}
       >
         <Stack.Screen name="Invite" component={InviteScreen} />
@@ -131,12 +146,18 @@ export default function App() {
   if (!fontsLoaded || dbInitialized === null) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#D4AF37" />
-          <Text style={[styles.loadingText, { fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined }]}>
-            Preparing your luxury experience...
-          </Text>
-        </View>
+        <StatusBar style="light" />
+        <LinearGradient
+          colors={['#0A0A0A', '#181818']}
+          style={styles.initGradient}
+        >
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#D4AF37" />
+            <Text style={[styles.loadingText, { fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined }]}>
+              Preparing your luxury experience...
+            </Text>
+          </View>
+        </LinearGradient>
       </SafeAreaView>
     );
   }
@@ -145,34 +166,32 @@ export default function App() {
   if (!dbInitialized) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorTitle, { fontFamily: 'PlayfairDisplay_700Bold' }]}>Database Error</Text>
-          <Text style={[styles.errorText, { fontFamily: 'Montserrat_400Regular' }]}>{initError}</Text>
-          <Text style={[styles.errorHint, { fontFamily: 'Montserrat_400Regular' }]}>
-            Check the console logs for more details and instructions on setting up the required tables.
-          </Text>
-        </View>
+        <StatusBar style="light" />
+        <LinearGradient
+          colors={['#0A0A0A', '#181818']}
+          style={styles.initGradient}
+        >
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorTitle, { fontFamily: 'PlayfairDisplay_700Bold' }]}>Database Error</Text>
+            <Text style={[styles.errorText, { fontFamily: 'Montserrat_400Regular' }]}>{initError}</Text>
+            <Text style={[styles.errorHint, { fontFamily: 'Montserrat_400Regular' }]}>
+              Please ensure your Supabase instance is properly configured.
+            </Text>
+          </View>
+        </LinearGradient>
       </SafeAreaView>
     );
   }
 
+  // Main app with providers
   return (
     <SafeAreaView style={styles.container}>
-      {/* Development Tools */}
-      {__DEV__ && (
-        <TouchableOpacity 
-          style={styles.devButton}
-          onPress={clearAllAppData}
-        >
-          <Text style={styles.devButtonText}>Clear App Data</Text>
-        </TouchableOpacity>
-      )}
-
-      <StripeProvider>
-        <UserProvider>
+      <StatusBar style="light" />
+      <UserProvider>
+        <StripeProvider>
           <AppNavigator />
-        </UserProvider>
-      </StripeProvider>
+        </StripeProvider>
+      </UserProvider>
     </SafeAreaView>
   );
 }
@@ -180,56 +199,67 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: '#0A0A0A',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
+    padding: 24,
+  },
+  loadingGradient: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initGradient: {
+    flex: 1,
   },
   loadingText: {
+    marginTop: 24,
+    fontSize: 18,
     color: '#D4AF37',
-    fontSize: 16,
-    marginTop: 15,
     textAlign: 'center',
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
+    alignItems: 'center',
+    padding: 24,
   },
   errorTitle: {
-    color: '#D42F2F',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: 28,
+    color: '#D4AF37',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   errorText: {
-    color: '#FFF',
     fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 24,
     textAlign: 'center',
-    marginBottom: 20,
+    lineHeight: 24,
   },
   errorHint: {
-    color: '#999',
     fontSize: 14,
+    color: '#888888',
     textAlign: 'center',
+    marginBottom: 40,
   },
-  devButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-    padding: 8,
-    borderRadius: 5,
-    zIndex: 1000,
+  debugTools: {
+    marginTop: 24,
   },
-  devButtonText: {
-    color: '#FFF',
-    fontSize: 12,
+  debugButton: {
+    backgroundColor: '#333333',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+  },
+  debugButtonText: {
+    color: '#D4AF37',
+    fontSize: 14,
   },
 });

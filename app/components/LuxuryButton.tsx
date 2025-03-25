@@ -1,15 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
-  Animated,
   ViewStyle,
   TextStyle,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { haptics, animations } from '../utils/animations';
+import { haptics } from '../utils/animations';
 
 // Props types
 interface LuxuryButtonProps {
@@ -21,7 +19,7 @@ interface LuxuryButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   hapticFeedback?: 'light' | 'medium' | 'heavy' | 'success' | 'premium' | 'error' | 'none';
-  showGradient?: boolean;
+  icon?: React.ReactNode;
 }
 
 // Button component
@@ -34,18 +32,8 @@ const LuxuryButton = ({
   style,
   textStyle,
   hapticFeedback = 'medium',
-  showGradient = true,
+  icon,
 }: LuxuryButtonProps) => {
-  // Animation values
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const shineAnim = useRef(new Animated.Value(0)).current;
-
-  // Start shine animation when component mounts
-  useEffect(() => {
-    if (variant !== 'dark' && !disabled) {
-      animations.shine(shineAnim);
-    }
-  }, [variant, disabled]);
 
   // Handle press with haptic feedback
   const handlePress = () => {
@@ -56,188 +44,157 @@ const LuxuryButton = ({
       haptics[hapticFeedback]();
     }
 
-    // Trigger press animation
-    animations.pulse(scaleAnim);
-
     // Execute the onPress function
     onPress();
   };
 
   // Determine button colors based on variant
-  const getColors = () => {
+  const getVariantStyles = (): { button: ViewStyle; text: TextStyle } => {
     switch (variant) {
       case 'gold':
         return {
-          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'],
-          textColor: '#000',
+          button: { 
+            backgroundColor: '#F5D76E',
+            borderColor: '#D4AF37',
+          },
+          text: { 
+            color: '#000000',
+          },
         };
       case 'platinum':
         return {
-          gradientColors: ['#E5E4E2', '#FFFFFF', '#E5E4E2'],
-          textColor: '#000',
+          button: { 
+            backgroundColor: '#E5E4E2',
+            borderColor: '#C0C0C0',
+          },
+          text: { 
+            color: '#000000',
+          },
         };
       case 'dark':
         return {
-          gradientColors: ['#222222', '#333333', '#222222'],
-          textColor: '#D4AF37',
+          button: { 
+            backgroundColor: '#333333',
+            borderColor: '#D4AF37',
+          },
+          text: { 
+            color: '#F5D76E',
+          },
         };
       default:
         return {
-          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'],
-          textColor: '#000',
+          button: { 
+            backgroundColor: '#F5D76E',
+            borderColor: '#D4AF37',
+          },
+          text: { 
+            color: '#000000',
+          },
         };
     }
   };
 
   // Get size-based styles
-  const getSizeStyles = (): { container: ViewStyle; text: TextStyle } => {
+  const getSizeStyles = (): { button: ViewStyle; text: TextStyle } => {
     switch (size) {
       case 'small':
         return {
-          container: { paddingVertical: 8, paddingHorizontal: 16 },
-          text: { fontSize: 14 },
+          button: { 
+            paddingVertical: 8, 
+            paddingHorizontal: 14, 
+            borderRadius: 6,
+          },
+          text: { 
+            fontSize: 14,
+            letterSpacing: 1,
+          },
         };
       case 'large':
         return {
-          container: { paddingVertical: 16, paddingHorizontal: 32 },
-          text: { fontSize: 18 },
+          button: { 
+            paddingVertical: 16, 
+            paddingHorizontal: 32, 
+            borderRadius: 8,
+          },
+          text: { 
+            fontSize: 20,
+            letterSpacing: 2,
+          },
         };
       default:
         return {
-          container: { paddingVertical: 12, paddingHorizontal: 24 },
-          text: { fontSize: 16 },
+          button: { 
+            paddingVertical: 12, 
+            paddingHorizontal: 24, 
+            borderRadius: 8,
+          },
+          text: { 
+            fontSize: 16,
+            letterSpacing: 1.5,
+          },
         };
     }
   };
 
-  const { gradientColors, textColor } = getColors();
+  const variantStyles = getVariantStyles();
   const sizeStyles = getSizeStyles();
 
-  // Shine effect styles
-  const shineStyle = {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: shineAnim.interpolate({
-      inputRange: [0, 0.5, 1],
-      outputRange: [0, 0.7, 0],
-    }),
-    transform: [
-      {
-        translateX: shineAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-100, 100],
-        }),
-      },
-    ],
-  };
-
   // Button content
-  const buttonContent = (
-    <Animated.View
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={handlePress}
+      disabled={disabled}
       style={[
         styles.container,
-        sizeStyles.container,
-        { transform: [{ scale: scaleAnim }] },
+        variantStyles.button,
+        sizeStyles.button,
         disabled && styles.disabled,
         style,
       ]}
     >
-      {showGradient ? (
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        >
-          <Animated.View style={[styles.shine, shineStyle]} />
-          <Text
-            style={[
-              styles.text,
-              { color: textColor },
-              sizeStyles.text,
-              disabled && styles.disabledText,
-              textStyle,
-            ]}
-          >
-            {title}
-          </Text>
-        </LinearGradient>
-      ) : (
-        <View
-          style={[
-            styles.nonGradient,
-            { backgroundColor: gradientColors[0] },
-          ]}
-        >
-          <Text
-            style={[
-              styles.text,
-              { color: textColor },
-              sizeStyles.text,
-              disabled && styles.disabledText,
-              textStyle,
-            ]}
-          >
-            {title}
-          </Text>
-        </View>
-      )}
-    </Animated.View>
-  );
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={handlePress}
-      disabled={disabled}
-      style={styles.touchable}
-    >
-      {buttonContent}
+      <View style={styles.contentContainer}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <Text style={[
+          styles.text,
+          variantStyles.text,
+          sizeStyles.text,
+          textStyle,
+        ]}>
+          {title.toUpperCase()}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
-  touchable: {
-    alignSelf: 'center',
-  },
   container: {
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  gradient: {
-    justifyContent: 'center',
+    alignSelf: 'stretch',
+    borderWidth: 3,
+    elevation: 15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  nonGradient: {
     justifyContent: 'center',
+  },
+  contentContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  iconContainer: {
+    marginRight: 8,
   },
   text: {
-    fontWeight: 'bold',
     textAlign: 'center',
-  },
-  shine: {
-    width: 30,
-    height: '300%',
-    backgroundColor: '#FFF',
-    opacity: 0.5,
-    transform: [{ rotate: '25deg' }],
-    position: 'absolute',
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat_700Bold',
   },
   disabled: {
-    opacity: 0.5,
-  },
-  disabledText: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
 });
 
