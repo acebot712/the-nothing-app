@@ -14,6 +14,12 @@ module.exports = {
     resizeMode: "contain",
     backgroundColor: "#0D0D0D"
   },
+  metro: {
+    config: "./metro.config.cjs"
+  },
+  babel: {
+    config: "./babel.config.cjs"
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.thenothingapp",
