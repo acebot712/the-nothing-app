@@ -1,12 +1,18 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { makeRedirectUri } from 'expo-auth-session';
-import { supabase, saveUser } from './supabase';
+import { supabase, saveUser, User } from './supabase';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Initialize WebBrowser for authentication flow
 WebBrowser.maybeCompleteAuthSession();
+
+// Define return type for auth functions
+interface AuthResult {
+  success: boolean;
+  user: User | null;
+}
 
 // Google auth configuration
 const googleConfig = {
@@ -33,7 +39,7 @@ const appleConfig = {
 /**
  * Sign in with Google
  */
-export const signInWithGoogle = async (): Promise<boolean> => {
+export const signInWithGoogle = async (): Promise<AuthResult> => {
   try {
     // Create a Google auth request
     const request = new AuthSession.AuthRequest({
@@ -62,7 +68,7 @@ export const signInWithGoogle = async (): Promise<boolean> => {
 
       if (error) {
         console.error('Error signing in with Google:', error);
-        return false;
+        return { success: false, user: null };
       }
 
       // Create or update user in our database
@@ -76,20 +82,24 @@ export const signInWithGoogle = async (): Promise<boolean> => {
       });
 
       // Store session
-      await AsyncStorage.setItem('@user', JSON.stringify(user));
-      return true;
+      if (user) {
+        await AsyncStorage.setItem('@user', JSON.stringify(user));
+        return { success: true, user };
+      }
+      
+      return { success: false, user: null };
     }
-    return false;
+    return { success: false, user: null };
   } catch (error) {
     console.error('Error during Google sign in:', error);
-    return false;
+    return { success: false, user: null };
   }
 };
 
 /**
  * Sign in with Apple
  */
-export const signInWithApple = async (): Promise<boolean> => {
+export const signInWithApple = async (): Promise<AuthResult> => {
   try {
     // Create an Apple auth request
     const request = new AuthSession.AuthRequest({
@@ -116,7 +126,7 @@ export const signInWithApple = async (): Promise<boolean> => {
 
       if (error) {
         console.error('Error signing in with Apple:', error);
-        return false;
+        return { success: false, user: null };
       }
 
       // Parse Apple user data
@@ -139,13 +149,17 @@ export const signInWithApple = async (): Promise<boolean> => {
       });
 
       // Store session
-      await AsyncStorage.setItem('@user', JSON.stringify(user));
-      return true;
+      if (user) {
+        await AsyncStorage.setItem('@user', JSON.stringify(user));
+        return { success: true, user };
+      }
+      
+      return { success: false, user: null };
     }
-    return false;
+    return { success: false, user: null };
   } catch (error) {
     console.error('Error during Apple sign in:', error);
-    return false;
+    return { success: false, user: null };
   }
 };
 

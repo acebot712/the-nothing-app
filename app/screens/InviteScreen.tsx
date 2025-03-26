@@ -1,427 +1,315 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
-  Image,
-  Animated,
-  Keyboard,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
-  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import LuxuryButton from '../components/LuxuryButton';
-import { animations, haptics } from '../utils/animations';
-import { useUser } from '../contexts/UserContext';
-import SocialLoginButtons from '../components/SocialLoginButtons';
+import LottieView from 'lottie-react-native';
+import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getInviteCode, saveUser } from '../config/supabase';
+import { SocialLoginButtons } from '../components/SocialLoginButtons';
+import { haptics } from '../utils/animations';
+import { User } from '../config/supabase';
+import { StatusBar } from 'expo-status-bar';
+import WaitingList from '../components/WaitingList';
 
-const MAX_ATTEMPTS = 3;
-
-const InviteScreen = () => {
-  const navigation = useNavigation<any>();
-  const { setHasInviteAccess, setUser } = useUser();
-  
+export default function InviteScreen() {
   const [inviteCode, setInviteCode] = useState('');
-  const [attempts, setAttempts] = useState(0);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [validInvite, setValidInvite] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authMessage, setAuthMessage] = useState('');
   
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const shakeAnim = useRef(new Animated.Value(0)).current;
-  
-  const validateInviteCode = () => {
-    // Clear previous error
-    setError('');
-    haptics.medium();
+  const animation = useRef<LottieView>(null);
+
+  useEffect(() => {
+    // Check if user is already logged in and has a valid invite
+    const checkExistingUser = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('@user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          // If user has already completed invite verification
+          if (user.invite_verified) {
+            router.replace('/home');
+          } else {
+            // User is authenticated but needs to verify invite code
+            setAuthenticated(true);
+            setAuthUser(user);
+            setAuthMessage('Welcome back! Please enter your invite code to continue.');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing user:', error);
+      }
+    };
     
-    // Validate
-    if (!inviteCode.trim()) {
-      setError('Please enter an invite code.');
-      shakeInput();
+    checkExistingUser();
+  }, []);
+
+  const handleLoginSuccess = (userData: User) => {
+    setAuthenticated(true);
+    setAuthUser(userData);
+    setAuthMessage(`Welcome, ${userData.username || 'User'}! Please enter your invite code to continue.`);
+    haptics.success();
+  };
+
+  const handleLoginError = (error: string) => {
+    setErrorMessage(error);
+    setTimeout(() => setErrorMessage(''), 5000);
+    haptics.error();
+  };
+
+  const validateInviteCode = async () => {
+    if (inviteCode.trim() === '') {
+      setErrorMessage('Please enter an invite code');
+      setTimeout(() => setErrorMessage(''), 3000);
       haptics.error();
       return;
     }
-    
-    // Increment attempts
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
-    
-    // Simulate API validation
+
     setLoading(true);
+    setErrorMessage('');
     
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const inviteData = await getInviteCode(inviteCode);
       
-      // Always fail until MAX_ATTEMPTS reached
-      if (newAttempts < MAX_ATTEMPTS) {
-        setError(`Invalid invite code. ${MAX_ATTEMPTS - newAttempts} attempts remaining.`);
-        shakeInput();
-        haptics.error();
-        setInviteCode('');
-      } else {
-        // "Succeed" on MAX_ATTEMPTS
-        setShowSuccess(true);
+      if (inviteData) {
+        // Valid invite code
+        animation.current?.play();
+        setValidInvite(true);
         haptics.success();
         
-        // After showing success, navigate to net worth screen
-        setTimeout(() => {
-          setHasInviteAccess(true);
-          navigation.navigate('NetWorth');
-        }, 3000);
+        // If user is authenticated, update their profile with verified invite
+        if (authenticated && authUser) {
+          const updatedUser = await saveUser({
+            ...authUser,
+            invite_verified: true,
+            invite_code: inviteCode
+          });
+          
+          // Store updated user info
+          if (updatedUser) {
+            await AsyncStorage.setItem('@user', JSON.stringify(updatedUser));
+          }
+          
+          // Wait for animation to complete
+          setTimeout(() => {
+            router.replace('/home');
+          }, 2000);
+        }
+      } else {
+        setErrorMessage('Invalid invite code. Please try again.');
+        haptics.error();
       }
-    }, 2000);
-  };
-  
-  const shakeInput = () => {
-    // Shake animation
-    Animated.sequence([
-      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
-    ]).start();
-  };
-  
-  // Success animation
-  useEffect(() => {
-    if (showSuccess) {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
+    } catch (error) {
+      console.error('Error validating invite code:', error);
+      setErrorMessage('An error occurred. Please try again.');
+      haptics.error();
+    } finally {
+      setLoading(false);
     }
-  }, [showSuccess]);
-  
-  // Handle successful social login
-  const handleLoginSuccess = (userData: any) => {
-    setIsAuthenticated(true);
-    setUserProfile(userData);
-    haptics.success();
   };
-  
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <LinearGradient
+        colors={['#121212', '#000000']}
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <LinearGradient
-          colors={['#050505', '#111111']}
-          style={styles.gradient}
+        <StatusBar style="light" />
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {showSuccess ? (
-            <View style={styles.successContainer}>
-              <Text style={styles.successTitle}>ACCESS GRANTED</Text>
-              <Text style={styles.successMessage}>
-                Welcome to The Nothing App. Your journey to flex on the poor begins now.
-              </Text>
-            </View>
-          ) : (
-            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-              <Animated.View
-                style={[
-                  styles.content,
-                  { opacity: fadeAnim },
-                ]}
-              >
-                <View style={styles.logoContainer}>
-                  <Text style={styles.logoText}>THE NOTHING APP</Text>
-                  <Text style={styles.tagline}>FOR THE TRULY WEALTHY</Text>
-                </View>
+          <View style={styles.content}>
+            <Text style={styles.title}>The Nothing App</Text>
+            <Text style={styles.subtitle}>Exclusive Access</Text>
+
+            {!authenticated ? (
+              // Authentication Step
+              <View style={styles.authSection}>
+                <WaitingList initialCount={12467} />
                 
-                <View style={styles.formContainer}>
-                  <Text style={styles.inviteText}>
-                    This app is invite-only.
-                  </Text>
-                  <Text style={styles.exclusiveText}>
-                    Only the wealthy and influential have access.
-                  </Text>
-                  
-                  {!isAuthenticated ? (
-                    <>
-                      <View style={styles.authMessageContainer}>
-                        <Text style={styles.authMessageTitle}>STEP 1: AUTHENTICATE</Text>
-                        <Text style={styles.authMessageText}>
-                          Sign in with a social account to verify your identity.
-                        </Text>
-                      </View>
-                      
-                      <SocialLoginButtons onLoginSuccess={handleLoginSuccess} />
-                    </>
+                <Text style={styles.exclusiveText}>
+                  The Nothing App is by invitation only.
+                  Members with access represent the top 0.1% of wealth.
+                </Text>
+                
+                <Text style={styles.instructionText}>
+                  Sign in to continue
+                </Text>
+                
+                <SocialLoginButtons 
+                  onLoginSuccess={handleLoginSuccess}
+                  onLoginError={handleLoginError}
+                />
+                
+                {errorMessage ? (
+                  <Text style={styles.errorText}>{errorMessage}</Text>
+                ) : null}
+              </View>
+            ) : (
+              // Invite Code Step
+              <View style={styles.inviteSection}>
+                {authMessage ? (
+                  <Text style={styles.welcomeText}>{authMessage}</Text>
+                ) : null}
+                
+                <Text style={styles.instructionText}>
+                  Enter your exclusive invite code
+                </Text>
+                
+                <TextInput
+                  style={styles.input}
+                  value={inviteCode}
+                  onChangeText={setInviteCode}
+                  placeholder="INVITE CODE"
+                  placeholderTextColor="#666"
+                  autoCapitalize="characters"
+                  maxLength={6}
+                />
+                
+                <TouchableOpacity
+                  style={[styles.button, validInvite && styles.buttonSuccess]}
+                  onPress={validateInviteCode}
+                  disabled={loading || validInvite}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : validInvite ? (
+                    <LottieView
+                      ref={animation}
+                      source={require('../assets/animations/success.json')}
+                      style={styles.animation}
+                      loop={false}
+                      autoPlay={false}
+                    />
                   ) : (
-                    <>
-                      <View style={styles.welcomeContainer}>
-                        <Text style={styles.welcomeTitle}>IDENTITY VERIFIED</Text>
-                        <Text style={styles.welcomeText}>
-                          Welcome, {userProfile?.username || 'Esteemed User'}. 
-                          Now enter your exclusive invite code to gain full access.
-                        </Text>
-                      </View>
-                      
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>INVITE CODE</Text>
-                        <Animated.View
-                          style={[styles.inputWrapper, { transform: [{ translateX: shakeAnim }] }]}
-                        >
-                          <TextInput
-                            style={styles.input}
-                            placeholder="Enter your code"
-                            placeholderTextColor="#666"
-                            value={inviteCode}
-                            onChangeText={setInviteCode}
-                            autoCapitalize="characters"
-                            autoCorrect={false}
-                          />
-                        </Animated.View>
-                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-                      </View>
-                      
-                      <View style={styles.buttonContainer}>
-                        <LuxuryButton
-                          title={loading ? "VERIFYING..." : "VERIFY"}
-                          onPress={validateInviteCode}
-                          disabled={loading}
-                          hapticFeedback="heavy"
-                          size="large"
-                          variant="gold"
-                          style={styles.verifyButton}
-                          textStyle={styles.verifyButtonText}
-                        />
-                        <Text style={styles.tapToVerify}>Tap to verify your invite code</Text>
-                      </View>
-                    </>
+                    <Text style={styles.buttonText}>Enter</Text>
                   )}
-                </View>
-              </Animated.View>
-            </ScrollView>
-          )}
-        </LinearGradient>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+                
+                {errorMessage ? (
+                  <Text style={styles.errorText}>{errorMessage}</Text>
+                ) : null}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   content: {
-    width: '100%',
-    maxWidth: 360,
-    alignSelf: 'center',
-  },
-  logoContainer: {
+    flex: 1,
+    padding: 20,
     alignItems: 'center',
-    marginBottom: 60,
+    justifyContent: 'center',
   },
-  logoText: {
+  title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#D4AF37',
-    textAlign: 'center',
-    marginBottom: 12,
-    fontFamily: 'PlayfairDisplay_700Bold',
-    letterSpacing: 2,
-    textShadowColor: 'rgba(212, 175, 55, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  tagline: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    fontFamily: 'Montserrat_400Regular',
-    letterSpacing: 4,
-    textTransform: 'uppercase',
-  },
-  formContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  inviteText: {
-    fontSize: 28,
-    fontWeight: 'bold',
     color: '#FFF',
-    textAlign: 'center',
     marginBottom: 10,
-    fontFamily: 'PlayfairDisplay_700Bold',
-    letterSpacing: 0.5,
-  },
-  exclusiveText: {
-    fontSize: 16,
-    color: '#AAA',
     textAlign: 'center',
-    marginBottom: 30,
-    fontFamily: 'Montserrat_400Regular',
-    lineHeight: 24,
   },
-  authMessageContainer: {
-    width: '100%',
-    marginBottom: 30,
-    alignItems: 'center',
-  },
-  authMessageTitle: {
-    fontSize: 16,
-    color: '#D4AF37',
-    fontFamily: 'Montserrat_700Bold',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  authMessageText: {
-    fontSize: 14,
-    color: '#FFF',
-    textAlign: 'center',
-    fontFamily: 'Montserrat_400Regular',
-    lineHeight: 20,
-  },
-  welcomeContainer: {
-    width: '100%',
-    marginBottom: 30,
-    alignItems: 'center',
-  },
-  welcomeTitle: {
+  subtitle: {
     fontSize: 18,
-    color: '#D4AF37',
-    fontFamily: 'Montserrat_700Bold',
-    marginBottom: 10,
-    letterSpacing: 1,
+    color: '#AAA',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  authSection: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  inviteSection: {
+    width: '100%',
+    alignItems: 'center',
   },
   welcomeText: {
-    fontSize: 14,
-    color: '#FFF',
-    textAlign: 'center',
-    fontFamily: 'Montserrat_400Regular',
-    lineHeight: 22,
-    paddingHorizontal: 20,
-  },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 30,
-  },
-  inputLabel: {
-    fontSize: 12,
-    color: '#D4AF37',
-    marginBottom: 8,
-    fontFamily: 'Montserrat_700Bold',
-    letterSpacing: 2,
-  },
-  inputWrapper: {
-    width: '100%',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-    backgroundColor: 'rgba(25, 25, 25, 0.6)',
-    overflow: 'hidden',
-  },
-  input: {
-    width: '100%',
-    padding: 16,
     fontSize: 16,
-    color: '#FFF',
-    textAlign: 'left',
-    fontFamily: 'Montserrat_400Regular',
-  },
-  errorText: {
-    color: '#FF6B6B',
-    marginTop: 12,
-    textAlign: 'center',
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 13,
-  },
-  successContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  successTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#D4AF37',
+    color: '#00e676',
     marginBottom: 20,
     textAlign: 'center',
-    fontFamily: 'PlayfairDisplay_700Bold',
-    letterSpacing: 1,
   },
-  successMessage: {
-    fontSize: 18,
+  instructionText: {
+    fontSize: 16,
     color: '#FFF',
+    marginBottom: 20,
     textAlign: 'center',
-    lineHeight: 28,
-    fontFamily: 'Montserrat_400Regular',
   },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10,
+  exclusiveText: {
+    fontSize: 14,
+    color: '#D4AF37',
+    textAlign: 'center',
+    marginBottom: 30,
+    paddingHorizontal: 20,
+    lineHeight: 20,
   },
-  verifyButton: {
-    width: '100%',
-    backgroundColor: '#F5D76E',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    borderWidth: 3,
-    borderColor: '#D4AF37',
-    alignItems: 'center',
+  input: {
+    width: '80%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    fontSize: 16,
+    color: '#FFF',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    textAlign: 'center',
+    letterSpacing: 5,
+  },
+  button: {
+    width: '50%',
+    height: 50,
+    backgroundColor: '#333',
+    borderRadius: 25,
     justifyContent: 'center',
-    shadowColor: '#F5D76E',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 15,
-    elevation: 20,
-    marginBottom: 10,
-  },
-  verifyButtonText: {
-    color: '#000000',
-    fontSize: 24,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    textAlign: 'center',
-    fontFamily: 'Montserrat_700Bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tapToVerify: {
-    color: '#D4AF37',
-    fontSize: 14,
-    marginTop: 10,
-    fontFamily: 'Montserrat_400Regular',
-  },
-  divider: {
-    flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    marginVertical: 30,
+    marginBottom: 20,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+  buttonSuccess: {
+    backgroundColor: '#00e676',
   },
-  dividerText: {
-    color: '#D4AF37',
-    paddingHorizontal: 15,
-    fontSize: 14,
-    fontFamily: 'Montserrat_700Bold',
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-});
-
-export default InviteScreen; 
+  errorText: {
+    color: '#ff5252',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  animation: {
+    width: 100,
+    height: 100,
+  },
+}); 

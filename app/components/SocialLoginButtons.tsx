@@ -1,62 +1,85 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { signInWithGoogle, signInWithApple } from '../config/auth';
-import { haptics } from '../utils/animations';
+import { User } from '../config/supabase';
 
 interface SocialLoginButtonsProps {
-  onLoginSuccess: (userData: any) => void;
+  onLoginSuccess: (userData: User) => void;
+  onLoginError?: (error: string) => void;
 }
 
-const SocialLoginButtons = ({ onLoginSuccess }: SocialLoginButtonsProps) => {
+export const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ 
+  onLoginSuccess,
+  onLoginError
+}) => {
+  const [loading, setLoading] = React.useState<string | null>(null);
+
   const handleGoogleLogin = async () => {
-    haptics.medium();
+    setLoading('google');
     try {
       const result = await signInWithGoogle();
-      if (result.success) {
+      if (result.success && result.user) {
         onLoginSuccess(result.user);
+      } else {
+        onLoginError?.('Google login failed. Please try again.');
       }
     } catch (error) {
       console.error('Google login error:', error);
+      onLoginError?.('An error occurred during Google login.');
+    } finally {
+      setLoading(null);
     }
   };
 
   const handleAppleLogin = async () => {
-    haptics.medium();
+    setLoading('apple');
     try {
       const result = await signInWithApple();
-      if (result.success) {
+      if (result.success && result.user) {
         onLoginSuccess(result.user);
+      } else {
+        onLoginError?.('Apple login failed. Please try again.');
       }
     } catch (error) {
       console.error('Apple login error:', error);
+      onLoginError?.('An error occurred during Apple login.');
+    } finally {
+      setLoading(null);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titleText}>Sign In with</Text>
-      
-      <TouchableOpacity
-        style={[styles.socialButton, styles.googleButton]}
+      <TouchableOpacity 
+        style={styles.googleButton} 
         onPress={handleGoogleLogin}
-        activeOpacity={0.8}
+        disabled={loading !== null}
       >
-        <Text style={styles.buttonText}>Google</Text>
+        {loading === 'google' ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <>
+            <Ionicons name="logo-google" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Continue with Google</Text>
+          </>
+        )}
       </TouchableOpacity>
       
-      {Platform.OS === 'ios' && (
-        <TouchableOpacity
-          style={[styles.socialButton, styles.appleButton]}
-          onPress={handleAppleLogin}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buttonText}>Apple</Text>
-        </TouchableOpacity>
-      )}
-      
-      <Text style={styles.infoText}>
-        Social login enables seamless access to The Nothing App's exclusive features.
-      </Text>
+      <TouchableOpacity 
+        style={styles.appleButton} 
+        onPress={handleAppleLogin}
+        disabled={loading !== null}
+      >
+        {loading === 'apple' ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <>
+            <Ionicons name="logo-apple" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Continue with Apple</Text>
+          </>
+        )}
+      </TouchableOpacity>
     </View>
   );
 };
@@ -64,46 +87,31 @@ const SocialLoginButtons = ({ onLoginSuccess }: SocialLoginButtonsProps) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  titleText: {
-    fontSize: 18,
-    color: '#FFF',
-    marginBottom: 16,
-    fontWeight: '500',
-  },
-  socialButton: {
-    width: '80%',
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginBottom: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    gap: 12,
   },
   googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#DB4437',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 10,
   },
   appleButton: {
-    backgroundColor: '#000',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 10,
   },
   buttonText: {
-    color: '#FFF',
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  infoText: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    marginTop: 10,
-    paddingHorizontal: 20,
-  },
-});
-
-export default SocialLoginButtons; 
+}); 

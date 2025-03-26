@@ -34,6 +34,8 @@ export interface User {
   purchase_amount: number;
   serial_number: string;
   created_at: string;
+  invite_code?: string;
+  invite_verified?: boolean;
 }
 
 export interface LeaderboardEntry {
@@ -149,6 +151,50 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
     return data as User;
   } catch (e) {
     console.error('Exception in saveUser:', e);
+    return null;
+  }
+};
+
+/**
+ * Validate an invite code
+ * @param code The invite code to validate
+ * @returns The invite data if valid, null otherwise
+ */
+export const getInviteCode = async (code: string): Promise<any | null> => {
+  try {
+    // For production, this would validate against a table of valid invite codes
+    // For development, we'll accept certain codes as valid
+    
+    // These are mock invite codes for development
+    const validCodes = ['RICH12', 'LUXURY', 'WEALTH', 'ELITE', 'MONEY', 'ACCESS'];
+    
+    if (validCodes.includes(code.toUpperCase())) {
+      // Return mock invite data
+      return {
+        id: `invite_${Math.random().toString(36).substring(2, 9)}`,
+        code: code.toUpperCase(),
+        valid: true,
+        created_at: new Date().toISOString(),
+      };
+    }
+    
+    // In production, we would query the database
+    // const { data, error } = await supabase
+    //   .from('invite_codes')
+    //   .select('*')
+    //   .eq('code', code.toUpperCase())
+    //   .single();
+    
+    // if (error || !data) {
+    //   console.error('Error fetching invite code:', error);
+    //   return null;
+    // }
+    
+    // return data;
+    
+    return null; // Code not valid
+  } catch (error) {
+    console.error('Exception in getInviteCode:', error);
     return null;
   }
 };
