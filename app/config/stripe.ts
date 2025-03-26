@@ -67,7 +67,7 @@ export const processPayment = async (
   email: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    console.log('Using fallback mock payment processing for tier:', tier);
+    console.info('Using fallback mock payment processing for tier:', tier);
     
     // Simulate a network request with a short delay
     await new Promise(resolve => setTimeout(resolve, 1500));

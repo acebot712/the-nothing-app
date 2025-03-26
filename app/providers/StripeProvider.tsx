@@ -1,4 +1,4 @@
-import React, { useEffect, ReactNode } from 'react';
+import React, { useEffect } from 'react';
 import { StripeProvider as NativeStripeProvider } from '@stripe/stripe-react-native';
 import { EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY } from '@env';
 import { initializeStripe } from '../config/stripe';
@@ -13,7 +13,7 @@ export default function StripeProvider({ children }: StripeProviderProps) {
     const setupStripe = async () => {
       try {
         await initializeStripe();
-        console.log('Stripe initialized successfully');
+        console.info('Stripe initialized successfully');
       } catch (error) {
         console.error('Failed to initialize Stripe:', error);
       }
