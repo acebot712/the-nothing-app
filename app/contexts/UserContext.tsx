@@ -2,6 +2,10 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, saveUser } from '../config/supabase';
 
+// User storage key constant
+const USER_STORAGE_KEY = '@user';
+const INVITE_ACCESS_KEY = '@inviteAccess';
+
 // Define the shape of our context
 interface UserContextType {
   user: User | null;
@@ -37,7 +41,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const userJson = await AsyncStorage.getItem('@user');
+        const userJson = await AsyncStorage.getItem(USER_STORAGE_KEY);
         if (userJson) {
           setUser(JSON.parse(userJson));
           setIsAuthenticated(true);
@@ -57,7 +61,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const saveUserToStorage = async () => {
       if (user) {
         try {
-          await AsyncStorage.setItem('@user', JSON.stringify(user));
+          await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
         } catch (error) {
           console.error('Failed to save user to storage', error);
         }
@@ -79,7 +83,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (tempUser) {
-        await AsyncStorage.setItem('user', JSON.stringify(tempUser));
+        await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(tempUser));
         setUser(tempUser);
         setIsAuthenticated(true);
         return tempUser;
@@ -96,7 +100,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
     
     if (updatedUser) {
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
       setUser(updatedUser);
       return updatedUser;
     }
@@ -107,8 +111,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('inviteAccess');
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      await AsyncStorage.removeItem(INVITE_ACCESS_KEY);
       
       // Reset state
       setUser(null);
