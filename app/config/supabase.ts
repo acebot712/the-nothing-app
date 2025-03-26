@@ -1,14 +1,11 @@
 import "react-native-url-polyfill/auto";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY } from "@env";
-
-// Use environment variables for Supabase credentials
-const supabaseUrl = EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = EXPO_PUBLIC_SUPABASE_ANON_KEY;
+import { ENV, validateEnvironment } from "./env";
 
 // Validate required environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
+const envValid = validateEnvironment();
+if (!envValid) {
   console.error(
     "Supabase credentials are missing. Please check your environment variables.",
   );
@@ -16,8 +13,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Create the Supabase client
 export const supabase: SupabaseClient = createClient(
-  supabaseUrl || "",
-  supabaseAnonKey || "",
+  ENV.SUPABASE.URL || "",
+  ENV.SUPABASE.ANON_KEY || "",
   {
     auth: {
       storage: AsyncStorage as any, // Type assertion needed for compatibility
@@ -282,8 +279,8 @@ export const initializeSupabase = async (): Promise<boolean> => {
 // Debug function to help with troubleshooting
 export const debugSupabaseConnection = async (): Promise<void> => {
   console.log("Starting Supabase connection debug...");
-  console.log(`Supabase URL: ${supabaseUrl ? "Configured" : "Missing"}`);
-  console.log(`Anon Key: ${supabaseAnonKey ? "Configured" : "Missing"}`);
+  console.log(`Supabase URL: ${ENV.SUPABASE.URL ? "Configured" : "Missing"}`);
+  console.log(`Anon Key: ${ENV.SUPABASE.ANON_KEY ? "Configured" : "Missing"}`);
 
   try {
     // Test connection
