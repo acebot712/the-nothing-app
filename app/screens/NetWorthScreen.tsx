@@ -11,16 +11,17 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
 import { saveUser } from '../config/supabase';
+import { COLORS } from '../design/colors';
 
 const MIN_NET_WORTH = 1000000; // $1 million
 
 const NetWorthScreen = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { setUser } = useUser();
   
   const [netWorth, setNetWorth] = useState('');
@@ -86,7 +87,8 @@ const NetWorthScreen = () => {
         // Navigate to pricing screen
         haptics.success();
         navigation.navigate('Pricing');
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err) {
         setError('An error occurred. The server may have detected you are poor.');
         haptics.error();
       } finally {
@@ -113,7 +115,7 @@ const NetWorthScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <LinearGradient
-          colors={['#0D0D0D', '#1A1A1A']}
+          colors={[COLORS.BACKGROUND.DARKER, COLORS.BACKGROUND.CARD_DARK]}
           style={styles.gradient}
         >
           <View style={styles.content}>
@@ -131,7 +133,7 @@ const NetWorthScreen = () => {
                   <TextInput
                     style={styles.input}
                     placeholder="Enter your name"
-                    placeholderTextColor="#666"
+                    placeholderTextColor={COLORS.GRAY_SHADES.MEDIUM_DARK}
                     value={username}
                     onChangeText={setUsername}
                     autoCapitalize="words"
@@ -145,7 +147,7 @@ const NetWorthScreen = () => {
                     <TextInput
                       style={styles.netWorthInput}
                       placeholder="1,000,000"
-                      placeholderTextColor="#666"
+                      placeholderTextColor={COLORS.GRAY_SHADES.MEDIUM_DARK}
                       value={netWorth}
                       onChangeText={handleNetWorthChange}
                       keyboardType="numeric"
@@ -200,13 +202,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#CCC',
+    color: COLORS.GRAY_SHADES.LIGHT,
     textAlign: 'center',
   },
   formContainer: {
@@ -217,31 +219,31 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     marginBottom: 8,
     fontWeight: '600',
   },
   input: {
     width: '100%',
-    backgroundColor: '#333',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
-    color: '#FFF',
+    color: COLORS.WHITE,
     borderWidth: 1,
-    borderColor: '#D4AF37',
+    borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   netWorthInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D4AF37',
+    borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   currencySymbol: {
     fontSize: 18,
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     paddingHorizontal: 15,
     fontWeight: 'bold',
   },
@@ -249,11 +251,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     fontSize: 18,
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontWeight: 'bold',
   },
   errorText: {
-    color: '#FF6B6B',
+    color: COLORS.ACCENTS.ERROR,
     marginTop: 8,
     textAlign: 'center',
     marginBottom: 20,
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
   },
   verifyButton: {
     width: '100%',
-    shadowColor: '#D4AF37',
+    shadowColor: COLORS.GOLD_SHADES.PRIMARY,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#666',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 15,

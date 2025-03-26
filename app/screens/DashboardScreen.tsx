@@ -9,23 +9,20 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
-  Dimensions,
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import FlexBadge from '../components/FlexBadge';
 import Leaderboard from '../components/Leaderboard';
 import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
 import { getLeaderboard, LeaderboardEntry } from '../config/supabase';
-
-// Get screen dimensions for responsive layout
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { COLORS } from '../design/colors';
 
 const DashboardScreen = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { user, logout } = useUser();
   
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
@@ -140,11 +137,11 @@ const DashboardScreen = () => {
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
         <LinearGradient
-          colors={['#0A0A0A', '#1A1A1A']}
+          colors={[COLORS.BACKGROUND.DARKER, COLORS.BACKGROUND.CARD_DARK]}
           style={styles.gradient}
         >
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#D4AF37" />
+            <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
             <Text style={styles.loadingText}>Loading your luxury experience...</Text>
           </View>
         </LinearGradient>
@@ -156,7 +153,7 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['#0A0A0A', '#181818']}
+        colors={[COLORS.BACKGROUND.DARKER, COLORS.BACKGROUND.DARK]}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea}>
@@ -222,7 +219,7 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: COLORS.BACKGROUND.DARKER,
   },
   gradient: {
     flex: 1,
@@ -238,11 +235,11 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 10 : 20,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.1)',
+    borderBottomColor: COLORS.ALPHA.GOLD_10,
   },
   logoText: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 18,
     letterSpacing: 1,
   },
@@ -251,11 +248,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderColor: COLORS.ALPHA.GOLD_30,
   },
   logoutText: {
     fontFamily: 'Montserrat_700Bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 12,
   },
   scrollView: {
@@ -269,25 +266,25 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 20,
     borderRadius: 16,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
   },
   section: {
     marginBottom: 24,
     padding: 20,
     borderRadius: 16,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
   },
   sectionTitle: {
     fontSize: 16,
     fontFamily: 'Montserrat_700Bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     letterSpacing: 1,
     marginBottom: 16,
   },
   quote: {
     fontSize: 14,
     fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    color: '#FFF',
+    color: COLORS.WHITE,
     marginBottom: 16,
     lineHeight: 24,
   },
@@ -298,7 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     width: '100%',
     borderRadius: 16,
-    shadowColor: '#D4AF37',
+    shadowColor: COLORS.GOLD_SHADES.PRIMARY,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
@@ -308,11 +305,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 20,
     borderRadius: 16,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
   },
   footerText: {
     fontFamily: 'Montserrat_700Bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 14,
     textAlign: 'center',
   },
@@ -326,7 +323,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
   },
 });
 

@@ -7,7 +7,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -21,6 +20,7 @@ import { haptics } from '../utils/animations';
 import { User } from '../config/supabase';
 import { StatusBar } from 'expo-status-bar';
 import WaitingList from '../components/WaitingList';
+import { COLORS } from '../design/colors';
 
 export default function InviteScreen() {
   const [inviteCode, setInviteCode] = useState('');
@@ -124,11 +124,11 @@ export default function InviteScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.keyboardView}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <LinearGradient
-        colors={['#121212', '#000000']}
+        colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]}
         style={styles.container}
       >
         <StatusBar style="light" />
@@ -179,7 +179,7 @@ export default function InviteScreen() {
                   value={inviteCode}
                   onChangeText={setInviteCode}
                   placeholder="INVITE CODE"
-                  placeholderTextColor="#666"
+                  placeholderTextColor={COLORS.GRAY_SHADES.MEDIUM_DARK}
                   autoCapitalize="characters"
                   maxLength={6}
                 />
@@ -190,10 +190,11 @@ export default function InviteScreen() {
                   disabled={loading || validInvite}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#FFF" />
+                    <ActivityIndicator color={COLORS.WHITE} />
                   ) : validInvite ? (
                     <LottieView
                       ref={animation}
+                      // eslint-disable-next-line @typescript-eslint/no-require-imports
                       source={require('../assets/animations/success.json')}
                       style={styles.animation}
                       loop={false}
@@ -220,6 +221,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  keyboardView: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -233,13 +237,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: COLORS.WHITE,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#AAA',
+    color: COLORS.GRAY_SHADES["888"],
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -254,19 +258,19 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 16,
-    color: '#00e676',
+    color: COLORS.ACCENTS.SUCCESS,
     marginBottom: 20,
     textAlign: 'center',
   },
   instructionText: {
     fontSize: 16,
-    color: '#FFF',
+    color: COLORS.WHITE,
     marginBottom: 20,
     textAlign: 'center',
   },
   exclusiveText: {
     fontSize: 14,
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     textAlign: 'center',
     marginBottom: 30,
     paddingHorizontal: 20,
@@ -276,35 +280,35 @@ const styles = StyleSheet.create({
     width: '80%',
     height: 50,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: COLORS.GRAY_SHADES.DARK,
     borderRadius: 25,
     paddingHorizontal: 20,
     marginBottom: 20,
     fontSize: 16,
-    color: '#FFF',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    color: COLORS.WHITE,
+    backgroundColor: COLORS.ALPHA.BLACK_50,
     textAlign: 'center',
     letterSpacing: 5,
   },
   button: {
     width: '50%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   buttonSuccess: {
-    backgroundColor: '#00e676',
+    backgroundColor: COLORS.ACCENTS.SUCCESS,
   },
   buttonText: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: 'bold',
   },
   errorText: {
-    color: '#ff5252',
+    color: COLORS.ACCENTS.ERROR,
     marginTop: 10,
     textAlign: 'center',
   },

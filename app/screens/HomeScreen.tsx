@@ -16,6 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import { User } from '../config/supabase';
 import { signOut } from '../config/auth';
 import { haptics } from '../utils/animations';
+import { COLORS } from '../design/colors';
 
 // Import our viral components
 import MemberStatus from '../components/MemberStatus';
@@ -75,7 +76,7 @@ export default function HomeScreen() {
   if (loading || !user) {
     return (
       <LinearGradient 
-        colors={['#121212', '#000000']} 
+        colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]} 
         style={styles.loadingContainer}
       >
         <Text style={styles.loadingText}>Loading exclusive content...</Text>
@@ -85,7 +86,7 @@ export default function HomeScreen() {
   
   return (
     <LinearGradient 
-      colors={['#121212', '#000000']} 
+      colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]} 
       style={styles.container}
     >
       <StatusBar style="light" />
@@ -100,7 +101,7 @@ export default function HomeScreen() {
             style={styles.logoutButton}
             onPress={handleLogout}
           >
-            <Ionicons name="log-out-outline" size={24} color="#999" />
+            <Ionicons name="log-out-outline" size={24} color={COLORS.GRAY_SHADES["888"]} />
           </TouchableOpacity>
         </View>
         
@@ -147,6 +148,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.BACKGROUND.DARK,
   },
   safeArea: {
     flex: 1,
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -168,17 +170,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: COLORS.ALPHA.WHITE_10,
   },
   headerLeft: {
     flex: 1,
   },
   welcomeText: {
-    color: '#999',
+    color: COLORS.GRAY_SHADES["888"],
     fontSize: 14,
   },
   usernameText: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 24,
     fontWeight: 'bold',
   },
@@ -193,23 +195,23 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   secretContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: COLORS.ALPHA.BLACK_30,
     borderRadius: 12,
     padding: 16,
     marginVertical: 15,
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: COLORS.GRAY_SHADES.DARK,
     alignItems: 'center',
   },
   secretTitle: {
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
     letterSpacing: 1,
   },
   secretDescription: {
-    color: '#999',
+    color: COLORS.GRAY_SHADES["888"],
     fontSize: 14,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -219,11 +221,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   versionText: {
-    color: '#666',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     fontSize: 12,
   },
   copyrightText: {
-    color: '#444',
+    color: COLORS.GRAY_SHADES.DARK,
     fontSize: 10,
     marginTop: 5,
   },
