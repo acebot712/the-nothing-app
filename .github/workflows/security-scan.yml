@@ -1,0 +1,218 @@
+name: Security Scanning
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+  workflow_dispatch:  # Allow manual triggers
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  dependency-scanning:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        id: npm_audit
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit-results.json || true
+          if [ -s npm-audit-results.json ]; then
+            echo "AUDIT_ISSUES=true" >> $GITHUB_ENV
+            jq '.advisories | length' npm-audit-results.json > vuln_count.txt
+            VULN_COUNT=$(cat vuln_count.txt)
+            echo "VULN_COUNT=$VULN_COUNT" >> $GITHUB_ENV
+            echo "Found $VULN_COUNT potential security issues"
+          else
+            echo "AUDIT_ISSUES=false" >> $GITHUB_ENV
+            echo "No security issues found"
+          fi
+
+      - name: Upload npm audit results
+        if: env.AUDIT_ISSUES == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-audit-results
+          path: npm-audit-results.json
+          retention-days: 30
+
+      - name: Create issue for vulnerabilities
+        if: env.AUDIT_ISSUES == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const auditData = JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8'));
+
+            // Check if there's an existing open issue about npm audit
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['security', 'dependencies']
+            });
+
+            const existingIssue = issues.data.find(issue =>
+              issue.title.includes('Security vulnerabilities in dependencies')
+            );
+
+            // Format vulnerabilities
+            let issueBody = `## Security Scan Results\n\nFound ${process.env.VULN_COUNT} potential security vulnerabilities in project dependencies.\n\n`;
+
+            // Add details for each vulnerability
+            if (auditData.advisories) {
+              issueBody += "### Vulnerabilities\n\n";
+
+              Object.values(auditData.advisories).forEach(adv => {
+                issueBody += `#### ${adv.title} (${adv.severity})\n`;
+                issueBody += `**Module:** ${adv.module_name}\n`;
+                issueBody += `**Vulnerable Versions:** ${adv.vulnerable_versions}\n`;
+                issueBody += `**Patched Versions:** ${adv.patched_versions}\n`;
+                issueBody += `**Recommendation:** ${adv.recommendation}\n\n`;
+              });
+            }
+
+            issueBody += "\nPlease review these vulnerabilities and update dependencies as needed.";
+
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: issueBody
+              });
+              console.log(`Updated existing issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Security vulnerabilities in dependencies',
+                body: issueBody,
+                labels: ['security', 'dependencies']
+              });
+              console.log('Created new issue for security vulnerabilities');
+            }
+
+  code-scanning:
+    name: Code Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript, typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  secrets-scanning:
+    name: Detect Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect hardcoded secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload secrets scan results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: gitleaks-report
+          path: results.sarif
+          retention-days: 30
+
+      - name: Check for .env files in repo
+        id: check_env
+        run: |
+          ENV_FILES=$(find . -name ".env*" -not -path "*/node_modules/*" -not -path "*/.git/*")
+          if [ -n "$ENV_FILES" ]; then
+            echo "ENV_FILES_FOUND=true" >> $GITHUB_ENV
+            echo "Found environment files that may contain secrets:"
+            echo "$ENV_FILES"
+          else
+            echo "ENV_FILES_FOUND=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create issue for environment files
+        if: env.ENV_FILES_FOUND == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Create an issue about .env files
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Environment files found in repository',
+              body: 'Environment files (.env*) were detected in the repository. These files often contain sensitive information and should not be committed. Consider adding them to .gitignore and using GitHub Secrets or a secure vault for production secrets.',
+              labels: ['security']
+            });
+
+  security-report:
+    name: Generate Security Report
+    needs: [dependency-scanning, code-scanning, secrets-scanning]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate report
+        run: |
+          echo "# Security Scan Report" > security-report.md
+          echo "" >> security-report.md
+          echo "## Dependency Scanning" >> security-report.md
+          if [ "${{ needs.dependency-scanning.result }}" == "success" ]; then
+            echo "✅ Dependency scanning completed" >> security-report.md
+          else
+            echo "❌ Dependency scanning failed or found issues" >> security-report.md
+          fi
+
+          echo "" >> security-report.md
+          echo "## Code Scanning" >> security-report.md
+          if [ "${{ needs.code-scanning.result }}" == "success" ]; then
+            echo "✅ Code scanning completed" >> security-report.md
+          else
+            echo "❌ Code scanning failed or found issues" >> security-report.md
+          fi
+
+          echo "" >> security-report.md
+          echo "## Secrets Scanning" >> security-report.md
+          if [ "${{ needs.secrets-scanning.result }}" == "success" ]; then
+            echo "✅ Secrets scanning completed" >> security-report.md
+          else
+            echo "❌ Secrets scanning failed or found issues" >> security-report.md
+          fi
+
+          echo "" >> security-report.md
+          echo "Security scans completed on $(date)" >> security-report.md
+
+          cat security-report.md
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.md
+          retention-days: 30

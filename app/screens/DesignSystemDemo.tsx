@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { 
-  theme, 
-  Text, 
-  Container, 
-  Button, 
-  Card, 
-  Avatar, 
-  Badge, 
-  Input, 
+import React, { useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import {
+  theme,
+  Text,
+  Container,
+  Button,
+  Card,
+  Avatar,
+  Badge,
+  Input,
   Divider,
   Modal,
-  Loader
-} from '../design';
-import { Ionicons } from '@expo/vector-icons';
+  Loader,
+} from "../design";
+import { Ionicons } from "@expo/vector-icons";
 
 const DesignSystemDemo = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,13 +33,17 @@ const DesignSystemDemo = () => {
     <Container useSafeArea style={styles.container}>
       <ScrollView>
         <View style={styles.section}>
-          <Text variant="h1" color="primary">Design System</Text>
+          <Text variant="h1" color="primary">
+            Design System
+          </Text>
           <Text variant="subtitle1">A showcase of UI components</Text>
         </View>
 
         {/* Typography */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Typography</Text>
+          <Text variant="h3" color="primary">
+            Typography
+          </Text>
           <Divider margin={theme.spacing.md} />
           <Text variant="h1">Heading 1</Text>
           <Text variant="h2">Heading 2</Text>
@@ -55,27 +59,65 @@ const DesignSystemDemo = () => {
 
         {/* Colors */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Colors</Text>
+          <Text variant="h3" color="primary">
+            Colors
+          </Text>
           <Divider margin={theme.spacing.md} />
           <View style={styles.row}>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.primary.main }]}>
-              <Text variant="caption" color="inverse">Primary</Text>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.primary.main },
+              ]}
+            >
+              <Text variant="caption" color="inverse">
+                Primary
+              </Text>
             </View>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.secondary.main }]}>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.secondary.main },
+              ]}
+            >
               <Text variant="caption">Secondary</Text>
             </View>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.gold.main }]}>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.gold.main },
+              ]}
+            >
               <Text variant="caption">Gold</Text>
             </View>
           </View>
           <View style={styles.row}>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.status.success }]}>
-              <Text variant="caption" color="inverse">Success</Text>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.status.success },
+              ]}
+            >
+              <Text variant="caption" color="inverse">
+                Success
+              </Text>
             </View>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.status.error }]}>
-              <Text variant="caption" color="inverse">Error</Text>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.status.error },
+              ]}
+            >
+              <Text variant="caption" color="inverse">
+                Error
+              </Text>
             </View>
-            <View style={[styles.colorBox, { backgroundColor: theme.colors.status.warning }]}>
+            <View
+              style={[
+                styles.colorBox,
+                { backgroundColor: theme.colors.status.warning },
+              ]}
+            >
               <Text variant="caption">Warning</Text>
             </View>
           </View>
@@ -83,7 +125,9 @@ const DesignSystemDemo = () => {
 
         {/* Buttons */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Buttons</Text>
+          <Text variant="h3" color="primary">
+            Buttons
+          </Text>
           <Divider margin={theme.spacing.md} />
           <View style={styles.buttonRow}>
             <Button title="Primary" variant="primary" />
@@ -98,43 +142,29 @@ const DesignSystemDemo = () => {
             <Button title="Gold" variant="gold" />
           </View>
           <View style={styles.buttonRow}>
-            <Button 
-              title="With Icon" 
-              leftIcon={<Ionicons name="star" size={16} color="white" />} 
+            <Button
+              title="With Icon"
+              leftIcon={<Ionicons name="star" size={16} color="white" />}
             />
-            <Button 
-              title="Loading" 
-              isLoading 
-            />
+            <Button title="Loading" isLoading />
           </View>
-          <Button 
-            title="Full Width Button" 
-            fullWidth 
+          <Button
+            title="Full Width Button"
+            fullWidth
             style={styles.fullWidthButton}
           />
         </Card>
 
         {/* Avatars and Badges */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Avatars & Badges</Text>
+          <Text variant="h3" color="primary">
+            Avatars & Badges
+          </Text>
           <Divider margin={theme.spacing.md} />
           <View style={styles.row}>
-            <Avatar 
-              size="sm" 
-              name="John Doe"
-              status="online"
-            />
-            <Avatar 
-              size="md" 
-              name="Jane Smith"
-              status="away"
-            />
-            <Avatar 
-              size="lg" 
-              name="Robert Brown"
-              premium
-              status="offline"
-            />
+            <Avatar size="sm" name="John Doe" status="online" />
+            <Avatar size="md" name="Jane Smith" status="away" />
+            <Avatar size="lg" name="Robert Brown" premium status="offline" />
           </View>
           <View style={[styles.row, styles.spacedRow]}>
             <Badge tier="regular" />
@@ -150,7 +180,9 @@ const DesignSystemDemo = () => {
 
         {/* Form Elements */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Form Elements</Text>
+          <Text variant="h3" color="primary">
+            Form Elements
+          </Text>
           <Divider margin={theme.spacing.md} />
           <Input
             label="Email"
@@ -172,9 +204,9 @@ const DesignSystemDemo = () => {
             value="invalid@email"
             error="Please enter a valid email address"
           />
-          <Button 
-            title="Submit" 
-            onPress={handleLogin} 
+          <Button
+            title="Submit"
+            onPress={handleLogin}
             style={styles.submitButton}
             isLoading={loading}
           />
@@ -182,7 +214,9 @@ const DesignSystemDemo = () => {
 
         {/* Dividers */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Dividers</Text>
+          <Text variant="h3" color="primary">
+            Dividers
+          </Text>
           <Divider margin={theme.spacing.md} />
           <Divider size="thin" />
           <View style={styles.verticalSpacer} />
@@ -199,16 +233,22 @@ const DesignSystemDemo = () => {
 
         {/* Modal */}
         <Card style={styles.card}>
-          <Text variant="h3" color="primary">Modal & Loader</Text>
+          <Text variant="h3" color="primary">
+            Modal & Loader
+          </Text>
           <Divider margin={theme.spacing.md} />
-          <Button 
-            title="Open Modal" 
-            onPress={() => setModalVisible(true)} 
+          <Button
+            title="Open Modal"
+            onPress={() => setModalVisible(true)}
             style={styles.modalButton}
           />
           <View style={styles.loaderContainer}>
             <Loader type="spinner" size="small" />
-            <Loader type="dots" size="small" color={theme.colors.primary.main} />
+            <Loader
+              type="dots"
+              size="small"
+              color={theme.colors.primary.main}
+            />
             <Loader type="pulse" size="small" color={theme.colors.gold.main} />
           </View>
         </Card>
@@ -227,11 +267,13 @@ const DesignSystemDemo = () => {
         position="center"
       >
         <View style={styles.modalContent}>
-          <Text variant="h3" color="primary">Design System Modal</Text>
+          <Text variant="h3" color="primary">
+            Design System Modal
+          </Text>
           <Text>This is a modal component from our design system.</Text>
-          <Button 
-            title="Close" 
-            onPress={() => setModalVisible(false)} 
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
             style={styles.closeButton}
           />
         </View>
@@ -251,25 +293,25 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginVertical: theme.spacing.sm,
   },
   spacedRow: {
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   colorBox: {
     width: 100,
     height: 60,
     marginRight: theme.spacing.sm,
     borderRadius: theme.borderRadius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     ...theme.elevation.shadow.sm,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: theme.spacing.sm,
   },
   fullWidthButton: {
@@ -291,8 +333,8 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xl,
   },
   loaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginTop: theme.spacing.md,
   },
   footer: {
@@ -300,4 +342,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DesignSystemDemo; 
+export default DesignSystemDemo;

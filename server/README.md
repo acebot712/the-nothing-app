@@ -107,32 +107,32 @@ const purchaseTier = async (tier) => {
     const response = await fetch('http://localhost:3000/api/payments/create-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         tier,
         userId: currentUser.id,
         email: currentUser.email,
         username: currentUser.username
       })
     });
-    
+
     const { data } = await response.json();
-    
+
     // 2. Process payment with Stripe.js
     // ... payment processing with Stripe Elements ...
-    
+
     // 3. Verify payment and update user tier
     const verifyResponse = await fetch(`http://localhost:3000/api/payments/verify/${data.paymentIntentId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: currentUser.id })
     });
-    
+
     const { data: verifyData } = await verifyResponse.json();
-    
+
     return verifyData;
   } catch (error) {
     console.error('Payment error:', error);
     throw error;
   }
 };
-``` 
+```

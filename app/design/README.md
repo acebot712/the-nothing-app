@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
 Display user avatars or placeholders.
 
 ```tsx
-<Avatar 
+<Avatar
   source="https://example.com/avatar.jpg"
   size="md"
   status="online"
@@ -67,7 +67,7 @@ Display user tier badges.
 Clickable buttons with various styles.
 
 ```tsx
-<Button 
+<Button
   title="Get Started"
   variant="primary"
   size="md"
@@ -83,7 +83,7 @@ Available variants: `primary`, `secondary`, `tertiary`, `ghost`, `danger`, `gold
 Container for content with various styles.
 
 ```tsx
-<Card 
+<Card
   variant="elevated"
   padding="lg"
   onPress={() => {}}
@@ -97,7 +97,7 @@ Container for content with various styles.
 Layout container with optional safe area and gradient.
 
 ```tsx
-<Container 
+<Container
   useSafeArea
   useGradient
   center
@@ -113,7 +113,7 @@ Visual separator with optional label.
 ```tsx
 <Divider />
 
-<Divider 
+<Divider
   label="OR"
   labelPosition="center"
   size="medium"
@@ -140,7 +140,7 @@ Text input field with validation states.
 Loading indicators with animations.
 
 ```tsx
-<Loader 
+<Loader
   type="spinner"
   size="large"
   text="Loading..."
@@ -166,7 +166,7 @@ Popup dialogs with various positions.
 Typography component with proper styling.
 
 ```tsx
-<Text 
+<Text
   variant="h1"
   color="primary"
   align="center"
@@ -182,4 +182,4 @@ Typography component with proper styling.
 2. Use theme tokens for spacing, colors, typography, etc.
 3. Avoid hardcoding values that are available in the theme
 4. Maintain consistency by using the appropriate component variants
-5. Use composition of design system components to create complex UI patterns 
+5. Use composition of design system components to create complex UI patterns

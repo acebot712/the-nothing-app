@@ -29,7 +29,7 @@ The most basic form of state management:
 ```jsx
 function Counter() {
   const [count, setCount] = useState(0);
-  
+
   return (
     <View>
       <Text>Count: {count}</Text>
@@ -59,7 +59,7 @@ function reducer(state, action) {
 
 function Counter() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  
+
   return (
     <View>
       <Text>Count: {state.count}</Text>
@@ -81,7 +81,7 @@ const ThemeContext = createContext('light');
 // Provider component
 function App() {
   const [theme, setTheme] = useState('light');
-  
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <MainNavigator />
@@ -92,7 +92,7 @@ function App() {
 // Consumer component
 function ThemedButton() {
   const { theme, setTheme } = useContext(ThemeContext);
-  
+
   return (
     <Button
       title="Toggle Theme"
@@ -139,19 +139,19 @@ export function UserProvider({ children }) {
       const { data } = await supabase.auth.getSession();
       setUser(data?.session?.user ?? null);
       setLoading(false);
-      
+
       // Set up listener for auth changes
       const { data: authListener } = supabase.auth.onAuthStateChange(
         (event, session) => {
           setUser(session?.user ?? null);
         }
       );
-      
+
       return () => {
         authListener?.subscription.unsubscribe();
       };
     };
-    
+
     fetchUser();
   }, []);
 
@@ -267,7 +267,7 @@ const createProfile = async (userId: string, username: string) => {
   const { data, error } = await supabase
     .from('profiles')
     .insert([{ id: userId, username }]);
-    
+
   if (error) throw error;
   return data;
 };
@@ -279,7 +279,7 @@ const getProfile = async (userId: string) => {
     .select('*')
     .eq('id', userId)
     .single();
-    
+
   if (error) throw error;
   return data;
 };
@@ -290,7 +290,7 @@ const updateProfile = async (userId: string, updates: any) => {
     .from('profiles')
     .update(updates)
     .eq('id', userId);
-    
+
   if (error) throw error;
   return data;
 };
@@ -301,7 +301,7 @@ const deleteAchievement = async (achievementId: string) => {
     .from('achievements')
     .delete()
     .eq('id', achievementId);
-    
+
   if (error) throw error;
 };
 ```
@@ -317,7 +317,7 @@ const subscribeToProfile = (userId: string, callback: (profile: any) => void) =>
       callback(payload.new);
     })
     .subscribe();
-    
+
   return () => {
     subscription.unsubscribe();
   };
@@ -339,7 +339,7 @@ export function useProfile(userId: string) {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchProfile = async () => {
       try {
         setLoading(true);
@@ -348,7 +348,7 @@ export function useProfile(userId: string) {
           .select('*')
           .eq('id', userId)
           .single();
-          
+
         if (error) throw error;
         if (isMounted) setProfile(data);
       } catch (err) {
@@ -357,9 +357,9 @@ export function useProfile(userId: string) {
         if (isMounted) setLoading(false);
       }
     };
-    
+
     fetchProfile();
-    
+
     // Set up real-time subscription
     const subscription = supabase
       .from(`profiles:id=eq.${userId}`)
@@ -367,7 +367,7 @@ export function useProfile(userId: string) {
         if (isMounted) setProfile(payload.new);
       })
       .subscribe();
-      
+
     return () => {
       isMounted = false;
       subscription?.unsubscribe();
@@ -392,16 +392,16 @@ export async function fetchWithCache(key, fetchFn) {
   if (cachedData && Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
     return cachedData.data;
   }
-  
+
   // Fetch fresh data
   const data = await fetchFn();
-  
+
   // Update cache
   cache.set(key, {
     data,
     timestamp: Date.now(),
   });
-  
+
   return data;
 }
 
@@ -414,7 +414,7 @@ const getUserAchievements = async (userId) => {
         .from('achievements')
         .select('*')
         .eq('user_id', userId);
-        
+
       if (error) throw error;
       return data;
     }
@@ -433,22 +433,22 @@ const signUp = async (email: string, password: string, username: string) => {
     email,
     password,
   });
-  
+
   if (authError) throw authError;
-  
+
   // Create the user profile
   if (authData.user) {
     const { error: profileError } = await supabase
       .from('profiles')
       .insert([{ id: authData.user.id, username }]);
-      
+
     if (profileError) {
       // Clean up: delete the auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authData.user.id);
       throw profileError;
     }
   }
-  
+
   return authData;
 };
 ```
@@ -460,7 +460,7 @@ const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
   });
-  
+
   if (error) throw error;
   return data;
 };
@@ -479,18 +479,18 @@ export async function safelyExecuteQuery(queryFn) {
     if (!netInfo.isConnected) {
       throw new Error('No internet connection');
     }
-    
+
     // Execute the query
     return await queryFn();
   } catch (error) {
     // Log the error
     console.error('Database operation failed:', error);
-    
+
     // Store failed operation for retry if appropriate
     if (isRetryableError(error)) {
       await storeForRetry(queryFn);
     }
-    
+
     // Rethrow with more context
     throw new AppError('Database operation failed', {
       originalError: error,
@@ -522,7 +522,7 @@ describe('useProfile hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
-  
+
   test('fetches profile data', async () => {
     // Mock Supabase response
     const mockSelect = jest.fn().mockReturnValue({
@@ -533,34 +533,34 @@ describe('useProfile hook', () => {
         }),
       }),
     });
-    
+
     const mockSubscribe = jest.fn().mockReturnValue({
       unsubscribe: jest.fn(),
     });
-    
+
     const mockOn = jest.fn().mockReturnValue({
       subscribe: mockSubscribe,
     });
-    
+
     supabase.from.mockReturnValue({
       select: mockSelect,
       on: mockOn,
     });
-    
+
     // Render the hook
     const { result, waitForNextUpdate } = renderHook(() => useProfile('123'));
-    
+
     // Initially loading
     expect(result.current.loading).toBe(true);
-    
+
     // Wait for the hook to update
     await waitForNextUpdate();
-    
+
     // Check the result
     expect(result.current.loading).toBe(false);
     expect(result.current.profile).toEqual({ id: '123', username: 'testuser' });
     expect(result.current.error).toBe(null);
-    
+
     // Verify Supabase was called correctly
     expect(supabase.from).toHaveBeenCalledWith('profiles');
     expect(mockSelect).toHaveBeenCalledWith('*');
@@ -611,7 +611,7 @@ BEGIN
   SET tier = new_tier,
       updated_at = now()
   WHERE id = user_id;
-  
+
   -- Record the transaction
   INSERT INTO public.transactions (
     user_id,
@@ -626,7 +626,7 @@ BEGIN
     'completed',
     'stripe'
   );
-  
+
   -- Grant achievement if applicable
   IF new_tier = 'god' THEN
     INSERT INTO public.achievements (
@@ -655,4 +655,4 @@ In the next chapter, we'll explore payment processing with Stripe, examining how
 2. Add offline support to an existing database operation using AsyncStorage for temporary data storage.
 3. Create a leaderboard feature that uses Supabase to track and display user statistics.
 4. Implement a caching mechanism for frequently accessed data to improve performance.
-5. Add error handling and loading states to an existing component that uses Supabase data. 
+5. Add error handling and loading states to an existing component that uses Supabase data.

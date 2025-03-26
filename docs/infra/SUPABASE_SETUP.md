@@ -4,24 +4,34 @@ This guide explains how to set up and use Supabase with The Nothing App.
 
 ## Supabase Credentials
 
-The application is already configured with the following Supabase credentials:
+You need to obtain Supabase credentials and configure the application with them:
 
-- **Project URL:** [https://dyfigkcfyrmphfzizwst.supabase.co](https://dyfigkcfyrmphfzizwst.supabase.co)
-- **API Key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Zmlna2NmeXJtcGhmeml6d3N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4MjQwNzUsImV4cCI6MjA1ODQwMDA3NX0.K6QbbXf35LjYUtj9sxDVVNU-us-hEqMAUWyq8oOE9i8
+- **Project URL:** Your Supabase project URL (e.g., `https://your-project-id.supabase.co`)
+- **API Key:** Your Supabase anon key
 - **Project Name:** The Nothing App
-- **Organization:** acebot712's Org
-- **Database Password:** CjRH34KKL2fGC#s
+- **Organization:** Your organization name
 
-These credentials are already set up in the `app/config/supabase.ts` file.
+These credentials should be set in your `.env` file and never committed to the repository.
+
+## Environment Configuration
+
+Create a `.env` file in the root directory with your Supabase credentials:
+
+```
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+EXPO_PUBLIC_API_URL=your_api_url
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+```
 
 ## Database Setup
 
 To complete the Supabase setup, you need to create the necessary tables in your Supabase project. Follow these steps:
 
 1. Log in to the [Supabase Dashboard](https://app.supabase.io)
-2. Navigate to your project: "The Nothing App"
+2. Navigate to your project
 3. Go to the SQL Editor
-4. Copy and paste the contents of the `supabase-setup.sql` file in this project
+4. Copy and paste the contents of the `supabase-schema.sql` file in this project
 5. Run the script to create the necessary tables and policies
 
 Alternatively, you can use the initialization script:
@@ -37,7 +47,8 @@ The SQL script will create the following:
 
 1. `users` table - Stores user information
 2. `leaderboard` table - Stores the app's leaderboard data, linked to users
-3. Row Level Security (RLS) policies to control access to these tables
+3. `invite_codes` table - Stores invitation codes for new users
+4. Row Level Security (RLS) policies to control access to these tables
 
 ## Database Schema
 
@@ -70,6 +81,18 @@ CREATE TABLE IF NOT EXISTS public.leaderboard (
 );
 ```
 
+### Invite Codes Table
+
+```sql
+CREATE TABLE IF NOT EXISTS public.invite_codes (
+  code TEXT PRIMARY KEY,
+  is_used BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  used_at TIMESTAMP WITH TIME ZONE,
+  used_by UUID REFERENCES public.users(id)
+);
+```
+
 ## Implementation Details
 
 ### Supabase Configuration
@@ -81,10 +104,16 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const supabaseUrl = 'https://dyfigkcfyrmphfzizwst.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Zmlna2NmeXJtcGhmeml6d3N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4MjQwNzUsImV4cCI6MjA1ODQwMDA3NX0.K6QbbXf35LjYUtj9sxDVVNU-us-hEqMAUWyq8oOE9i8';
+// Get environment variables
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Ensure environment variables are set
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials are missing. Please check your environment variables.');
+}
+
+export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
   auth: {
     storage: AsyncStorage as any,
     autoRefreshToken: true,
@@ -100,12 +129,30 @@ The following functions are implemented to interact with Supabase:
 
 - `getLeaderboard()` - Fetches the leaderboard entries sorted by purchase amount
 - `saveUser(user)` - Saves a new user to the database or updates an existing one
+- `getInviteCode(code)` - Validates an invitation code
+- `markInviteCodeAsUsed(code, userId)` - Marks an invitation code as used
 
 ## Security Considerations
 
 1. The Supabase anon key is restricted by Row Level Security policies.
 2. Users can only read and update their own data.
 3. The leaderboard is publicly readable but not writable via the client API.
+4. Invitation codes are protected to prevent abuse.
+5. **Never commit your Supabase credentials to the repository.**
+
+## Testing Database Connection
+
+You can use the included `test-database-connection.js` script to verify your Supabase connection and table setup:
+
+```bash
+node test-database-connection.js
+```
+
+The script will:
+1. Test the connection to your Supabase instance
+2. Verify that all required tables exist
+3. Check row-level security policies
+4. Report any issues found
 
 ## Troubleshooting
 
@@ -114,7 +161,8 @@ If you encounter issues with the Supabase connection:
 1. Verify your internet connection
 2. Check that the SQL tables are properly created
 3. Ensure Row Level Security policies are configured correctly
-4. Verify the API key hasn't expired
+4. Verify your environment variables are set correctly
 5. If you encounter ID issues, remember that leaderboard entries must reference valid user IDs
+6. Use the application's built-in Demo Mode if database connection fails
 
-For assistance with Supabase, refer to the [Supabase documentation](https://supabase.io/docs). 
+For assistance with Supabase, refer to the [Supabase documentation](https://supabase.io/docs).

@@ -1,11 +1,22 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../design/colors';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../design/colors";
 
-const MetaCommentary = () => {
+interface User {
+  tier: string;
+  [key: string]: any;
+}
+
+interface MetaCommentaryProps {
+  user?: User;
+}
+
+const MetaCommentary: React.FC<MetaCommentaryProps> = ({ user }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>This component has been removed in production.</Text>
+      <Text style={styles.text}>
+        This component has been removed in production.
+      </Text>
     </View>
   );
 };
@@ -22,4 +33,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MetaCommentary; 
+export default MetaCommentary;

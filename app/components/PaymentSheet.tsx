@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
-import { useStripe } from '@stripe/stripe-react-native';
-import { processPayment, PRICING_TIERS } from '../config/stripe';
-import { haptics } from '../utils/animations';
-import { EXPO_PUBLIC_API_URL } from '@env';
-import { COLORS } from '../design/colors';
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { useStripe } from "@stripe/stripe-react-native";
+import { processPayment, PRICING_TIERS } from "../config/stripe";
+import { haptics } from "../utils/animations";
+import { EXPO_PUBLIC_API_URL } from "@env";
+import { COLORS } from "../design/colors";
 
 // Error type for better error handling
 interface PaymentError {
@@ -13,10 +20,10 @@ interface PaymentError {
 }
 
 // Default to localhost if no API_URL is provided
-const BASE_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const BASE_URL = EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 interface PaymentSheetProps {
-  tier: 'REGULAR' | 'ELITE' | 'GOD';
+  tier: "REGULAR" | "ELITE" | "GOD";
   email: string;
   onPaymentSuccess: (message: string) => void;
   onPaymentFailure: (error: string) => void;
@@ -24,13 +31,13 @@ interface PaymentSheetProps {
   username?: string;
 }
 
-export default function PaymentSheet({ 
-  tier, 
-  email, 
-  onPaymentSuccess, 
+export default function PaymentSheet({
+  tier,
+  email,
+  onPaymentSuccess,
   onPaymentFailure,
   userId,
-  username
+  username,
 }: PaymentSheetProps) {
   const [loading, setLoading] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -38,17 +45,17 @@ export default function PaymentSheet({
   const handlePayment = async () => {
     try {
       setLoading(true);
-      
+
       // Provide haptic feedback for starting payment
       haptics.medium();
-      
+
       // Try to use real Stripe integration
       try {
         // Create payment intent via our backend API
         const response = await fetch(`${BASE_URL}/api/payments/create-intent`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             tier: tier.toLowerCase(),
@@ -57,89 +64,99 @@ export default function PaymentSheet({
             username,
           }),
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to create payment intent');
+          throw new Error(
+            errorData.message || "Failed to create payment intent",
+          );
         }
-        
+
         const { data } = await response.json();
-        
+
         // Initialize the payment sheet
         const { error: initError } = await initPaymentSheet({
-          merchantDisplayName: 'The Nothing App',
+          merchantDisplayName: "The Nothing App",
           paymentIntentClientSecret: data.clientSecret,
           allowsDelayedPaymentMethods: false,
           defaultBillingDetails: {
             email,
           },
         });
-        
+
         if (initError) {
           throw new Error(initError.message);
         }
-        
+
         // Present the payment sheet
         const { error: presentError } = await presentPaymentSheet();
-        
+
         if (presentError) {
-          if (presentError.code === 'Canceled') {
-            throw new Error('Payment cancelled');
+          if (presentError.code === "Canceled") {
+            throw new Error("Payment cancelled");
           }
           throw new Error(presentError.message);
         }
-        
+
         // If we got here, payment was successful
         // Verify the payment on the server
-        const verifyResponse = await fetch(`${BASE_URL}/api/payments/verify/${data.paymentIntentId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const verifyResponse = await fetch(
+          `${BASE_URL}/api/payments/verify/${data.paymentIntentId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: userId || "anonymous",
+            }),
           },
-          body: JSON.stringify({
-            userId: userId || 'anonymous',
-          }),
-        });
-        
+        );
+
         if (!verifyResponse.ok) {
           const verifyErrorData = await verifyResponse.json();
-          throw new Error(verifyErrorData.message || 'Payment verification failed');
+          throw new Error(
+            verifyErrorData.message || "Payment verification failed",
+          );
         }
-        
+
         haptics.premium(); // Premium haptic feedback for successful payment
-        onPaymentSuccess(`You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`);
-        
+        onPaymentSuccess(
+          `You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`,
+        );
       } catch (stripeError: unknown) {
         // Check if it's a PaymentError with the expected properties
         const paymentError = stripeError as PaymentError;
-        
+
         // If Stripe integration failed for any reason (backend down, etc), fall back to mock implementation
-        if (paymentError.message === 'Payment cancelled') {
+        if (paymentError.message === "Payment cancelled") {
           haptics.error();
-          onPaymentFailure('Payment cancelled');
+          onPaymentFailure("Payment cancelled");
           setLoading(false);
           return;
         }
-        
+
         // Fallback to mock payment for API errors
         Alert.alert(
           "Payment Processing Issue",
-          `We're having trouble with our payment processor: ${paymentError.message || 'Unknown error'}. For demo purposes, we'll simulate a successful payment.`,
+          `We're having trouble with our payment processor: ${
+            paymentError.message || "Unknown error"
+          }. For demo purposes, we'll simulate a successful payment.`,
           [
             {
               text: "Cancel",
               style: "cancel",
               onPress: () => {
                 haptics.error();
-                onPaymentFailure('Payment cancelled');
-              }
+                onPaymentFailure("Payment cancelled");
+              },
             },
             {
               text: "Continue with Demo",
               onPress: async () => {
                 // Use mock payment processing for demo
                 const result = await processPayment(tier, email);
-                
+
                 if (result.success) {
                   haptics.premium(); // Premium haptic feedback for successful payment
                   onPaymentSuccess(result.message);
@@ -147,14 +164,15 @@ export default function PaymentSheet({
                   haptics.error();
                   onPaymentFailure(result.message);
                 }
-              }
-            }
-          ]
+              },
+            },
+          ],
         );
       }
     } catch (error: unknown) {
       haptics.error();
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
       onPaymentFailure(errorMessage);
     } finally {
       setLoading(false);
@@ -166,11 +184,9 @@ export default function PaymentSheet({
       <Text style={styles.pricingInfo}>
         You are purchasing the {PRICING_TIERS[tier].name}
       </Text>
-      <Text style={styles.price}>
-        ${PRICING_TIERS[tier].price}
-      </Text>
-      
-      <TouchableOpacity 
+      <Text style={styles.price}>${PRICING_TIERS[tier].price}</Text>
+
+      <TouchableOpacity
         style={[styles.payButton, loading && styles.payButtonDisabled]}
         onPress={handlePayment}
         disabled={loading}
@@ -181,10 +197,10 @@ export default function PaymentSheet({
           <Text style={styles.payButtonText}>Complete Purchase</Text>
         )}
       </TouchableOpacity>
-      
+
       <Text style={styles.disclaimer}>
-        Payment is processed securely through Stripe.
-        By proceeding, you acknowledge that you're paying for absolutely nothing.
+        Payment is processed securely through Stripe. By proceeding, you
+        acknowledge that you're paying for absolutely nothing.
       </Text>
     </View>
   );
@@ -193,7 +209,7 @@ export default function PaymentSheet({
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: COLORS.BACKGROUND.DARKER,
     borderRadius: 12,
     borderWidth: 1,
@@ -206,7 +222,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.GOLD_SHADES.ACCENT,
     marginBottom: 30,
   },
@@ -215,8 +231,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     marginBottom: 20,
   },
   payButtonDisabled: {
@@ -226,11 +242,11 @@ const styles = StyleSheet.create({
   payButtonText: {
     color: COLORS.WHITE,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   disclaimer: {
     fontSize: 12,
     color: COLORS.GRAY_SHADES["888"],
-    textAlign: 'center',
+    textAlign: "center",
   },
-}); 
+});

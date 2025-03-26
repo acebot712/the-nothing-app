@@ -1,2 +1,2 @@
-import InviteScreen from './screens/InviteScreen';
-export default InviteScreen; 
+import InviteScreen from "./screens/InviteScreen";
+export default InviteScreen;

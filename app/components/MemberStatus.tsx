@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { User } from '../config/supabase';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../design/colors';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
+import { User } from "../config/supabase";
+import { LinearGradient } from "expo-linear-gradient";
+import { COLORS } from "../design/colors";
 
 interface MemberStatusProps {
   user: User;
@@ -12,74 +12,75 @@ const MemberStatus: React.FC<MemberStatusProps> = ({ user }) => {
   const [memberRank, setMemberRank] = useState(0);
   const [exclusivityScore, setExclusivityScore] = useState(0);
   const [daysSinceJoin, setDaysSinceJoin] = useState(0);
-  const [status, setStatus] = useState('');
-  
+  const [status, setStatus] = useState("");
+
   const animatedValue = useState(new Animated.Value(0))[0];
-  
+
   useEffect(() => {
     // Calculate stats based on user data
-    
+
     // Days since joining (from created_at)
     const created = new Date(user.created_at);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - created.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     setDaysSinceJoin(diffDays);
-    
+
     // Member rank (1-100, lower is more exclusive)
     // For demo purposes, just use a random number between 1-100
     // In production, this would be calculated from real metrics
-    const rank = Math.max(1, Math.floor(100 - (user.purchase_amount / 1000)));
+    const rank = Math.max(1, Math.floor(100 - user.purchase_amount / 1000));
     setMemberRank(rank);
-    
+
     // Calculate exclusivity score (0-100)
-    const baseScore = user.tier === 'god' ? 85 : user.tier === 'elite' ? 65 : 30;
+    const baseScore =
+      user.tier === "god" ? 85 : user.tier === "elite" ? 65 : 30;
     const dayBonus = Math.min(10, diffDays); // Up to 10 points for longevity
     const purchaseBonus = Math.min(10, user.purchase_amount / 1000); // Up to 10 points for spending
-    
+
     const score = Math.min(100, baseScore + dayBonus + purchaseBonus);
     setExclusivityScore(score);
-    
+
     // Set status label based on score
-    if (score >= 95) setStatus('LEGENDARY');
-    else if (score >= 85) setStatus('ELITE FOUNDER');
-    else if (score >= 75) setStatus('INNER CIRCLE');
-    else if (score >= 65) setStatus('VIP');
-    else if (score >= 50) setStatus('MEMBER');
-    else setStatus('NEWCOMER');
-    
+    if (score >= 95) setStatus("LEGENDARY");
+    else if (score >= 85) setStatus("ELITE FOUNDER");
+    else if (score >= 75) setStatus("INNER CIRCLE");
+    else if (score >= 65) setStatus("VIP");
+    else if (score >= 50) setStatus("MEMBER");
+    else setStatus("NEWCOMER");
+
     // Animate progress
     Animated.timing(animatedValue, {
       toValue: score / 100,
       duration: 1500,
-      useNativeDriver: false
+      useNativeDriver: false,
     }).start();
   }, [user, animatedValue]);
-  
+
   // Get colors based on tier
   const getStatusColors = () => {
     switch (user.tier) {
-      case 'god':
-        return ['#FFD700', '#D4AF37'] as const;
-      case 'elite':
-        return ['#C0C0C0', '#A0A0A0'] as const;
+      case "god":
+        return ["#FFD700", "#D4AF37"] as const;
+      case "elite":
+        return ["#C0C0C0", "#A0A0A0"] as const;
       default:
-        return ['#CD7F32', '#8B4513'] as const;
+        return ["#CD7F32", "#8B4513"] as const;
     }
   };
-  
+
   const width = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0%', '100%']
+    outputRange: ["0%", "100%"],
   });
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>MEMBER STATUS</Text>
         <Text style={styles.serialNumber}>{user.serial_number}</Text>
       </View>
-      
+
       <View style={styles.statusContainer}>
         <LinearGradient
           colors={getStatusColors()}
@@ -90,54 +91,62 @@ const MemberStatus: React.FC<MemberStatusProps> = ({ user }) => {
           <Text style={styles.statusText}>{status}</Text>
         </LinearGradient>
       </View>
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>MEMBER RANK</Text>
           <Text style={styles.statValue}>#{memberRank}</Text>
         </View>
-        
+
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>DAYS IN CLUB</Text>
           <Text style={styles.statValue}>{daysSinceJoin}</Text>
         </View>
-        
+
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>TIER</Text>
-          <Text style={[
-            styles.statValue, 
-            user.tier === 'god' ? styles.godTier : 
-            user.tier === 'elite' ? styles.eliteTier : 
-            styles.regularTier
-          ]}>
+          <Text
+            style={[
+              styles.statValue,
+              user.tier === "god"
+                ? styles.godTier
+                : user.tier === "elite"
+                ? styles.eliteTier
+                : styles.regularTier,
+            ]}
+          >
             {user.tier.toUpperCase()}
           </Text>
         </View>
       </View>
-      
+
       <View style={styles.progressContainer}>
         <Text style={styles.progressLabel}>EXCLUSIVITY SCORE</Text>
         <View style={styles.progressBar}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.progressFill,
               { width },
-              user.tier === 'god' ? styles.godFill :
-              user.tier === 'elite' ? styles.eliteFill :
-              styles.regularFill
+              user.tier === "god"
+                ? styles.godFill
+                : user.tier === "elite"
+                ? styles.eliteFill
+                : styles.regularFill,
             ]}
           />
         </View>
-        <Text style={styles.progressValue}>{Math.round(exclusivityScore)}/100</Text>
+        <Text style={styles.progressValue}>
+          {Math.round(exclusivityScore)}/100
+        </Text>
       </View>
-      
+
       <View style={styles.exclusiveMessage}>
         <Text style={styles.messageText}>
-          {exclusivityScore >= 80 
+          {exclusivityScore >= 80
             ? "You're in our top tier of members. Special privileges unlocked."
             : exclusivityScore >= 50
-              ? "You're making progress. Exclusive features await higher tiers."
-              : "Continue to elevate your status to unlock exclusive benefits."}
+            ? "You're making progress. Exclusive features await higher tiers."
+            : "Continue to elevate your status to unlock exclusive benefits."}
         </Text>
       </View>
     </View>
@@ -154,24 +163,24 @@ const styles = StyleSheet.create({
     borderColor: COLORS.BACKGROUND.CARD_DARK,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 15,
   },
   title: {
     color: COLORS.WHITE,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1,
   },
   serialNumber: {
     color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     fontSize: 12,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   statusContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   statusBadge: {
@@ -184,16 +193,16 @@ const styles = StyleSheet.create({
   statusText: {
     color: COLORS.BLACK,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 1,
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   statLabel: {
@@ -205,7 +214,7 @@ const styles = StyleSheet.create({
   statValue: {
     color: COLORS.WHITE,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   godTier: {
     color: COLORS.METAL.GOLD,
@@ -228,11 +237,11 @@ const styles = StyleSheet.create({
     height: 10,
     backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 5,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 5,
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
   },
   godFill: {
     backgroundColor: COLORS.METAL.GOLD,
@@ -246,7 +255,7 @@ const styles = StyleSheet.create({
   progressValue: {
     color: COLORS.WHITE,
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: "right",
   },
   exclusiveMessage: {
     backgroundColor: COLORS.ALPHA.WHITE_10,
@@ -262,4 +271,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MemberStatus; 
+export default MemberStatus;

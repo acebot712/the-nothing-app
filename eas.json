@@ -9,12 +9,23 @@
       "distribution": "internal",
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "DEVELOPMENT_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "DEVELOPMENT_SUPABASE_ANON_KEY",
+        "EXPO_PUBLIC_API_URL": "DEVELOPMENT_API_URL",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "DEVELOPMENT_STRIPE_PUBLISHABLE_KEY",
+        "APP_ENVIRONMENT": "development"
       }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
       "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "STAGING_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "STAGING_SUPABASE_ANON_KEY",
+        "EXPO_PUBLIC_API_URL": "STAGING_API_URL",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "STAGING_STRIPE_PUBLISHABLE_KEY",
         "APP_ENVIRONMENT": "preview"
       }
     },
@@ -22,12 +33,23 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "PRODUCTION_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "PRODUCTION_SUPABASE_ANON_KEY",
+        "EXPO_PUBLIC_API_URL": "PRODUCTION_API_URL",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "PRODUCTION_STRIPE_PUBLISHABLE_KEY",
         "APP_ENVIRONMENT": "production"
       }
     },
     "simulator": {
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "DEVELOPMENT_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "DEVELOPMENT_SUPABASE_ANON_KEY",
+        "EXPO_PUBLIC_API_URL": "DEVELOPMENT_API_URL",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "DEVELOPMENT_STRIPE_PUBLISHABLE_KEY",
+        "APP_ENVIRONMENT": "development"
       }
     }
   },
@@ -39,7 +61,7 @@
         "appleTeamId": "YOUR_APPLE_TEAM_ID"
       },
       "android": {
-        "serviceAccountKeyPath": "gen-lang-client-0782705722-f93f2c9f7124.json",
+        "serviceAccountKeyPath": "google-service-account.json",
         "track": "production"
       }
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,110 +9,138 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import LuxuryButton from '../components/LuxuryButton';
-import { haptics } from '../utils/animations';
-import { useUser } from '../contexts/UserContext';
-import { saveUser } from '../config/supabase';
-import { COLORS } from '../design/colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  useNavigation,
+  NavigationProp,
+  ParamListBase,
+} from "@react-navigation/native";
+import LuxuryButton from "../components/LuxuryButton";
+import { haptics } from "../utils/animations";
+import { useUser } from "../contexts/UserContext";
+import { saveUser } from "../config/supabase";
+import { COLORS } from "../design/colors";
 
 const MIN_NET_WORTH = 1000000; // $1 million
 
 const NetWorthScreen = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { setUser } = useUser();
-  
-  const [netWorth, setNetWorth] = useState('');
-  const [username, setUsername] = useState('');
-  const [error, setError] = useState('');
+
+  const [netWorth, setNetWorth] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   // Animation values
   const shakeAnim = useRef(new Animated.Value(0)).current;
-  
+
   const handleNetWorthChange = (text: string) => {
     // Remove non-numeric characters
-    const numericText = text.replace(/[^0-9]/g, '');
-    
+    const numericText = text.replace(/[^0-9]/g, "");
+
     // Format with commas as thousands separators
     if (numericText) {
       const formattedNetWorth = parseInt(numericText, 10).toLocaleString();
       setNetWorth(formattedNetWorth);
     } else {
-      setNetWorth('');
+      setNetWorth("");
     }
   };
-  
+
   const validateNetWorth = () => {
     // Clear previous error
-    setError('');
+    setError("");
     haptics.medium();
-    
+
     // Validate username
     if (!username.trim()) {
-      setError('Please enter your name.');
+      setError("Please enter your name.");
       shakeInput();
       haptics.error();
       return;
     }
-    
+
     // Parse net worth without commas
-    const netWorthValue = parseInt(netWorth.replace(/,/g, ''), 10);
-    
+    const netWorthValue = parseInt(netWorth.replace(/,/g, ""), 10);
+
     // Validate net worth
     if (isNaN(netWorthValue) || netWorthValue < MIN_NET_WORTH) {
-      setError(`Sorry, you're too poor for this app. Minimum net worth is $${MIN_NET_WORTH.toLocaleString()}.`);
+      setError(
+        `Sorry, you're too poor for this app. Minimum net worth is $${MIN_NET_WORTH.toLocaleString()}.`,
+      );
       shakeInput();
       haptics.error();
       return;
     }
-    
+
     // Simulate verification
     setLoading(true);
-    
+
     setTimeout(async () => {
       try {
         // Create user
         const user = await saveUser({
           username: username.trim(),
           net_worth: netWorthValue,
-          email: `${username.toLowerCase().replace(/\s/g, '')}@therich.com`,
+          email: `${username.toLowerCase().replace(/\s/g, "")}@therich.com`,
         });
-        
+
         // Update user in context
         setUser(user);
-        
+
         // Navigate to pricing screen
         haptics.success();
-        navigation.navigate('Pricing');
+        navigation.navigate("Pricing");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
-        setError('An error occurred. The server may have detected you are poor.');
+        setError(
+          "An error occurred. The server may have detected you are poor.",
+        );
         haptics.error();
       } finally {
         setLoading(false);
       }
     }, 2000);
   };
-  
+
   const shakeInput = () => {
     // Shake animation
     Animated.sequence([
-      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: -10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: -10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 0,
+        duration: 50,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
-  
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <LinearGradient
           colors={[COLORS.BACKGROUND.DARKER, COLORS.BACKGROUND.CARD_DARK]}
@@ -125,7 +153,7 @@ const NetWorthScreen = () => {
                 We only serve the truly wealthy. Prove that you belong.
               </Text>
             </View>
-            
+
             <View style={styles.formContainer}>
               <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
                 <View style={styles.inputGroup}>
@@ -139,7 +167,7 @@ const NetWorthScreen = () => {
                     autoCapitalize="words"
                   />
                 </View>
-                
+
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>YOUR NET WORTH</Text>
                   <View style={styles.netWorthInputContainer}>
@@ -155,9 +183,9 @@ const NetWorthScreen = () => {
                   </View>
                 </View>
               </Animated.View>
-              
+
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
-              
+
               <View style={styles.buttonContainer}>
                 <LuxuryButton
                   title={loading ? "VERIFYING..." : "VERIFY MY WEALTH"}
@@ -169,7 +197,7 @@ const NetWorthScreen = () => {
                   style={styles.verifyButton}
                 />
               </View>
-              
+
               <Text style={styles.disclaimerText}>
                 * We totally verify this information with real banks and stuff.
               </Text>
@@ -187,32 +215,32 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   content: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
   },
   titleContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.GOLD_SHADES.PRIMARY,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
     color: COLORS.GRAY_SHADES.LIGHT,
-    textAlign: 'center',
+    textAlign: "center",
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
   },
   inputGroup: {
     marginBottom: 20,
@@ -221,10 +249,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.GOLD_SHADES.PRIMARY,
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   input: {
-    width: '100%',
+    width: "100%",
     backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 8,
     padding: 15,
@@ -234,8 +262,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   netWorthInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 8,
     borderWidth: 1,
@@ -245,29 +273,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.GOLD_SHADES.PRIMARY,
     paddingHorizontal: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   netWorthInput: {
     flex: 1,
     padding: 15,
     fontSize: 18,
     color: COLORS.WHITE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   errorText: {
     color: COLORS.ACCENTS.ERROR,
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   buttonContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 30,
     marginBottom: 20,
-    width: '100%',
+    width: "100%",
   },
   verifyButton: {
-    width: '100%',
+    width: "100%",
     shadowColor: COLORS.GOLD_SHADES.PRIMARY,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
@@ -277,10 +305,10 @@ const styles = StyleSheet.create({
   disclaimerText: {
     fontSize: 12,
     color: COLORS.GRAY_SHADES.MEDIUM_DARK,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontStyle: "italic",
     marginTop: 15,
   },
 });
 
-export default NetWorthScreen; 
+export default NetWorthScreen;

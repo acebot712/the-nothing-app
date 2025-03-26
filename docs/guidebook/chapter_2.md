@@ -119,7 +119,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Success'>;
 function SuccessScreen({ route, navigation }: Props) {
   // TypeScript now knows that route.params.tier exists and is one of the defined values
   const { tier } = route.params;
-  
+
   return (
     <View>
       <Text>Congratulations on purchasing the {tier} tier!</Text>
@@ -147,14 +147,14 @@ function ExpensiveScreen() {
     useCallback(() => {
       // Set up expensive resources (e.g., API polling, subscriptions)
       console.info('Screen focused - setting up resources');
-      
+
       // Return a cleanup function that runs when the screen loses focus
       return () => {
         console.info('Screen unfocused - cleaning up resources');
       };
     }, [])
   );
-  
+
   return <View>{/* Screen content */}</View>;
 }
 ```
@@ -209,7 +209,7 @@ When the user selects a pricing tier, we present the payment flow as a modal to 
 function PricingScreen({ navigation }) {
   const handlePurchase = (tier) => {
     // Present the payment sheet as a modal
-    navigation.navigate('PaymentSheet', { 
+    navigation.navigate('PaymentSheet', {
       tier,
       // Pass a callback to handle success
       onComplete: (result) => {
@@ -219,7 +219,7 @@ function PricingScreen({ navigation }) {
       }
     });
   };
-  
+
   return (
     <View>
       {/* Pricing tiers with purchase buttons */}
@@ -291,7 +291,7 @@ useEffect(() => {
       console.warn('Failed to restore navigation state:', e);
     }
   };
-  
+
   restoreState();
 }, []);
 
@@ -316,7 +316,7 @@ This pattern allows the app to restore the user's exact navigation state after r
 ```jsx
 function AppNavigator() {
   const { user } = useUser();
-  
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -426,7 +426,7 @@ function TestNavigator({ component, params = {} }) {
 // Test a navigation action
 test('navigates to pricing screen when button is pressed', () => {
   const mockNavigate = jest.fn();
-  
+
   // Mock the navigation hook
   jest.mock('@react-navigation/native', () => {
     return {
@@ -436,12 +436,12 @@ test('navigates to pricing screen when button is pressed', () => {
       }),
     };
   });
-  
+
   const { getByText } = render(<TestNavigator component={DashboardScreen} />);
-  
+
   // Trigger navigation
   fireEvent.press(getByText('View Pricing'));
-  
+
   // Verify navigation was triggered
   expect(mockNavigate).toHaveBeenCalledWith('PricingScreen');
 });
@@ -461,4 +461,4 @@ In the next chapter, we'll dive into state management with Supabase and Context 
 2. Implement a custom transition animation for navigating to the Success screen.
 3. Create a nested navigation stack within one of the existing tabs.
 4. Add TypeScript types for a new screen that accepts complex parameters.
-5. Implement deep linking to allow direct navigation to the Leaderboard screen. 
+5. Implement deep linking to allow direct navigation to the Leaderboard screen.

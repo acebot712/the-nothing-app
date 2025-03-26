@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -8,52 +8,53 @@ import {
   ViewStyle,
   StyleProp,
   Text,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { COLORS } from "../colors";
 
 interface LoaderProps {
-  size?: 'small' | 'large';
+  size?: "small" | "large";
   color?: string;
   text?: string;
   fullscreen?: boolean;
   style?: StyleProp<ViewStyle>;
-  type?: 'spinner' | 'dots' | 'pulse';
+  type?: "spinner" | "dots" | "pulse";
 }
 
 const Loader: React.FC<LoaderProps> = ({
-  size = 'large',
+  size = "large",
   color = COLORS.ACCENTS.INFO,
   text,
   fullscreen = false,
   style,
-  type = 'spinner',
+  type = "spinner",
 }) => {
   // Animation values
   const spinValue = useRef(new Animated.Value(0)).current;
-  
+
   // Create refs outside of useMemo
   const scaleValue1 = useRef(new Animated.Value(1)).current;
   const scaleValue2 = useRef(new Animated.Value(1)).current;
   const scaleValue3 = useRef(new Animated.Value(1)).current;
-  
+
   // Use useMemo to create the array to avoid re-creation on each render
-  const scaleValues = useMemo(() => [
-    scaleValue1, scaleValue2, scaleValue3
-  ], [scaleValue1, scaleValue2, scaleValue3]);
+  const scaleValues = useMemo(
+    () => [scaleValue1, scaleValue2, scaleValue3],
+    [scaleValue1, scaleValue2, scaleValue3],
+  );
 
   // Start animation when component mounts
   useEffect(() => {
-    if (type === 'spinner') {
+    if (type === "spinner") {
       Animated.loop(
         Animated.timing(spinValue, {
           toValue: 1,
           duration: 1500,
           easing: Easing.linear,
           useNativeDriver: true,
-        })
+        }),
       ).start();
-    } else if (type === 'dots' || type === 'pulse') {
+    } else if (type === "dots" || type === "pulse") {
       // Animate dots in sequence
       const createAnimation = (value: Animated.Value, delay: number) =>
         Animated.sequence([
@@ -77,7 +78,7 @@ const Loader: React.FC<LoaderProps> = ({
           createAnimation(scaleValues[0], 0),
           createAnimation(scaleValues[1], 200),
           createAnimation(scaleValues[2], 400),
-        ])
+        ]),
       ).start();
     }
   }, [spinValue, scaleValues, type]);
@@ -85,50 +86,40 @@ const Loader: React.FC<LoaderProps> = ({
   // Interpolate rotation for spinner
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
   // Dynamic styles based on props
   const getSpinnerStyle = () => ({
     borderColor: color,
-    width: size === 'small' ? 24 : 40,
-    height: size === 'small' ? 24 : 40,
-    borderWidth: size === 'small' ? 2 : 3,
+    width: size === "small" ? 24 : 40,
+    height: size === "small" ? 24 : 40,
+    borderWidth: size === "small" ? 2 : 3,
     transform: [{ rotate: spin }],
   });
 
   const getDotStyle = (animatedValue: Animated.Value) => ({
     backgroundColor: color,
-    width: size === 'small' ? 8 : 12,
-    height: size === 'small' ? 8 : 12,
-    marginHorizontal: size === 'small' ? 2 : 4,
+    width: size === "small" ? 8 : 12,
+    height: size === "small" ? 8 : 12,
+    marginHorizontal: size === "small" ? 2 : 4,
     transform: [{ scale: animatedValue }],
-    ...(type === 'pulse' ? { borderRadius: size === 'small' ? 4 : 6 } : {}),
+    ...(type === "pulse" ? { borderRadius: size === "small" ? 4 : 6 } : {}),
   });
 
   const textStyle = { color };
 
   // Render spinner type
   const renderSpinner = () => {
-    if (type === 'spinner') {
-      return (
-        <Animated.View
-          style={[
-            styles.spinner,
-            getSpinnerStyle(),
-          ]}
-        />
-      );
-    } else if (type === 'dots' || type === 'pulse') {
+    if (type === "spinner") {
+      return <Animated.View style={[styles.spinner, getSpinnerStyle()]} />;
+    } else if (type === "dots" || type === "pulse") {
       return (
         <View style={styles.dotsContainer}>
           {scaleValues.map((value, index) => (
             <Animated.View
               key={index}
-              style={[
-                styles.dot,
-                getDotStyle(value),
-              ]}
+              style={[styles.dot, getDotStyle(value)]}
             />
           ))}
         </View>
@@ -140,10 +131,7 @@ const Loader: React.FC<LoaderProps> = ({
   };
 
   // Container styles based on fullscreen
-  const containerStyle = [
-    fullscreen && styles.fullscreen,
-    style,
-  ];
+  const containerStyle = [fullscreen && styles.fullscreen, style];
 
   return (
     <View style={containerStyle}>
@@ -165,22 +153,22 @@ const Loader: React.FC<LoaderProps> = ({
 
 const styles = StyleSheet.create({
   fullscreen: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 999,
   },
   loaderContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   background: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -188,8 +176,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   content: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   spinner: {
     borderRadius: 100,
@@ -197,9 +185,9 @@ const styles = StyleSheet.create({
     borderRightColor: COLORS.TRANSPARENT,
   },
   dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   dot: {
     borderRadius: 100,
@@ -207,8 +195,8 @@ const styles = StyleSheet.create({
   text: {
     marginTop: 12,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 
-export default Loader; 
+export default Loader;

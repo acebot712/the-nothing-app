@@ -19,13 +19,13 @@ import * as Sentry from '@sentry/react-native';
 
 export function measureRenderTime(componentName: string) {
   const startTime = Date.now();
-  
+
   return () => {
     const endTime = Date.now();
     const duration = endTime - startTime;
-    
+
     console.debug(`[Performance] ${componentName} rendered in ${duration}ms`);
-    
+
     // Report to analytics for significant renders
     if (duration > 500) {
       Sentry.addBreadcrumb({
@@ -34,7 +34,7 @@ export function measureRenderTime(componentName: string) {
         level: 'warning',
       });
     }
-    
+
     return duration;
   };
 }
@@ -44,7 +44,7 @@ export function deferTask(task: () => void, description = 'deferred task') {
     const startTime = Date.now();
     task();
     const duration = Date.now() - startTime;
-    
+
     console.debug(`[Performance] Completed ${description} in ${duration}ms`);
   });
 }
@@ -59,7 +59,7 @@ export function deferTask(task: () => void, description = 'deferred task') {
 function ExpensiveComponent({ data, onPress }) {
   // This component re-renders whenever any prop changes
   const processedData = expensiveCalculation(data);
-  
+
   return (
     <View>
       {processedData.map(item => (
@@ -76,12 +76,12 @@ const ExpensiveComponent = React.memo(
   function ExpensiveComponent({ data, onPress }) {
     // Memoize expensive calculations
     const processedData = useMemo(() => expensiveCalculation(data), [data]);
-    
+
     // Memoize callback functions
     const handlePress = useCallback((item) => {
       onPress(item);
     }, [onPress]);
-    
+
     return (
       <View>
         {processedData.map(item => (
@@ -94,7 +94,7 @@ const ExpensiveComponent = React.memo(
   },
   // Custom comparison function for props
   (prevProps, nextProps) => {
-    return isEqual(prevProps.data, nextProps.data) && 
+    return isEqual(prevProps.data, nextProps.data) &&
            prevProps.onPress === nextProps.onPress;
   }
 );
@@ -121,9 +121,9 @@ function UserList({ users }) {
   const renderItem = useCallback(({ item }) => {
     return <UserItem user={item} />;
   }, []);
-  
+
   const keyExtractor = useCallback((item) => item.id, []);
-  
+
   return (
     <FlatList
       data={users}
@@ -174,25 +174,25 @@ export function OptimizedImage({
 
   React.useEffect(() => {
     let isMounted = true;
-    
+
     const optimizeImage = async () => {
       try {
         setLoading(true);
-        
+
         // Skip optimization for local assets
         if (!source.uri || source.uri.startsWith('file://') || source.uri.startsWith('asset://')) {
           setOptimizedSource(source);
           setLoading(false);
           return;
         }
-        
+
         // Optimize the image
         const manipResult = await manipulateAsync(
           source.uri,
           [{ resize: { width: maxWidth } }],
           { compress: quality, format: SaveFormat.JPEG }
         );
-        
+
         if (isMounted) {
           setOptimizedSource({ uri: manipResult.uri });
           setLoading(false);
@@ -206,9 +206,9 @@ export function OptimizedImage({
         }
       }
     };
-    
+
     optimizeImage();
-    
+
     return () => {
       isMounted = false;
     };
@@ -261,11 +261,11 @@ let isProcessingQueue = false;
 // Process queued requests when the app is idle
 function processQueue() {
   if (isProcessingQueue || requestQueue.length === 0) return;
-  
+
   isProcessingQueue = true;
-  
+
   const request = requestQueue.shift();
-  
+
   request.execute()
     .finally(() => {
       isProcessingQueue = false;
@@ -278,17 +278,17 @@ export async function fetchCriticalData(endpoint, params) {
   // Add retry logic for critical requests
   let attempts = 0;
   const maxAttempts = 3;
-  
+
   while (attempts < maxAttempts) {
     try {
       return await client.get(endpoint, { params });
     } catch (error) {
       attempts++;
-      
+
       if (attempts >= maxAttempts) {
         throw error;
       }
-      
+
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts)));
     }
@@ -307,7 +307,7 @@ export function queueBackgroundRequest(endpoint, params, callback) {
       }
     },
   });
-  
+
   processQueue();
 }
 ```
@@ -343,22 +343,22 @@ function userReducer(state, action) {
   switch (action.type) {
     case ACTIONS.SET_USER:
       return { ...state, user: action.payload, loading: false };
-      
+
     case ACTIONS.UPDATE_PROFILE:
       return { ...state, profile: { ...state.profile, ...action.payload } };
-      
+
     case ACTIONS.SET_LOADING:
       return { ...state, loading: action.payload };
-      
+
     case ACTIONS.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
-      
+
     case ACTIONS.CLEAR_ERROR:
       return { ...state, error: null };
-      
+
     case ACTIONS.LOGOUT:
       return { ...initialState };
-      
+
     default:
       return state;
   }
@@ -370,32 +370,32 @@ const UserContext = createContext(null);
 // Provider component
 export function UserProvider({ children }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
-  
+
   // Memoized action creators
   const setUser = useCallback((user) => {
     dispatch({ type: ACTIONS.SET_USER, payload: user });
   }, []);
-  
+
   const updateProfile = useCallback((profileData) => {
     dispatch({ type: ACTIONS.UPDATE_PROFILE, payload: profileData });
   }, []);
-  
+
   const setLoading = useCallback((isLoading) => {
     dispatch({ type: ACTIONS.SET_LOADING, payload: isLoading });
   }, []);
-  
+
   const setError = useCallback((error) => {
     dispatch({ type: ACTIONS.SET_ERROR, payload: error });
   }, []);
-  
+
   const clearError = useCallback(() => {
     dispatch({ type: ACTIONS.CLEAR_ERROR });
   }, []);
-  
+
   const logout = useCallback(() => {
     dispatch({ type: ACTIONS.LOGOUT });
   }, []);
-  
+
   // Memoize the context value to prevent unnecessary re-renders
   const value = React.useMemo(() => ({
     ...state,
@@ -406,7 +406,7 @@ export function UserProvider({ children }) {
     clearError,
     logout,
   }), [state, setUser, updateProfile, setLoading, setError, clearError, logout]);
-  
+
   return (
     <UserContext.Provider value={value}>
       {children}
@@ -432,53 +432,53 @@ Preventing memory leaks is essential for long app sessions:
 // Before optimization
 function ProfileScreen({ userId }) {
   const [profile, setProfile] = useState(null);
-  
+
   useEffect(() => {
     // This might cause a memory leak if the component unmounts
     // before the fetch completes
     fetchUserProfile(userId).then(data => {
       setProfile(data);
     });
-    
+
     // Subscribe to real-time updates
     const subscription = subscribeToProfileUpdates(userId, (data) => {
       setProfile(data);
     });
-    
+
     // Missing cleanup function
   }, [userId]);
-  
+
   // Component code...
 }
 
 // After optimization
 function ProfileScreen({ userId }) {
   const [profile, setProfile] = useState(null);
-  
+
   useEffect(() => {
     let isMounted = true;
-    
+
     fetchUserProfile(userId).then(data => {
       // Only update state if component is still mounted
       if (isMounted) {
         setProfile(data);
       }
     });
-    
+
     // Subscribe to real-time updates
     const subscription = subscribeToProfileUpdates(userId, (data) => {
       if (isMounted) {
         setProfile(data);
       }
     });
-    
+
     // Proper cleanup function
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
   }, [userId]);
-  
+
   // Component code...
 }
 ```
@@ -641,19 +641,19 @@ export async function initFeatureFlags(userProfile) {
         USER_SEGMENT = 'regular';
       }
     }
-    
+
     // Try to load cached flags
     const cachedFlags = await AsyncStorage.getItem('featureFlags');
     if (cachedFlags) {
       REMOTE_FLAGS = JSON.parse(cachedFlags);
     }
-    
+
     // Fetch fresh flags from backend
     const response = await fetch(`${apiUrl}/feature-flags?segment=${USER_SEGMENT}&platform=${Platform.OS}`);
     const freshFlags = await response.json();
-    
+
     REMOTE_FLAGS = freshFlags;
-    
+
     // Cache the flags
     await AsyncStorage.setItem('featureFlags', JSON.stringify(freshFlags));
   } catch (error) {
@@ -668,7 +668,7 @@ export function isFeatureEnabled(featureName) {
   if (__DEV__ && AsyncStorage.getItem(`debug_${featureName}`) === 'true') {
     return true;
   }
-  
+
   // Check remote flag first, fall back to default
   return REMOTE_FLAGS[featureName] !== undefined
     ? REMOTE_FLAGS[featureName]
@@ -688,7 +688,7 @@ import Constants from 'expo-constants';
 // Initialize Sentry
 export function initErrorReporting() {
   const { environment } = Constants.expoConfig?.extra || {};
-  
+
   Sentry.init({
     dsn: 'https://your-sentry-dsn@sentry.io/project',
     environment,
@@ -709,7 +709,7 @@ export function reportError(error, context = {}) {
   if (__DEV__) {
     console.error('Error:', error, 'Context:', context);
   }
-  
+
   Sentry.captureException(error, {
     extra: context,
   });
@@ -910,7 +910,7 @@ export function initAnalytics(userId = null) {
     trackAppLifecycleEvents: true,
     recordScreenViews: true,
   });
-  
+
   if (userId) {
     Analytics.identify(userId, {
       platform: Platform.OS,
@@ -930,7 +930,7 @@ export function trackScreen(screenName, properties = {}) {
 // Track custom events
 export function trackEvent(eventName, properties = {}) {
   Analytics.track(eventName, properties);
-  
+
   // Also add breadcrumb to Sentry for debugging
   Sentry.addBreadcrumb({
     category: 'analytics',
@@ -948,13 +948,13 @@ export function trackPerformance(name, durationMs) {
       operation: name,
       durationMs,
     });
-    
+
     Sentry.captureMessage(`Slow operation: ${name} (${durationMs}ms)`, {
       level: 'warning',
       tags: { performance: 'slow' },
     });
   }
-  
+
   // Always track performance data
   trackEvent('Performance Metric', {
     operation: name,
@@ -979,23 +979,23 @@ export async function checkForUpdates() {
     console.log('Updates not configured');
     return false;
   }
-  
+
   try {
     const update = await Updates.checkForUpdateAsync();
-    
+
     if (update.isAvailable) {
       trackEvent('Update Available', {
         channel: Updates.channel,
         currentVersion: Updates.manifest?.version,
       });
-      
+
       await fetchAndApplyUpdate();
       return true;
     }
   } catch (error) {
     console.error('Failed to check for updates:', error);
   }
-  
+
   return false;
 }
 
@@ -1004,12 +1004,12 @@ async function fetchAndApplyUpdate() {
   try {
     // Download the update
     const { isNew } = await Updates.fetchUpdateAsync();
-    
+
     if (isNew) {
       trackEvent('Update Downloaded', {
         channel: Updates.channel,
       });
-      
+
       // Prompt the user to restart
       Alert.alert(
         'Update Available',
@@ -1086,4 +1086,4 @@ In our final chapter, we'll explore advanced patterns and future directions for 
 2. Set up a GitHub Actions workflow for continuous integration that runs linting and type checking.
 3. Create a performance monitoring system that tracks render times for key components.
 4. Implement feature flags for a new experimental feature in the app.
-5. Configure and test an over-the-air update for a small bug fix. 
+5. Configure and test an over-the-air update for a small bug fix.

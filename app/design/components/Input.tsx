@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -12,9 +12,9 @@ import {
   Animated,
   NativeSyntheticEvent,
   TextInputFocusEventData,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../colors';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../colors";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -65,7 +65,7 @@ const Input: React.FC<InputProps> = ({
   // Animate label when focused or has value
   React.useEffect(() => {
     Animated.timing(animatedLabelPosition, {
-      toValue: (isFocused || hasValue) ? 1 : 0,
+      toValue: isFocused || hasValue ? 1 : 0,
       duration: 150,
       useNativeDriver: false,
     }).start();
@@ -135,14 +135,14 @@ const Input: React.FC<InputProps> = ({
     if (!secureTextEntry) return null;
 
     return (
-      <TouchableOpacity 
-        style={styles.iconRight} 
+      <TouchableOpacity
+        style={styles.iconRight}
         onPress={toggleSecureEntry}
         hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
       >
-        <Ionicons 
-          name={secureEntry ? 'eye-off' : 'eye'} 
-          size={20} 
+        <Ionicons
+          name={secureEntry ? "eye-off" : "eye"}
+          size={20}
           color={COLORS.GRAY_SHADES["888"]}
         />
       </TouchableOpacity>
@@ -152,43 +152,28 @@ const Input: React.FC<InputProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       {label && !insetLabel && (
-        <Animated.Text
-          style={[
-            styles.label,
-            animatedLabelStyle,
-            labelStyle,
-          ]}
-        >
+        <Animated.Text style={[styles.label, animatedLabelStyle, labelStyle]}>
           {label}
         </Animated.Text>
       )}
 
-      <View style={[
-        styles.inputContainer,
-        dynamicInputContainerStyle,
-      ]}>
+      <View style={[styles.inputContainer, dynamicInputContainerStyle]}>
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
         <View style={styles.inputWrapper}>
           {insetLabel && hasValue && (
             <Animated.Text
-              style={[
-                styles.insetLabel,
-                animatedLabelStyle,
-                labelStyle,
-              ]}
+              style={[styles.insetLabel, animatedLabelStyle, labelStyle]}
             >
               {label}
             </Animated.Text>
           )}
 
           <TextInput
-            style={[
-              styles.input,
-              dynamicInputStyle,
-              inputStyle,
-            ]}
-            placeholder={insetLabel && !isFocused && !hasValue ? label : placeholder}
+            style={[styles.input, dynamicInputStyle, inputStyle]}
+            placeholder={
+              insetLabel && !isFocused && !hasValue ? label : placeholder
+            }
             placeholderTextColor={COLORS.GRAY_SHADES.MEDIUM_DARK}
             secureTextEntry={secureEntry}
             value={value}
@@ -224,45 +209,45 @@ const Input: React.FC<InputProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
-    width: '100%',
+    width: "100%",
   },
   label: {
     marginBottom: 6,
-    fontWeight: '500',
-    position: 'absolute',
+    fontWeight: "500",
+    position: "absolute",
     left: 0,
     zIndex: 1,
     backgroundColor: COLORS.WHITE,
     paddingHorizontal: 4,
   },
   insetLabel: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     backgroundColor: COLORS.TRANSPARENT,
     paddingHorizontal: 4,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     height: 50,
   },
   inputWrapper: {
     flex: 1,
-    height: '100%',
-    justifyContent: 'center',
+    height: "100%",
+    justifyContent: "center",
   },
   input: {
     flex: 1,
-    height: '100%',
+    height: "100%",
     fontSize: 16,
     color: COLORS.BLACK,
     paddingRight: 16,
     ...Platform.select({
       web: {
-        outlineStyle: 'none',
+        outlineStyle: "none",
       },
       default: {},
     }),
@@ -279,4 +264,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Input; 
+export default Input;

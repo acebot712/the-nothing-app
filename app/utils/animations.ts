@@ -1,4 +1,4 @@
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing } from "react-native";
 
 // Define type for haptic feedback options
 interface HapticOptions {
@@ -16,12 +16,12 @@ interface HapticFeedback {
 /* eslint-disable @typescript-eslint/no-require-imports */
 let ReactNativeHapticFeedback: HapticFeedback;
 try {
-  ReactNativeHapticFeedback = require('react-native-haptic-feedback').default;
+  ReactNativeHapticFeedback = require("react-native-haptic-feedback").default;
 } catch (error) {
-  console.warn('react-native-haptic-feedback not available', error);
+  console.warn("react-native-haptic-feedback not available", error);
   // Create a mock implementation
   ReactNativeHapticFeedback = {
-    trigger: () => {}
+    trigger: () => {},
   };
 }
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -39,37 +39,37 @@ const safelyTriggerHaptic = (type: string) => {
       ReactNativeHapticFeedback.trigger(type, hapticOptions);
     }
   } catch (error) {
-    console.warn('Failed to trigger haptic feedback:', error);
+    console.warn("Failed to trigger haptic feedback:", error);
   }
 };
 
 // Luxury app haptic patterns
 export const haptics = {
   // Light tap for simple interactions
-  light: () => safelyTriggerHaptic('impactLight'),
-  
+  light: () => safelyTriggerHaptic("impactLight"),
+
   // Medium tap for confirmations
-  medium: () => safelyTriggerHaptic('impactMedium'),
-  
+  medium: () => safelyTriggerHaptic("impactMedium"),
+
   // Heavy tap for important actions
-  heavy: () => safelyTriggerHaptic('impactHeavy'),
-  
+  heavy: () => safelyTriggerHaptic("impactHeavy"),
+
   // Success pattern
   success: () => {
-    safelyTriggerHaptic('impactMedium');
-    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 150);
+    safelyTriggerHaptic("impactMedium");
+    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 150);
   },
-  
+
   // Premium success pattern (for purchases)
   premium: () => {
-    safelyTriggerHaptic('impactMedium');
-    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 150);
-    setTimeout(() => safelyTriggerHaptic('impactLight'), 300);
-    setTimeout(() => safelyTriggerHaptic('impactHeavy'), 450);
+    safelyTriggerHaptic("impactMedium");
+    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 150);
+    setTimeout(() => safelyTriggerHaptic("impactLight"), 300);
+    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 450);
   },
-  
+
   // Error pattern
-  error: () => safelyTriggerHaptic('notificationError'),
+  error: () => safelyTriggerHaptic("notificationError"),
 };
 
 // Animation utilities
@@ -91,7 +91,7 @@ export const animations = {
       }),
     ]).start();
   },
-  
+
   // Shine animation for gold elements
   shine: (value: Animated.Value, _duration = 2000) => {
     Animated.sequence([
@@ -108,7 +108,7 @@ export const animations = {
       }),
     ]).start(() => animations.shine(value, _duration));
   },
-  
+
   // Fade in animation
   fadeIn: (value: Animated.Value, duration = 500) => {
     Animated.timing(value, {
@@ -117,7 +117,7 @@ export const animations = {
       useNativeDriver: true,
     }).start();
   },
-  
+
   // Fade out animation
   fadeOut: (value: Animated.Value, duration = 500) => {
     Animated.timing(value, {
@@ -126,7 +126,7 @@ export const animations = {
       useNativeDriver: true,
     }).start();
   },
-  
+
   // Bounce animation
   bounce: (value: Animated.Value, toValue = 1.2, _duration = 1000) => {
     Animated.sequence([
@@ -144,4 +144,4 @@ export const animations = {
       }),
     ]).start();
   },
-}; 
+};

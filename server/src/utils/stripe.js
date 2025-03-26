@@ -1,6 +1,6 @@
-const Stripe = require('stripe');
-const config = require('../config');
-const { logger } = require('./logger');
+const Stripe = require("stripe");
+const config = require("../config");
+const { logger } = require("./logger");
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(config.stripe.secretKey);
@@ -10,31 +10,31 @@ const createPaymentIntent = async (tier, metadata = {}) => {
   try {
     // Get tier configuration
     const tierConfig = config.stripe.products[tier.toLowerCase()];
-    
+
     if (!tierConfig) {
       throw new Error(`Invalid tier: ${tier}`);
     }
-    
+
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: tierConfig.price,
       currency: tierConfig.currency,
       metadata: {
         tier: tier.toLowerCase(),
-        ...metadata
+        ...metadata,
       },
       automatic_payment_methods: {
         enabled: true,
       },
     });
-    
+
     logger.info(`Payment intent created for tier ${tier}: ${paymentIntent.id}`);
-    
+
     return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: tierConfig.price,
-      currency: tierConfig.currency
+      currency: tierConfig.currency,
     };
   } catch (error) {
     logger.error(`Error creating payment intent: ${error.message}`);
@@ -46,28 +46,28 @@ const createPaymentIntent = async (tier, metadata = {}) => {
 const verifyPaymentIntent = async (paymentIntentId) => {
   try {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
-    if (paymentIntent.status !== 'succeeded') {
+
+    if (paymentIntent.status !== "succeeded") {
       return {
         verified: false,
         status: paymentIntent.status,
-        message: `Payment has not succeeded. Current status: ${paymentIntent.status}`
+        message: `Payment has not succeeded. Current status: ${paymentIntent.status}`,
       };
     }
-    
+
     return {
       verified: true,
-      status: 'succeeded',
+      status: "succeeded",
       amount: paymentIntent.amount,
       currency: paymentIntent.currency,
-      metadata: paymentIntent.metadata
+      metadata: paymentIntent.metadata,
     };
   } catch (error) {
     logger.error(`Error verifying payment intent: ${error.message}`);
     return {
       verified: false,
-      status: 'error',
-      message: error.message
+      status: "error",
+      message: error.message,
     };
   }
 };
@@ -76,45 +76,45 @@ const verifyPaymentIntent = async (paymentIntentId) => {
 const handleWebhookEvent = async (signature, rawBody) => {
   try {
     const event = stripe.webhooks.constructEvent(
-      rawBody, 
-      signature, 
-      config.stripe.webhookSecret
+      rawBody,
+      signature,
+      config.stripe.webhookSecret,
     );
-    
+
     logger.info(`Webhook received: ${event.type}`);
-    
+
     switch (event.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
-        
+
         // Process successful payment
         logger.info(`Payment succeeded: ${paymentIntent.id}`);
-        
+
         // In a production app, you would update the database here
-        return { 
-          success: true, 
+        return {
+          success: true,
           event: event.type,
-          paymentIntentId: paymentIntent.id
+          paymentIntentId: paymentIntent.id,
         };
-        
-      case 'payment_intent.payment_failed':
+
+      case "payment_intent.payment_failed":
         const failedPayment = event.data.object;
-        
+
         // Handle failed payment
         logger.warn(`Payment failed: ${failedPayment.id}`);
-        return { 
-          success: false, 
+        return {
+          success: false,
           event: event.type,
           paymentIntentId: failedPayment.id,
-          error: failedPayment.last_payment_error?.message || 'Payment failed'
+          error: failedPayment.last_payment_error?.message || "Payment failed",
         };
-        
+
       default:
         // For other events, process asynchronously
         await processOtherEvent(event);
-        return { 
-          success: true, 
-          event: event.type
+        return {
+          success: true,
+          event: event.type,
         };
     }
   } catch (error) {
@@ -128,10 +128,10 @@ const processOtherEvent = async (event) => {
   // In a real app, you might want to handle other event types
   // For now, just log them
   logger.info(`Processing other event: ${event.type}`);
-  
+
   // Simulate async processing
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
   return true;
 };
 
@@ -139,5 +139,5 @@ module.exports = {
   stripe,
   createPaymentIntent,
   verifyPaymentIntent,
-  handleWebhookEvent
-}; 
+  handleWebhookEvent,
+};

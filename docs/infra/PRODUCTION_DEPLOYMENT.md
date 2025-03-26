@@ -1,160 +1,227 @@
-# Production Deployment Guide for The Nothing App
+# Production Deployment Guide
 
-This guide provides instructions on how to build and deploy The Nothing App to the Apple App Store and Google Play Store.
+This document provides instructions for deploying The Nothing App to production environments.
 
-## Prerequisites
+## Pre-Deployment Checklist
 
-Before deploying to production, ensure you have the following:
+Before deploying to production, ensure you have completed the following tasks:
 
-1. An Apple Developer Account (for iOS deployment)
-2. A Google Play Developer Account (for Android deployment)
-3. Expo Application Services (EAS) account
-4. Proper configuration of Supabase (see `SUPABASE_SETUP.md`)
-5. Stripe account with live API keys
+- [ ] Run `npm run lint:all` to check for linting errors
+- [ ] Run `npm run tsc` to verify TypeScript types
+- [ ] Verify all environment variables are correctly set for production
+- [ ] Test the application in a staging environment
+- [ ] Ensure Supabase is properly configured with all required tables
+- [ ] Verify Stripe integration is working correctly
+- [ ] Check that all API endpoints are secured
+- [ ] Run a complete test of the user flow from registration to payment
+- [ ] Execute `npm run preproduction` to perform automated pre-production checks
 
-## Environment Setup
+## Environment Configuration
 
-1. Ensure your `.env.local` file contains the production API keys:
+The app requires the following environment variables for production:
 
 ```
-EXPO_PUBLIC_SUPABASE_URL=your_production_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_production_supabase_anon_key
-EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_production_stripe_key
+EXPO_PUBLIC_SUPABASE_URL=your-production-supabase-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-production-supabase-anon-key
+EXPO_PUBLIC_API_URL=https://your-production-api-url.com/api
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-production-stripe-publishable-key
 ```
 
-2. Verify `app.json` and `app.config.js` are properly configured with your production app details
+### Setting Environment Variables for Expo
 
-## Building for iOS
+1. For local testing with production settings, create a `.env.production` file:
 
-1. Configure EAS credentials:
-
-```bash
-npx eas credentials
+```
+EXPO_PUBLIC_SUPABASE_URL=your-production-supabase-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-production-supabase-anon-key
+EXPO_PUBLIC_API_URL=https://your-production-api-url.com/api
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-production-stripe-publishable-key
+APP_ENVIRONMENT=production
 ```
 
-2. Update the `eas.json` file with your Apple account details:
+2. For EAS builds, these variables are configured in the `eas.json` file:
 
 ```json
-"submit": {
-  "production": {
-    "ios": {
-      "appleId": "YOUR_APPLE_ID",
-      "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-      "appleTeamId": "YOUR_APPLE_TEAM_ID"
+{
+  "build": {
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "your-production-supabase-url",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "your-production-supabase-anon-key",
+        "EXPO_PUBLIC_API_URL": "https://your-production-api-url.com/api",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "your-production-stripe-publishable-key",
+        "APP_ENVIRONMENT": "production"
+      }
     }
   }
 }
 ```
 
-3. Build the production iOS app:
+3. For secure environment variables, use EAS Secrets:
 
 ```bash
+# Set secrets via EAS CLI
+eas secret:create --scope project --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "your-anon-key"
+eas secret:create --scope project --name EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY --value "your-stripe-key"
+```
+
+## Database Configuration
+
+Ensure your Supabase production database:
+
+1. Has all the required tables created (use `supabase-schema.sql`)
+2. Has appropriate Row Level Security (RLS) policies to protect user data
+3. Has backups enabled
+4. Has database migrations applied if you've made schema changes
+
+## API Server Deployment
+
+Deploy the server component:
+
+1. Set up a Node.js environment on your hosting provider (AWS, GCP, Azure, etc.)
+2. Configure server environment variables for production
+3. Set up SSL/TLS certificates for secure connections
+4. Implement rate limiting for API endpoints
+5. Set up continuous monitoring and error tracking
+
+### Example server environment variables:
+
+```
+NODE_ENV=production
+PORT=3000
+CORS_ORIGIN=https://your-app-domain.com
+SUPABASE_URL=your-production-supabase-url
+SUPABASE_SERVICE_KEY=your-supabase-service-key
+STRIPE_SECRET_KEY=your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+```
+
+## Building for Production
+
+### Using the CI Build Script
+
+The easiest way to build for production is using our CI build script:
+
+```bash
+# Build for iOS production
+./scripts/ci-build.sh -e production -p ios -u
+
+# Build for Android production
+./scripts/ci-build.sh -e production -p android -u
+
+# Build for both platforms
+./scripts/ci-build.sh -e production -p all -u
+```
+
+### Manual Building
+
+Alternatively, you can use the npm scripts directly:
+
+#### iOS
+
+```bash
+# Build for iOS App Store
 npm run build:ios
 ```
 
-4. Once the build is complete, submit to the App Store:
+After building, follow these steps:
+1. Download the build from EAS
+2. Submit to App Store Connect using `npm run submit:ios` or manually through Xcode
+3. Complete App Store submission requirements (screenshots, descriptions, etc.)
+
+#### Android
 
 ```bash
-npm run submit:ios
-```
-
-## Building for Android
-
-1. Generate a Google Play service account key and save it in your project
-
-2. Update the `eas.json` file with your Android details:
-
-```json
-"submit": {
-  "production": {
-    "android": {
-      "serviceAccountKeyPath": "path/to/service-account.json",
-      "track": "production"
-    }
-  }
-}
-```
-
-3. Build the production Android app:
-
-```bash
+# Build for Google Play Store
 npm run build:android
 ```
 
-4. Once the build is complete, submit to the Google Play Store:
+After building, follow these steps:
+1. Download the build from EAS
+2. Submit to Google Play using `npm run submit:android` or manually through Google Play Console
+3. Complete Play Store submission requirements (screenshots, descriptions, etc.)
 
-```bash
-npm run submit:android
-```
+## Progressive Rollout
 
-## Building for Both Platforms
+For major updates, consider using a phased rollout:
 
-To build for both iOS and Android simultaneously:
+1. Release to 10% of users initially
+2. Monitor for errors and crashes
+3. If no issues are found, gradually increase the rollout percentage
+4. Complete the rollout once stability is confirmed
 
-```bash
-npm run build:all
-```
+## Monitoring and Analytics
 
-## App Store Listing Recommendations
+Set up the following for production monitoring:
 
-For maximum virality and impact, consider the following for your app store listings:
+1. Error tracking (Sentry recommended)
+2. Performance monitoring
+3. User analytics
+4. Server logs and alerting
 
-### App Store Screenshots
+## Database Migration Plan
 
-1. Show the luxury UI with gold accents
-2. Highlight the exclusive invitation process
-3. Display the three pricing tiers
-4. Show the leaderboard with top spenders
-5. Feature the digital flex badge sharing screen
+When making schema changes in production:
 
-### App Description
+1. Always back up the database before migrations
+2. Test migrations on a staging environment first
+3. Schedule migrations during off-peak hours
+4. Have a rollback plan in case of issues
 
-Write a description that emphasizes exclusivity, luxury, and the absurdity of the app, for example:
+## Scaling Considerations
 
-```
-THE NOTHING APP - ULTIMATE LUXURY
+As user base grows:
 
-The world's most exclusive app that does absolutely nothing. Join the elite who have spent thousands on digital bragging rights.
+1. Consider implementing a CDN for static assets
+2. Set up database read replicas for heavy read operations
+3. Implement caching for frequently accessed data
+4. Scale API servers horizontally as needed
 
-Features:
-• Invitation-only access
-• Verify your wealth ($1M+ required)
-• Three luxury tiers from $999 to $99,999
-• Digital flex badge to share your wealth
-• Global leaderboard of top spenders
-• AI concierge for God Mode users
-• Hidden features for the ultra-elite
+## Security Considerations
 
-As featured in [media outlets]. Join the wealthy who understand true digital luxury.
+1. Enable audit logs in Supabase
+2. Implement IP-based rate limiting for sensitive endpoints
+3. Regularly rotate API keys and credentials
+4. Set up security monitoring and alerting
+5. Perform regular security audits
 
-"This app changed my life. You wouldn't understand." - Anonymous User
-```
+## Troubleshooting Common Production Issues
 
-## Maintenance
+### Database Connection Issues
 
-After deployment, monitor the following:
+If users report database connection errors:
+1. Check Supabase status page
+2. Verify network connectivity between app and Supabase
+3. Confirm environment variables are correctly set
+4. Check for database service disruptions
+5. Verify the application is using the fallback mechanism for database connection issues
 
-1. Supabase database performance and storage usage
-2. Stripe payment processing
-3. User acquisition and retention metrics
-4. App store reviews and ratings
+### Payment Processing Problems
 
-## Support
+If payment issues occur:
+1. Check Stripe Dashboard for error logs
+2. Verify webhook configurations
+3. Test payment flow in Stripe test mode
+4. Ensure API server is correctly processing Stripe events
 
-For production support issues, please contact:
+## Emergency Contacts
 
-- Technical Support: [Your support email]
-- Billing Questions: [Your billing email]
+Maintain a list of emergency contacts for production issues:
+- DevOps lead: [contact info]
+- Backend developer: [contact info]
+- Frontend developer: [contact info]
+- Database administrator: [contact info]
 
-## Security
+## Compliance and Legal
 
-Remember to regularly:
-
-1. Rotate API keys
-2. Update dependencies
-3. Monitor for unusual activity in the Supabase dashboard
-4. Check Stripe dashboard for payment disputes
+Ensure your deployment complies with:
+- App Store Review Guidelines
+- Google Play Policy
+- Data protection regulations (GDPR, CCPA, etc.)
+- Payment processing regulations
 
 ---
 
-© The Nothing App - Confidential 
+## Reference
+
+For more information on CI/CD pipelines and automated deployments, refer to the CI-CD-SETUP.md document in the docs/infra directory.

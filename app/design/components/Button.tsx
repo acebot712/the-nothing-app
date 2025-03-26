@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
@@ -9,12 +9,18 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import theme from '../theme';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import theme from "../theme";
 
-export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'gold';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "ghost"
+  | "danger"
+  | "gold";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -31,8 +37,8 @@ export interface ButtonProps extends TouchableOpacityProps {
 
 const Button: React.FC<ButtonProps> = ({
   title,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   isLoading = false,
   leftIcon,
   rightIcon,
@@ -47,48 +53,72 @@ const Button: React.FC<ButtonProps> = ({
   // Button colors based on variant
   const getButtonColors = () => {
     switch (variant) {
-      case 'secondary':
+      case "secondary":
         return {
           background: theme.colors.secondary.main,
           text: theme.colors.secondary.contrast,
           border: theme.colors.secondary.dark,
-          gradient: gradientColors || [theme.colors.secondary.light, theme.colors.secondary.main, theme.colors.secondary.light],
+          gradient: gradientColors || [
+            theme.colors.secondary.light,
+            theme.colors.secondary.main,
+            theme.colors.secondary.light,
+          ],
         };
-      case 'tertiary':
+      case "tertiary":
         return {
-          background: 'transparent',
+          background: "transparent",
           text: theme.colors.primary.main,
           border: theme.colors.primary.main,
-          gradient: gradientColors || [theme.colors.primary.light + '10', theme.colors.primary.main + '10', theme.colors.primary.light + '10'],
+          gradient: gradientColors || [
+            theme.colors.primary.light + "10",
+            theme.colors.primary.main + "10",
+            theme.colors.primary.light + "10",
+          ],
         };
-      case 'ghost':
+      case "ghost":
         return {
-          background: 'transparent',
+          background: "transparent",
           text: theme.colors.primary.main,
-          border: 'transparent',
-          gradient: gradientColors || ['transparent', 'transparent', 'transparent'],
+          border: "transparent",
+          gradient: gradientColors || [
+            "transparent",
+            "transparent",
+            "transparent",
+          ],
         };
-      case 'danger':
+      case "danger":
         return {
           background: theme.colors.status.error,
           text: theme.colors.text.inverse,
           border: theme.colors.status.error,
-          gradient: gradientColors || [theme.colors.status.error, theme.colors.status.error, theme.colors.status.error],
+          gradient: gradientColors || [
+            theme.colors.status.error,
+            theme.colors.status.error,
+            theme.colors.status.error,
+          ],
         };
-      case 'gold':
+      case "gold":
         return {
           background: theme.colors.gold.main,
-          text: '#000000',
+          text: "#000000",
           border: theme.colors.gold.dark,
-          gradient: gradientColors || [theme.colors.gold.light, theme.colors.gold.main, theme.colors.gold.light],
+          gradient: gradientColors || [
+            theme.colors.gold.light,
+            theme.colors.gold.main,
+            theme.colors.gold.light,
+          ],
         };
-      case 'primary':
+      case "primary":
       default:
         return {
           background: theme.colors.primary.main,
           text: theme.colors.primary.contrast,
           border: theme.colors.primary.dark,
-          gradient: gradientColors || [theme.colors.primary.light, theme.colors.primary.main, theme.colors.primary.light],
+          gradient: gradientColors || [
+            theme.colors.primary.light,
+            theme.colors.primary.main,
+            theme.colors.primary.light,
+          ],
         };
     }
   };
@@ -96,21 +126,21 @@ const Button: React.FC<ButtonProps> = ({
   // Button dimensions based on size
   const getButtonDimensions = () => {
     switch (size) {
-      case 'sm':
+      case "sm":
         return {
           paddingVertical: theme.spacing.xs,
           paddingHorizontal: theme.spacing.md,
           fontSize: theme.typography.fontSize.sm,
           borderRadius: theme.borderRadius.sm,
         };
-      case 'lg':
+      case "lg":
         return {
           paddingVertical: theme.spacing.md,
           paddingHorizontal: theme.spacing.xl,
           fontSize: theme.typography.fontSize.lg,
           borderRadius: theme.borderRadius.lg,
         };
-      case 'md':
+      case "md":
       default:
         return {
           paddingVertical: theme.spacing.sm,
@@ -125,28 +155,29 @@ const Button: React.FC<ButtonProps> = ({
   const buttonDimensions = getButtonDimensions();
 
   const wrapperStyle = {
-    alignSelf: fullWidth ? 'stretch' as const : 'flex-start' as const,
+    alignSelf: fullWidth ? ("stretch" as const) : ("flex-start" as const),
   };
 
   const buttonStyle = [
     styles.button,
     {
-      backgroundColor: variant === 'ghost' ? 'transparent' : buttonColors.background,
+      backgroundColor:
+        variant === "ghost" ? "transparent" : buttonColors.background,
       borderColor: buttonColors.border,
-      borderWidth: variant === 'tertiary' ? 1 : 0,
+      borderWidth: variant === "tertiary" ? 1 : 0,
       borderRadius: buttonDimensions.borderRadius,
       paddingVertical: buttonDimensions.paddingVertical,
       paddingHorizontal: buttonDimensions.paddingHorizontal,
       opacity: disabled ? 0.6 : 1,
     },
-    style
+    style,
   ];
 
   const textStyleObj = {
     color: disabled ? theme.colors.text.disabled : buttonColors.text,
     fontSize: buttonDimensions.fontSize,
-    fontWeight: '600' as const,
-    textAlign: 'center' as const,
+    fontWeight: "600" as const,
+    textAlign: "center" as const,
   };
 
   const renderContent = () => (
@@ -167,7 +198,7 @@ const Button: React.FC<ButtonProps> = ({
     </>
   );
 
-  const shouldUseGradient = variant !== 'ghost' && variant !== 'tertiary';
+  const shouldUseGradient = variant !== "ghost" && variant !== "tertiary";
 
   return (
     <TouchableOpacity
@@ -195,19 +226,19 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
     ...theme.elevation.shadow.sm,
   },
   loader: {
     marginVertical: 2,
   },
   contentContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   leftIcon: {
     marginRight: theme.spacing.xs,
@@ -217,4 +248,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Button; 
+export default Button;

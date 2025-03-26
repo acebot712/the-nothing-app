@@ -1,10 +1,17 @@
-import React from 'react';
-import { View, StyleSheet, ViewProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
-import theme from '../theme';
-import Text from './Text';
+import React from "react";
+import {
+  View,
+  StyleSheet,
+  ViewProps,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
+import theme from "../theme";
+import Text from "./Text";
 
-export type DividerType = 'horizontal' | 'vertical';
-export type DividerSize = 'thin' | 'medium' | 'thick';
+export type DividerType = "horizontal" | "vertical";
+export type DividerSize = "thin" | "medium" | "thick";
 
 export interface DividerProps extends ViewProps {
   type?: DividerType;
@@ -13,29 +20,29 @@ export interface DividerProps extends ViewProps {
   style?: StyleProp<ViewStyle>;
   margin?: number;
   label?: string;
-  labelPosition?: 'center' | 'left' | 'right';
+  labelPosition?: "center" | "left" | "right";
   labelStyle?: StyleProp<TextStyle>;
 }
 
 const Divider: React.FC<DividerProps> = ({
-  type = 'horizontal',
-  size = 'thin',
+  type = "horizontal",
+  size = "thin",
   color = theme.colors.ui.divider,
   style,
   margin,
   label,
-  labelPosition = 'center',
+  labelPosition = "center",
   labelStyle,
   ...rest
 }) => {
   // Determine thickness based on size
   const getThickness = (): number => {
     switch (size) {
-      case 'thick':
+      case "thick":
         return 3;
-      case 'medium':
+      case "medium":
         return 2;
-      case 'thin':
+      case "thin":
       default:
         return 1;
     }
@@ -44,45 +51,48 @@ const Divider: React.FC<DividerProps> = ({
   // Calculate dimensions and position based on type
   const getDividerStyle = (): ViewStyle => {
     const thickness = getThickness();
-    
+
     // Base styles
-    if (type === 'vertical') {
+    if (type === "vertical") {
       return {
         width: thickness,
-        height: '100%',
+        height: "100%",
         marginHorizontal: margin !== undefined ? margin : theme.spacing.sm,
       };
     }
-    
+
     return {
       height: thickness,
-      width: '100%',
+      width: "100%",
       marginVertical: margin !== undefined ? margin : theme.spacing.sm,
     };
   };
-  
+
   // For horizontal divider with label
-  if (type === 'horizontal' && label) {
+  if (type === "horizontal" && label) {
     // Determine label container position
     const getLabelContainerStyle = (): ViewStyle => {
       switch (labelPosition) {
-        case 'left':
-          return { justifyContent: 'flex-start' };
-        case 'right':
-          return { justifyContent: 'flex-end' };
-        case 'center':
+        case "left":
+          return { justifyContent: "flex-start" };
+        case "right":
+          return { justifyContent: "flex-end" };
+        case "center":
         default:
-          return { justifyContent: 'center' };
+          return { justifyContent: "center" };
       }
     };
-    
+
     return (
-      <View style={[styles.labelContainer, getLabelContainerStyle(), style]} {...rest}>
+      <View
+        style={[styles.labelContainer, getLabelContainerStyle(), style]}
+        {...rest}
+      >
         <View style={[styles.labelDivider, { backgroundColor: color }]} />
         <View style={styles.labelWrapper}>
           <Text
             variant="caption"
-            color="tertiary" 
+            color="tertiary"
             style={[styles.label, labelStyle]}
           >
             {label}
@@ -92,7 +102,7 @@ const Divider: React.FC<DividerProps> = ({
       </View>
     );
   }
-  
+
   // Standard divider
   return (
     <View
@@ -112,9 +122,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.ui.divider,
   },
   labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
     marginVertical: theme.spacing.sm,
   },
   labelDivider: {
@@ -130,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Divider; 
+export default Divider;

@@ -1,10 +1,17 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, saveUser } from '../config/supabase';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+  useCallback,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User, saveUser, getUserById } from "../config/supabase";
 
 // User storage key constant
-const USER_STORAGE_KEY = '@user';
-const INVITE_ACCESS_KEY = '@inviteAccess';
+const USER_STORAGE_KEY = "@user";
+const INVITE_ACCESS_KEY = "@inviteAccess";
 
 // Define the shape of our context
 interface UserContextType {
@@ -14,9 +21,24 @@ interface UserContextType {
   isLoading: boolean;
   hasInviteAccess: boolean;
   setHasInviteAccess: (value: boolean) => void;
-  purchaseTier: (tier: 'regular' | 'elite' | 'god', amount: number) => Promise<User | null>;
+  purchaseTier: (
+    tier: "regular" | "elite" | "god",
+    amount: number,
+  ) => Promise<User | null>;
   logout: () => Promise<boolean>;
+  refreshUserData: () => Promise<boolean>;
+  clearUserData: () => Promise<void>;
 }
+
+// Error handling helper
+const handleAsyncError = (operation: string, error: unknown) => {
+  if (error instanceof Error) {
+    // Log to an error reporting service in production
+    console.error(`Error during ${operation}:`, error.message);
+  } else {
+    console.error(`Unknown error during ${operation}`);
+  }
+};
 
 // Create context with default values
 const UserContext = createContext<UserContextType>({
@@ -28,6 +50,8 @@ const UserContext = createContext<UserContextType>({
   purchaseTier: async () => null,
   logout: async () => false,
   setUser: () => {},
+  refreshUserData: async () => false,
+  clearUserData: async () => {},
 });
 
 // Provider component
@@ -37,6 +61,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [hasInviteAccess, setHasInviteAccess] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Clear user data - factored out for reuse
+  const clearUserData = useCallback(async (): Promise<void> => {
+    try {
+      await AsyncStorage.multiRemove([USER_STORAGE_KEY, INVITE_ACCESS_KEY]);
+    } catch (error) {
+      handleAsyncError("clearing user data", error);
+    }
+  }, []);
+
   // Load user from storage on mount
   useEffect(() => {
     const loadUser = async () => {
@@ -44,22 +77,28 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         // Load user data
         const userJson = await AsyncStorage.getItem(USER_STORAGE_KEY);
         if (userJson) {
-          setUser(JSON.parse(userJson));
+          const parsedUser = JSON.parse(userJson) as User;
+          setUser(parsedUser);
           setIsAuthenticated(true);
         }
-        
+
         // Check invite access
         const inviteAccess = await AsyncStorage.getItem(INVITE_ACCESS_KEY);
-        setHasInviteAccess(inviteAccess === 'true');
+        setHasInviteAccess(inviteAccess === "true");
       } catch (error) {
-        console.error('Failed to load user from storage', error);
+        handleAsyncError("loading user from storage", error);
+        // Reset state on error
+        setUser(null);
+        setIsAuthenticated(false);
+        setHasInviteAccess(false);
+        await clearUserData();
       } finally {
         setIsLoading(false);
       }
     };
 
     loadUser();
-  }, []);
+  }, [clearUserData]);
 
   // Save user to storage whenever it changes
   useEffect(() => {
@@ -68,7 +107,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
         } catch (error) {
-          console.error('Failed to save user to storage', error);
+          handleAsyncError("saving user to storage", error);
         }
       }
     };
@@ -80,67 +119,111 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const updateInviteAccess = async () => {
       try {
-        await AsyncStorage.setItem(INVITE_ACCESS_KEY, hasInviteAccess ? 'true' : 'false');
+        await AsyncStorage.setItem(
+          INVITE_ACCESS_KEY,
+          hasInviteAccess ? "true" : "false",
+        );
       } catch (error) {
-        console.error('Failed to save invite access to storage', error);
+        handleAsyncError("saving invite access to storage", error);
       }
     };
-    
+
     updateInviteAccess();
   }, [hasInviteAccess]);
 
+  // Refresh user data from the server
+  const refreshUserData = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    try {
+      setIsLoading(true);
+      const updatedUser = await getUserById(user.id);
+
+      if (updatedUser) {
+        await AsyncStorage.setItem(
+          USER_STORAGE_KEY,
+          JSON.stringify(updatedUser),
+        );
+        setUser(updatedUser);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      handleAsyncError("refreshing user data", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
+
   // Handle purchasing a tier
-  const purchaseTier = async (tier: 'regular' | 'elite' | 'god', amount: number) => {
-    if (!user) {
-      // Create a temporary user first
-      const tempUser = await saveUser({
-        username: `User_${Math.floor(Math.random() * 10000)}`,
+  const purchaseTier = async (
+    tier: "regular" | "elite" | "god",
+    amount: number,
+  ): Promise<User | null> => {
+    try {
+      setIsLoading(true);
+
+      if (!user) {
+        // Create a temporary user first
+        const tempUser = await saveUser({
+          username: `User_${Math.floor(Math.random() * 10000)}`,
+          tier,
+          purchase_amount: amount,
+          net_worth: 1000000, // Default net worth
+        });
+
+        if (tempUser) {
+          await AsyncStorage.setItem(
+            USER_STORAGE_KEY,
+            JSON.stringify(tempUser),
+          );
+          setUser(tempUser);
+          setIsAuthenticated(true);
+          return tempUser;
+        }
+
+        return null;
+      }
+
+      // Update existing user
+      const updatedUser = await saveUser({
+        ...user,
         tier,
         purchase_amount: amount,
-        net_worth: 1000000, // Default net worth
       });
-      
-      if (tempUser) {
-        await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(tempUser));
-        setUser(tempUser);
-        setIsAuthenticated(true);
-        return tempUser;
+
+      if (updatedUser) {
+        await AsyncStorage.setItem(
+          USER_STORAGE_KEY,
+          JSON.stringify(updatedUser),
+        );
+        setUser(updatedUser);
+        return updatedUser;
       }
-      
+
       return null;
+    } catch (error) {
+      handleAsyncError("purchasing tier", error);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Update existing user
-    const updatedUser = await saveUser({
-      ...user,
-      tier,
-      purchase_amount: amount,
-    });
-    
-    if (updatedUser) {
-      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      return updatedUser;
-    }
-    
-    return null;
   };
-  
+
   // Logout function
-  const logout = async () => {
+  const logout = async (): Promise<boolean> => {
     try {
-      // Clear user data
-      await AsyncStorage.removeItem(USER_STORAGE_KEY);
-      // Also clear invite access
-      await AsyncStorage.removeItem(INVITE_ACCESS_KEY);
-      
+      await clearUserData();
+
       setUser(null);
       setIsAuthenticated(false);
       setHasInviteAccess(false);
-      
+
       return true;
-    } catch {
-      // Silently fail but return false
+    } catch (error) {
+      handleAsyncError("logging out", error);
       return false;
     }
   };
@@ -156,6 +239,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setHasInviteAccess,
         purchaseTier,
         logout,
+        refreshUserData,
+        clearUserData,
       }}
     >
       {children}
@@ -164,4 +249,4 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 };
 
 // Custom hook for using the user context
-export const useUser = () => useContext(UserContext); 
+export const useUser = () => useContext(UserContext);

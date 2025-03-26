@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   StyleSheet,
@@ -6,9 +6,9 @@ import {
   StyleProp,
   ViewStyle,
   SafeAreaView,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { COLORS } from "../colors";
 
 export interface ContainerProps extends ViewProps {
   children: React.ReactNode;
@@ -25,24 +25,22 @@ const Container: React.FC<ContainerProps> = ({
   style,
   useSafeArea = false,
   useGradient = false,
-  gradientColors = [COLORS.WHITE, COLORS.GRAY_SHADES.LIGHTER] as [string, string],
+  gradientColors = [COLORS.WHITE, COLORS.GRAY_SHADES.LIGHTER] as [
+    string,
+    string,
+  ],
   padding,
   center = false,
   ...rest
 }) => {
   // Apply padding if specified
   const paddingStyle = padding !== undefined ? { padding } : {};
-  
+
   // Apply center alignment if requested
   const centerStyle = center ? styles.center : {};
-  
+
   // Combine styles
-  const containerStyle = [
-    styles.container,
-    paddingStyle,
-    centerStyle,
-    style,
-  ];
+  const containerStyle = [styles.container, paddingStyle, centerStyle, style];
 
   // Content to render
   const content = (
@@ -84,12 +82,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.WHITE,
   },
   center: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   gradient: {
     flex: 1,
   },
 });
 
-export default Container; 
+export default Container;

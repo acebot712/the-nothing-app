@@ -63,4 +63,4 @@ Happy coding!
 
 ## License
 
-This tutorial and the associated codebase are provided under the MIT License. Feel free to use the knowledge and code for your own projects. 
+This tutorial and the associated codebase are provided under the MIT License. Feel free to use the knowledge and code for your own projects.

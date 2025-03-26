@@ -107,7 +107,7 @@ These files configure your Expo project. The `app.json` contains static configur
 export default {
   // Spread app.json config
   ...appJson.expo,
-  
+
   // Environment variables
   extra: {
     supabaseUrl: getEnv('EXPO_PUBLIC_SUPABASE_URL'),
@@ -226,16 +226,16 @@ import { View, Text } from 'react-native';
 
 export default function Timer() {
   const [seconds, setSeconds] = useState(0);
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setSeconds(prev => prev + 1);
     }, 1000);
-    
+
     // Cleanup function runs when component unmounts
     return () => clearInterval(interval);
   }, []); // Empty dependency array means "run once on mount"
-  
+
   return (
     <View>
       <Text>Seconds elapsed: {seconds}</Text>
@@ -326,4 +326,4 @@ In the next chapter, we'll dive into navigation in Expo apps, exploring how to c
 2. Identify three components in the app and describe their purpose and structure.
 3. Add a new custom font to the application and use it in a component.
 4. Create a new screen with a gradient background that displays the current time.
-5. Configure an environment variable and use it in your application. 
+5. Configure an environment variable and use it in your application.

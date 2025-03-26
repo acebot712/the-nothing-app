@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Modal as RNModal,
@@ -7,11 +7,11 @@ import {
   Dimensions,
   ViewStyle,
   StyleProp,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../design/colors';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../../design/colors";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface ModalProps {
   visible: boolean;
@@ -19,10 +19,10 @@ interface ModalProps {
   children: React.ReactNode;
   closeOnOverlayPress?: boolean;
   showCloseButton?: boolean;
-  animationType?: 'none' | 'fade' | 'slide';
+  animationType?: "none" | "fade" | "slide";
   overlayStyle?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
-  position?: 'center' | 'bottom' | 'top';
+  position?: "center" | "bottom" | "top";
   height?: number;
   width?: number;
 }
@@ -33,10 +33,10 @@ const Modal: React.FC<ModalProps> = ({
   children,
   closeOnOverlayPress = true,
   showCloseButton = true,
-  animationType = 'fade',
+  animationType = "fade",
   overlayStyle,
   contentStyle,
-  position = 'center',
+  position = "center",
   height,
   width,
 }) => {
@@ -50,20 +50,20 @@ const Modal: React.FC<ModalProps> = ({
   // Calculate content container position
   const getPositionStyle = (): ViewStyle => {
     switch (position) {
-      case 'top':
+      case "top":
         return {
-          justifyContent: 'flex-start',
+          justifyContent: "flex-start",
           paddingTop: 80,
         };
-      case 'bottom':
+      case "bottom":
         return {
-          justifyContent: 'flex-end',
+          justifyContent: "flex-end",
           paddingBottom: 40,
         };
-      case 'center':
+      case "center":
       default:
         return {
-          justifyContent: 'center',
+          justifyContent: "center",
         };
     }
   };
@@ -98,7 +98,7 @@ const Modal: React.FC<ModalProps> = ({
           onPress={handleOverlayPress}
           activeOpacity={1}
         />
-        
+
         <View style={[styles.content, getDimensionStyle(), contentStyle]}>
           {showCloseButton && (
             <TouchableOpacity
@@ -106,10 +106,14 @@ const Modal: React.FC<ModalProps> = ({
               onPress={onClose}
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
             >
-              <Ionicons name="close" size={24} color={COLORS.GRAY_SHADES.DARKER} />
+              <Ionicons
+                name="close"
+                size={24}
+                color={COLORS.GRAY_SHADES.DARKER}
+              />
             </TouchableOpacity>
           )}
-          
+
           {children}
         </View>
       </View>
@@ -120,11 +124,11 @@ const Modal: React.FC<ModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: COLORS.ALPHA.BLACK_50,
   },
   backdropTouchable: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     width: SCREEN_WIDTH,
@@ -142,11 +146,11 @@ const styles = StyleSheet.create({
     maxHeight: SCREEN_HEIGHT * 0.8,
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 12,
     right: 12,
     zIndex: 10,
   },
 });
 
-export default Modal; 
+export default Modal;

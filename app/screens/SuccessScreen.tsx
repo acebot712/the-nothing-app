@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,27 +6,27 @@ import {
   ScrollView,
   Animated,
   Share,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import LuxuryButton from '../components/LuxuryButton';
-import FlexBadge from '../components/FlexBadge';
-import { haptics } from '../utils/animations';
-import { useUser } from '../contexts/UserContext';
-import { COLORS } from '../design/colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
+import LuxuryButton from "../components/LuxuryButton";
+import FlexBadge from "../components/FlexBadge";
+import { haptics } from "../utils/animations";
+import { useUser } from "../contexts/UserContext";
+import { COLORS } from "../design/colors";
 
 const SuccessScreen = () => {
   const navigation = useNavigation<{
     navigate: (screen: string) => void;
   }>();
   const { user } = useUser();
-  
+
   const [showAIConcierge, setShowAIConcierge] = useState(false);
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const fadeTextAnim = useRef(new Animated.Value(0)).current;
-  
+
   useEffect(() => {
     // Start the fade animations
     Animated.parallel([
@@ -42,62 +42,61 @@ const SuccessScreen = () => {
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     // For God tier, show AI concierge message after 2 seconds
-    if (user?.tier === 'god') {
+    if (user?.tier === "god") {
       setTimeout(() => {
         setShowAIConcierge(true);
         haptics.premium();
       }, 2000);
     }
   }, [fadeAnim, fadeTextAnim, user?.tier]);
-  
+
   const handleShare = async () => {
     try {
       haptics.medium();
-      
-      const shareMessage = 
-        `I just spent $${user?.purchase_amount.toLocaleString()} on The Nothing App. Stay poor.
-        
+
+      const shareMessage = `I just spent $${user?.purchase_amount.toLocaleString()} on The Nothing App. Stay poor.
+
 Serial: ${user?.serial_number}
 Tier: ${user?.tier.toUpperCase()}
 
 #TheNothingApp #StayPoor`;
-      
+
       await Share.share({
         message: shareMessage,
-        title: 'The Nothing App',
+        title: "The Nothing App",
       });
     } catch (error) {
-      console.error('Error sharing badge:', error);
+      console.error("Error sharing badge:", error);
     }
   };
-  
+
   const goToHome = () => {
     haptics.medium();
-    navigation.navigate('Dashboard');
+    navigation.navigate("Dashboard");
   };
-  
+
   // Get concierge message based on tier
   const getConciergeMessage = () => {
-    if (user?.tier === 'god') {
+    if (user?.tier === "god") {
       return "Your private jet is on standby, sir. The helicopter to your yacht leaves in 30 minutes. Would you like me to inform the chef of your arrival?";
     }
     return "";
   };
-  
+
   // Determine the completion message based on tier
   const getCompletionMessage = () => {
     switch (user?.tier) {
-      case 'god':
+      case "god":
         return "You've reached the pinnacle of digital flex. The ultimate display of wealth.";
-      case 'elite':
+      case "elite":
         return "Outstanding choice. You've demonstrated exceptional wealth.";
       default:
         return "Congratulations on your first step towards digital luxury.";
     }
   };
-  
+
   // StyleSheet with COLORS constants
   const styles = StyleSheet.create({
     container: {
@@ -112,23 +111,23 @@ Tier: ${user?.tier.toUpperCase()}
     scrollContent: {
       padding: 20,
       paddingTop: 60,
-      alignItems: 'center',
+      alignItems: "center",
     },
     header: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: 30,
     },
     title: {
       fontSize: 28,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: COLORS.GOLD_SHADES.PRIMARY,
       marginBottom: 10,
-      textAlign: 'center',
+      textAlign: "center",
     },
     subtitle: {
       fontSize: 16,
       color: COLORS.GRAY_SHADES.MEDIUM_DARK,
-      textAlign: 'center',
+      textAlign: "center",
       maxWidth: 300,
     },
     conciergeContainer: {
@@ -136,29 +135,29 @@ Tier: ${user?.tier.toUpperCase()}
       borderRadius: 16,
       padding: 20,
       marginBottom: 30,
-      width: '100%',
+      width: "100%",
     },
     conciergeTitle: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: COLORS.BLACK,
       marginBottom: 10,
-      textAlign: 'center',
+      textAlign: "center",
     },
     conciergeMessage: {
       fontSize: 16,
       color: COLORS.BLACK,
       lineHeight: 24,
-      fontStyle: 'italic',
+      fontStyle: "italic",
     },
     ctaContainer: {
-      width: '100%',
-      alignItems: 'center',
+      width: "100%",
+      alignItems: "center",
       marginTop: 20,
     },
     buttonShare: {
       marginBottom: 16,
-      width: '100%',
+      width: "100%",
       shadowColor: COLORS.GOLD_SHADES.PRIMARY,
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.8,
@@ -166,7 +165,7 @@ Tier: ${user?.tier.toUpperCase()}
       elevation: 10,
     },
     buttonDashboard: {
-      width: '100%',
+      width: "100%",
       shadowColor: COLORS.GOLD_SHADES.PRIMARY,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.6,
@@ -174,27 +173,20 @@ Tier: ${user?.tier.toUpperCase()}
       elevation: 8,
     },
   });
-  
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#0D0D0D', '#1A1A1A']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={["#0D0D0D", "#1A1A1A"]} style={styles.gradient}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View
-            style={[styles.header, { opacity: fadeAnim }]}
-          >
+          <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
             <Text style={styles.title}>PURCHASE COMPLETE</Text>
-            <Text style={styles.subtitle}>
-              {getCompletionMessage()}
-            </Text>
+            <Text style={styles.subtitle}>{getCompletionMessage()}</Text>
           </Animated.View>
-          
+
           {user && (
             <Animated.View style={{ opacity: fadeAnim }}>
               <FlexBadge
@@ -206,28 +198,20 @@ Tier: ${user?.tier.toUpperCase()}
               />
             </Animated.View>
           )}
-          
+
           {showAIConcierge && (
             <Animated.View
-              style={[
-                styles.conciergeContainer,
-                { opacity: fadeTextAnim }
-              ]}
+              style={[styles.conciergeContainer, { opacity: fadeTextAnim }]}
             >
-              <Text style={styles.conciergeTitle}>
-                AI LUXURY CONCIERGE
-              </Text>
+              <Text style={styles.conciergeTitle}>AI LUXURY CONCIERGE</Text>
               <Text style={styles.conciergeMessage}>
                 {getConciergeMessage()}
               </Text>
             </Animated.View>
           )}
-          
+
           <Animated.View
-            style={[
-              styles.ctaContainer,
-              { opacity: fadeTextAnim }
-            ]}
+            style={[styles.ctaContainer, { opacity: fadeTextAnim }]}
           >
             <LuxuryButton
               title="SHARE YOUR WEALTH"
@@ -237,7 +221,7 @@ Tier: ${user?.tier.toUpperCase()}
               style={styles.buttonShare}
               size="large"
             />
-            
+
             <LuxuryButton
               title="GO TO DASHBOARD"
               onPress={goToHome}
@@ -253,4 +237,4 @@ Tier: ${user?.tier.toUpperCase()}
   );
 };
 
-export default SuccessScreen; 
+export default SuccessScreen;

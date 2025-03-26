@@ -1,17 +1,20 @@
-import Constants from 'expo-constants';
-import { EXPO_PUBLIC_API_URL } from '@env';
+import Constants from "expo-constants";
+import { EXPO_PUBLIC_API_URL } from "@env";
 
 // API base URL - update this with your backend server URL
 // For local development with Expo, you might use something like:
 // - http://localhost:3000/api (for web)
 // - http://10.0.2.2:3000/api (for Android emulator)
 // - http://192.168.x.x:3000/api (your local IP for physical devices)
-const API_URL = EXPO_PUBLIC_API_URL || Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api';
+const API_URL =
+  EXPO_PUBLIC_API_URL ||
+  Constants.expoConfig?.extra?.apiUrl ||
+  "http://localhost:3000/api";
 
 // Helper for handling API responses
 const handleResponse = async (response) => {
-  const contentType = response.headers.get('content-type');
-  const isJson = contentType && contentType.includes('application/json');
+  const contentType = response.headers.get("content-type");
+  const isJson = contentType && contentType.includes("application/json");
   const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
@@ -30,11 +33,11 @@ const handleResponse = async (response) => {
  */
 export const registerUser = async (userData) => {
   const response = await fetch(`${API_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData)
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
   });
-  
+
   return handleResponse(response);
 };
 
@@ -43,11 +46,11 @@ export const registerUser = async (userData) => {
  */
 export const loginUser = async (email) => {
   const response = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
   });
-  
+
   return handleResponse(response);
 };
 
@@ -64,11 +67,11 @@ export const getUserById = async (userId) => {
  */
 export const updateUser = async (userId, userData) => {
   const response = await fetch(`${API_URL}/users/${userId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData)
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
   });
-  
+
   return handleResponse(response);
 };
 
@@ -77,16 +80,16 @@ export const updateUser = async (userId, userData) => {
  */
 export const createPaymentIntent = async (tier, userData) => {
   const response = await fetch(`${API_URL}/payments/create-intent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       tier,
       userId: userData.id,
       email: userData.email,
-      username: userData.username
-    })
+      username: userData.username,
+    }),
   });
-  
+
   return handleResponse(response);
 };
 
@@ -94,12 +97,15 @@ export const createPaymentIntent = async (tier, userData) => {
  * Verify a payment and update user tier
  */
 export const verifyPayment = async (paymentIntentId, userId) => {
-  const response = await fetch(`${API_URL}/payments/verify/${paymentIntentId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId })
-  });
-  
+  const response = await fetch(
+    `${API_URL}/payments/verify/${paymentIntentId}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    },
+  );
+
   return handleResponse(response);
 };
 
@@ -107,7 +113,9 @@ export const verifyPayment = async (paymentIntentId, userId) => {
  * Get leaderboard data
  */
 export const getLeaderboard = async (limit = 20, page = 1) => {
-  const response = await fetch(`${API_URL}/leaderboard?limit=${limit}&page=${page}`);
+  const response = await fetch(
+    `${API_URL}/leaderboard?limit=${limit}&page=${page}`,
+  );
   return handleResponse(response);
 };
 
@@ -127,5 +135,5 @@ export default {
   createPaymentIntent,
   verifyPayment,
   getLeaderboard,
-  getUserLeaderboardEntry
-}; 
+  getUserLeaderboardEntry,
+};

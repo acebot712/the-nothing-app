@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { StripeProvider as NativeStripeProvider } from '@stripe/stripe-react-native';
-import { EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY } from '@env';
-import { initializeStripe } from '../config/stripe';
+import React, { useEffect } from "react";
+import { StripeProvider as NativeStripeProvider } from "@stripe/stripe-react-native";
+import { EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY } from "@env";
+import { initializeStripe } from "../config/stripe";
 
 interface StripeProviderProps {
   children: React.ReactElement | React.ReactElement[];
@@ -13,9 +13,9 @@ export default function StripeProvider({ children }: StripeProviderProps) {
     const setupStripe = async () => {
       try {
         await initializeStripe();
-        console.info('Stripe initialized successfully');
+        console.info("Stripe initialized successfully");
       } catch (error) {
-        console.error('Failed to initialize Stripe:', error);
+        console.error("Failed to initialize Stripe:", error);
       }
     };
 
@@ -24,11 +24,11 @@ export default function StripeProvider({ children }: StripeProviderProps) {
 
   return (
     <NativeStripeProvider
-      publishableKey={EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}
+      publishableKey={EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""}
       merchantIdentifier="merchant.com.thenothingapp"
       urlScheme="thenothingapp"
     >
       {children}
     </NativeStripeProvider>
   );
-} 
+}

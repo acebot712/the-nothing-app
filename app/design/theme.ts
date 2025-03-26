@@ -4,55 +4,55 @@
 const colors = {
   // Primary colors
   primary: {
-    main: '#0066CC',
-    light: '#0080FF',
-    dark: '#004C99',
-    contrast: '#FFFFFF',
+    main: "#0066CC",
+    light: "#0080FF",
+    dark: "#004C99",
+    contrast: "#FFFFFF",
   },
   // Secondary colors
   secondary: {
-    main: '#E1E1E1',
-    light: '#F5F5F5',
-    dark: '#CCCCCC',
-    contrast: '#333333',
+    main: "#E1E1E1",
+    light: "#F5F5F5",
+    dark: "#CCCCCC",
+    contrast: "#333333",
   },
   // Status colors
   status: {
-    success: '#4CD964',
-    error: '#FF3B30',
-    warning: '#FFCC00',
-    info: '#5AC8FA',
+    success: "#4CD964",
+    error: "#FF3B30",
+    warning: "#FFCC00",
+    info: "#5AC8FA",
   },
   // Text colors
   text: {
-    primary: '#000000',
-    secondary: '#555555',
-    tertiary: '#888888',
-    disabled: '#AAAAAA',
-    inverse: '#FFFFFF',
+    primary: "#000000",
+    secondary: "#555555",
+    tertiary: "#888888",
+    disabled: "#AAAAAA",
+    inverse: "#FFFFFF",
   },
   // UI colors
   ui: {
-    background: '#FFFFFF',
-    card: '#FFFFFF',
-    divider: '#E1E1E1',
-    border: '#CCCCCC',
+    background: "#FFFFFF",
+    card: "#FFFFFF",
+    divider: "#E1E1E1",
+    border: "#CCCCCC",
   },
   // Special colors for tiers
   gold: {
-    main: '#D4AF37',
-    light: '#F4EFA8',
-    dark: '#9C7F26',
+    main: "#D4AF37",
+    light: "#F4EFA8",
+    dark: "#9C7F26",
   },
   platinum: {
-    main: '#E5E4E2',
-    light: '#FFFFFF',
-    dark: '#AAAAA8',
+    main: "#E5E4E2",
+    light: "#FFFFFF",
+    dark: "#AAAAA8",
   },
   dark: {
-    main: '#111111',
-    light: '#333333',
-    lightest: '#2F2F2F',
+    main: "#111111",
+    light: "#333333",
+    lightest: "#2F2F2F",
   },
 };
 
@@ -61,22 +61,22 @@ const typography = {
   fontFamily: {
     // Main fonts (use system fonts by default)
     body: {
-      regular: 'System',
-      bold: 'System',
-      semibold: 'System',
-      light: 'System',
+      regular: "System",
+      bold: "System",
+      semibold: "System",
+      light: "System",
     },
     heading: {
-      regular: 'System',
-      bold: 'System',
-      italic: 'System',
+      regular: "System",
+      bold: "System",
+      italic: "System",
     },
   },
   fontSize: {
-    '5xl': 36,
-    '4xl': 32,
-    '3xl': 28,
-    '2xl': 24,
+    "5xl": 36,
+    "4xl": 32,
+    "3xl": 28,
+    "2xl": 24,
     xl: 20,
     lg: 18,
     md: 16,
@@ -127,28 +127,28 @@ const borderRadius = {
 const elevation = {
   shadow: {
     none: {
-      shadowColor: 'transparent',
+      shadowColor: "transparent",
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0,
       shadowRadius: 0,
       elevation: 0,
     },
     sm: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.18,
       shadowRadius: 1.0,
       elevation: 1,
     },
     md: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
     },
     lg: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 4.65,
@@ -189,10 +189,10 @@ const animations = {
     exit: 195,
   },
   easing: {
-    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
-    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+    easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+    easeOut: "cubic-bezier(0.0, 0, 0.2, 1)",
+    easeIn: "cubic-bezier(0.4, 0, 1, 1)",
+    sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
   },
 };
 
@@ -227,4 +227,4 @@ const theme = {
 };
 
 export type Theme = typeof theme;
-export default theme; 
+export default theme;

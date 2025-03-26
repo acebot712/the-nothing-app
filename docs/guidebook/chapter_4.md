@@ -11,7 +11,7 @@ Before diving into implementation details, let's understand the fundamentals of 
 ### The Payment Flow
 
 1. **User Initiates Payment**: User selects a pricing tier or product
-2. **Payment Information Collection**: Securely collect payment details 
+2. **Payment Information Collection**: Securely collect payment details
 3. **Payment Processing**: Submit payment details to a payment processor
 4. **Authorization**: Payment processor contacts the card issuer for approval
 5. **Confirmation**: App receives confirmation and updates user privileges
@@ -72,12 +72,12 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 router.post('/create-payment-intent', async (req, res) => {
   try {
     const { amount, currency, customerId } = req.body;
-    
+
     // Validate the request
     if (!amount || !currency) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
-    
+
     // Create a PaymentIntent with the specified amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
@@ -88,7 +88,7 @@ router.post('/create-payment-intent', async (req, res) => {
       // Capture payment automatically when card is charged
       capture_method: 'automatic',
     });
-    
+
     // Return the client secret to the client
     res.json({
       clientSecret: paymentIntent.client_secret,
@@ -103,7 +103,7 @@ router.post('/create-payment-intent', async (req, res) => {
 // Handle webhook events from Stripe
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const signature = req.headers['stripe-signature'];
-  
+
   try {
     // Verify the event came from Stripe
     const event = stripe.webhooks.constructEvent(
@@ -111,22 +111,22 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-    
+
     // Handle different event types
     switch (event.type) {
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object;
         await handleSuccessfulPayment(paymentIntent);
         break;
-        
+
       case 'payment_intent.payment_failed':
         const failedPayment = event.data.object;
         await handleFailedPayment(failedPayment);
         break;
-        
+
       // Handle other event types as needed
     }
-    
+
     res.json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
@@ -138,11 +138,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 async function handleSuccessfulPayment(paymentIntent) {
   // Extract metadata from the payment intent
   const { userId, tier } = paymentIntent.metadata;
-  
+
   if (userId && tier) {
     // Update user subscription in your database
     await db.updateUserSubscription(userId, tier);
-    
+
     // Record the transaction
     await db.recordTransaction({
       userId,
@@ -187,7 +187,7 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
     const initializePaymentSheet = async () => {
       try {
         setLoading(true);
-        
+
         // Create a payment intent on your server
         const response = await fetch(`${BASE_URL}/api/payment/create-payment-intent`, {
           method: 'POST',
@@ -203,13 +203,13 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
             },
           }),
         });
-        
+
         const { clientSecret, ephemeralKey, customerId } = await response.json();
-        
+
         if (!clientSecret) {
           throw new Error('Failed to create payment intent');
         }
-        
+
         // Initialize the Stripe Payment Sheet
         const { error } = await initPaymentSheet({
           paymentIntentClientSecret: clientSecret,
@@ -219,7 +219,7 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
           style: 'automatic',
           primaryButtonLabel: `Pay $${(amount / 100).toFixed(2)}`,
         });
-        
+
         if (error) {
           throw new Error(error.message);
         }
@@ -230,7 +230,7 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
         setLoading(false);
       }
     };
-    
+
     initializePaymentSheet();
   }, [amount, tier, initPaymentSheet]);
 
@@ -238,20 +238,20 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
   const handlePayment = async () => {
     try {
       setLoading(true);
-      
+
       // Present the payment sheet to the user
       const { error } = await presentPaymentSheet();
-      
+
       if (error) {
         if (error.code === 'Canceled') {
           // User canceled the payment - not an error
           onPaymentComplete({ success: false });
           return;
         }
-        
+
         throw new Error(error.message);
       }
-      
+
       // Payment successful
       onPaymentComplete({ success: true });
     } catch (error) {
@@ -268,7 +268,7 @@ export function PaymentSheet({ amount, tier, onPaymentComplete }: PaymentSheetPr
       <Text style={styles.description}>
         You're about to unlock the {tier} tier for ${(amount / 100).toFixed(2)}.
       </Text>
-      
+
       <Button
         title={loading ? 'Processing...' : 'Pay Now'}
         onPress={handlePayment}
@@ -409,7 +409,7 @@ export function PricingScreen() {
             <Text style={styles.tierName}>{tier.name}</Text>
             <Text style={styles.tierPrice}>${(tier.price / 100).toFixed(2)}</Text>
             <Text style={styles.tierDescription}>{tier.description}</Text>
-            
+
             <View style={styles.featuresContainer}>
               {tier.features.map((feature, index) => (
                 <Text key={index} style={styles.feature}>
@@ -417,7 +417,7 @@ export function PricingScreen() {
                 </Text>
               ))}
             </View>
-            
+
             <Button
               title={`Get ${tier.name} Nothing`}
               onPress={() => handlePurchase(tier)}
@@ -522,17 +522,17 @@ global.fetch = jest.fn(() =>
 describe('PaymentSheet', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup mock Stripe functions
     useStripe.mockReturnValue({
       initPaymentSheet: jest.fn(() => Promise.resolve({ error: null })),
       presentPaymentSheet: jest.fn(() => Promise.resolve({ error: null })),
     });
   });
-  
+
   test('initializes payment sheet on mount', async () => {
     const onCompleteMock = jest.fn();
-    
+
     render(
       <PaymentSheet
         amount={9900}
@@ -540,14 +540,14 @@ describe('PaymentSheet', () => {
         onPaymentComplete={onCompleteMock}
       />
     );
-    
+
     // Wait for API call and initialization
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/api/payment/create-payment-intent'),
         expect.any(Object)
       );
-      
+
       expect(useStripe().initPaymentSheet).toHaveBeenCalledWith(
         expect.objectContaining({
           paymentIntentClientSecret: 'test_secret_123',
@@ -555,10 +555,10 @@ describe('PaymentSheet', () => {
       );
     });
   });
-  
+
   test('handles successful payment', async () => {
     const onCompleteMock = jest.fn();
-    
+
     const { getByText } = render(
       <PaymentSheet
         amount={9900}
@@ -566,20 +566,20 @@ describe('PaymentSheet', () => {
         onPaymentComplete={onCompleteMock}
       />
     );
-    
+
     // Wait for initialization
     await waitFor(() => {
       expect(useStripe().initPaymentSheet).toHaveBeenCalled();
     });
-    
+
     // Trigger payment
     fireEvent.press(getByText('Pay Now'));
-    
+
     // Check presentPaymentSheet was called
     await waitFor(() => {
       expect(useStripe().presentPaymentSheet).toHaveBeenCalled();
     });
-    
+
     // Check completion callback was called with success
     expect(onCompleteMock).toHaveBeenCalledWith({ success: true });
   });
@@ -678,15 +678,15 @@ export function PaymentErrorHandler({ error, onRetry, onCancel }: PaymentErrorHa
     if (errorMessage.includes('insufficient_funds')) {
       return 'Your card has insufficient funds. Please try a different payment method.';
     }
-    
+
     if (errorMessage.includes('card_declined')) {
       return 'Your card was declined. Please try a different card or contact your bank.';
     }
-    
+
     if (errorMessage.includes('expired_card')) {
       return 'Your card has expired. Please try a different card.';
     }
-    
+
     // Default error message
     return 'There was a problem processing your payment. Please try again.';
   };
@@ -695,7 +695,7 @@ export function PaymentErrorHandler({ error, onRetry, onCancel }: PaymentErrorHa
     <View style={styles.container}>
       <Text style={styles.title}>Payment Failed</Text>
       <Text style={styles.message}>{getUserFriendlyErrorMessage(error)}</Text>
-      
+
       <View style={styles.buttonContainer}>
         <Button title="Try Again" onPress={onRetry} style={styles.retryButton} />
         <Button title="Cancel" onPress={onCancel} style={styles.cancelButton} />
@@ -772,30 +772,30 @@ if (paymentMethod) {
 // server/middlewares/validatePayment.js
 function validatePaymentRequest(req, res, next) {
   const { amount, currency, tier } = req.body;
-  
+
   // Verify the amount matches the expected price for the tier
   const validAmounts = {
     regular: 9900,
     elite: 19900,
     god: 99900,
   };
-  
+
   if (!amount || !tier || !currency) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
-  
+
   if (!validAmounts[tier]) {
     return res.status(400).json({ error: 'Invalid tier' });
   }
-  
+
   if (amount !== validAmounts[tier]) {
     return res.status(400).json({ error: 'Invalid amount for tier' });
   }
-  
+
   if (currency !== 'usd') {
     return res.status(400).json({ error: 'Currency not supported' });
   }
-  
+
   // Validation passed
   next();
 }
@@ -817,4 +817,4 @@ In the next chapter, we'll explore how to optimize and deploy our Expo applicati
 2. Add support for Apple Pay and Google Pay as alternative payment methods.
 3. Create a subscription management screen that allows users to view and manage their current tier.
 4. Implement a receipt email system that sends a confirmation after successful payment.
-5. Add analytics tracking to measure conversion rates at different steps of the payment flow. 
+5. Add analytics tracking to measure conversion rates at different steps of the payment flow.

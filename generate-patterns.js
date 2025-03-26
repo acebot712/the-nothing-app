@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Ensure assets directory exists
-const assetsDir = path.join(__dirname, 'assets');
+const assetsDir = path.join(__dirname, "assets");
 if (!fs.existsSync(assetsDir)) {
   fs.mkdirSync(assetsDir);
 }
@@ -79,13 +79,15 @@ const bronzeMedal = `
 `;
 
 // Save the SVG patterns
-fs.writeFileSync(path.join(assetsDir, 'platinum-pattern.svg'), platinumPattern);
-fs.writeFileSync(path.join(assetsDir, 'gold-pattern.svg'), goldPattern);
-fs.writeFileSync(path.join(assetsDir, 'regular-pattern.svg'), regularPattern);
+fs.writeFileSync(path.join(assetsDir, "platinum-pattern.svg"), platinumPattern);
+fs.writeFileSync(path.join(assetsDir, "gold-pattern.svg"), goldPattern);
+fs.writeFileSync(path.join(assetsDir, "regular-pattern.svg"), regularPattern);
 
 // Save the medal SVGs
-fs.writeFileSync(path.join(assetsDir, 'gold-medal.svg'), goldMedal);
-fs.writeFileSync(path.join(assetsDir, 'silver-medal.svg'), silverMedal);
-fs.writeFileSync(path.join(assetsDir, 'bronze-medal.svg'), bronzeMedal);
+fs.writeFileSync(path.join(assetsDir, "gold-medal.svg"), goldMedal);
+fs.writeFileSync(path.join(assetsDir, "silver-medal.svg"), silverMedal);
+fs.writeFileSync(path.join(assetsDir, "bronze-medal.svg"), bronzeMedal);
 
-console.log('Successfully generated pattern and medal SVGs in the assets directory.'); 
+console.log(
+  "Successfully generated pattern and medal SVGs in the assets directory.",
+);

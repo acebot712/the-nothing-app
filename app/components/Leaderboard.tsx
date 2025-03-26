@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -8,11 +8,11 @@ import {
   Image,
   Platform,
   ImageSourcePropType,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { LeaderboardEntry } from '../config/supabase';
-import { haptics } from '../utils/animations';
-import { COLORS } from '../design/colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { LeaderboardEntry } from "../config/supabase";
+import { haptics } from "../utils/animations";
+import { COLORS } from "../design/colors";
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
@@ -26,58 +26,58 @@ interface LeaderboardProps {
 // We use type assertions to avoid TypeScript errors while keeping require for dynamic imports
 const MEDALS = {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  first: require('../../assets/gold-medal.png') as ImageSourcePropType,
+  first: require("../../assets/gold-medal.png") as ImageSourcePropType,
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  second: require('../../assets/silver-medal.png') as ImageSourcePropType,
+  second: require("../../assets/silver-medal.png") as ImageSourcePropType,
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  third: require('../../assets/bronze-medal.png') as ImageSourcePropType,
+  third: require("../../assets/bronze-medal.png") as ImageSourcePropType,
 };
 
-const LeaderboardRow = ({ 
-  entry, 
-  index, 
-  isCurrentUser, 
-  onPress 
-}: { 
-  entry: LeaderboardEntry; 
-  index: number; 
-  isCurrentUser: boolean; 
+const LeaderboardRow = ({
+  entry,
+  index,
+  isCurrentUser,
+  onPress,
+}: {
+  entry: LeaderboardEntry;
+  index: number;
+  isCurrentUser: boolean;
   onPress?: (entry: LeaderboardEntry) => void;
 }) => {
   // Get color based on position
   const getRowColors = () => {
     if (isCurrentUser) {
       return {
-        background: ['#D4AF37', '#F4EFA8', '#D4AF37'] as const,
-        text: '#000',
-        secondaryText: 'rgba(0, 0, 0, 0.7)',
+        background: ["#D4AF37", "#F4EFA8", "#D4AF37"] as const,
+        text: "#000",
+        secondaryText: "rgba(0, 0, 0, 0.7)",
       };
     }
-    
+
     switch (index) {
       case 0:
         return {
-          background: ['#E5E4E2', '#FFFFFF', '#E5E4E2'] as const,
-          text: '#000',
-          secondaryText: 'rgba(0, 0, 0, 0.7)',
+          background: ["#E5E4E2", "#FFFFFF", "#E5E4E2"] as const,
+          text: "#000",
+          secondaryText: "rgba(0, 0, 0, 0.7)",
         };
       case 1:
         return {
-          background: ['#D4AF37', '#F4EFA8', '#D4AF37'] as const,
-          text: '#000',
-          secondaryText: 'rgba(0, 0, 0, 0.7)',
+          background: ["#D4AF37", "#F4EFA8", "#D4AF37"] as const,
+          text: "#000",
+          secondaryText: "rgba(0, 0, 0, 0.7)",
         };
       case 2:
         return {
-          background: ['#CD7F32', '#FFC299', '#CD7F32'] as const,
-          text: '#000',
-          secondaryText: 'rgba(0, 0, 0, 0.7)',
+          background: ["#CD7F32", "#FFC299", "#CD7F32"] as const,
+          text: "#000",
+          secondaryText: "rgba(0, 0, 0, 0.7)",
         };
       default:
         return {
-          background: ['#222', '#2A2A2A', '#222'] as const,
-          text: '#FFF',
-          secondaryText: 'rgba(255, 255, 255, 0.7)',
+          background: ["#222", "#2A2A2A", "#222"] as const,
+          text: "#FFF",
+          secondaryText: "rgba(255, 255, 255, 0.7)",
         };
     }
   };
@@ -100,13 +100,10 @@ const LeaderboardRow = ({
   };
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.8} 
+    <TouchableOpacity
+      activeOpacity={0.8}
       onPress={handlePress}
-      style={[
-        styles.rowTouchable,
-        isCurrentUser && styles.currentUserRow
-      ]}
+      style={[styles.rowTouchable, isCurrentUser && styles.currentUserRow]}
     >
       <LinearGradient
         colors={background}
@@ -118,21 +115,20 @@ const LeaderboardRow = ({
           {getMedal() ? (
             <Image source={getMedal()} style={styles.medalIcon} />
           ) : (
-            <Text style={[styles.rankText, { color: text }]}>
-              {index + 1}
-            </Text>
+            <Text style={[styles.rankText, { color: text }]}>{index + 1}</Text>
           )}
         </View>
-        
+
         <View style={styles.userInfo}>
           <Text style={[styles.username, { color: text }]} numberOfLines={1}>
-            {entry.username} {isCurrentUser && <Text style={styles.youTag}>(You)</Text>}
+            {entry.username}{" "}
+            {isCurrentUser && <Text style={styles.youTag}>(You)</Text>}
           </Text>
           <Text style={[styles.tierText, { color: secondaryText }]}>
             {entry.tier.toUpperCase()}
           </Text>
         </View>
-        
+
         <View style={styles.amount}>
           <Text style={[styles.amountText, { color: text }]}>
             ${entry.purchase_amount.toLocaleString()}
@@ -143,13 +139,19 @@ const LeaderboardRow = ({
   );
 };
 
-const Leaderboard = ({ entries, currentUserId, onPress, scrollEnabled = false, maxEntries = 5 }: LeaderboardProps) => {
+const Leaderboard = ({
+  entries,
+  currentUserId,
+  onPress,
+  scrollEnabled = false,
+  maxEntries = 5,
+}: LeaderboardProps) => {
   // Limit displayed entries if maxEntries is provided
   const displayEntries = maxEntries ? entries.slice(0, maxEntries) : entries;
-  
+
   // Check if there are more entries than what we're showing
   const hasMoreEntries = entries.length > displayEntries.length;
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.headerColumns}>
@@ -157,7 +159,7 @@ const Leaderboard = ({ entries, currentUserId, onPress, scrollEnabled = false, m
         <Text style={styles.headerUser}>USER</Text>
         <Text style={styles.headerAmount}>SPENT</Text>
       </View>
-      
+
       <FlatList
         data={displayEntries}
         keyExtractor={(item) => item.id}
@@ -175,25 +177,31 @@ const Leaderboard = ({ entries, currentUserId, onPress, scrollEnabled = false, m
         scrollEnabled={scrollEnabled}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No one has flexed their wealth yet.</Text>
+            <Text style={styles.emptyText}>
+              No one has flexed their wealth yet.
+            </Text>
           </View>
         )}
-        ListFooterComponent={hasMoreEntries ? () => (
-          <TouchableOpacity
-            style={styles.viewMoreButton}
-            activeOpacity={0.8}
-            onPress={() => {
-              haptics.light();
-              // Could navigate to a full leaderboard screen
-              // or expand the list in place
-              alert("View Full Leaderboard");
-            }}
-          >
-            <Text style={styles.viewMoreText}>
-              VIEW {entries.length - displayEntries.length} MORE
-            </Text>
-          </TouchableOpacity>
-        ) : undefined}
+        ListFooterComponent={
+          hasMoreEntries
+            ? () => (
+                <TouchableOpacity
+                  style={styles.viewMoreButton}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    haptics.light();
+                    // Could navigate to a full leaderboard screen
+                    // or expand the list in place
+                    alert("View Full Leaderboard");
+                  }}
+                >
+                  <Text style={styles.viewMoreText}>
+                    VIEW {entries.length - displayEntries.length} MORE
+                  </Text>
+                </TouchableOpacity>
+              )
+            : undefined
+        }
       />
     </View>
   );
@@ -201,12 +209,12 @@ const Leaderboard = ({ entries, currentUserId, onPress, scrollEnabled = false, m
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    overflow: 'hidden',
+    width: "100%",
+    overflow: "hidden",
     borderRadius: 8,
   },
   headerColumns: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -216,20 +224,20 @@ const styles = StyleSheet.create({
   headerRank: {
     width: 50,
     fontSize: 10,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
     color: COLORS.GRAY_SHADES["888"],
   },
   headerUser: {
     flex: 1,
     fontSize: 10,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
     color: COLORS.GRAY_SHADES["888"],
   },
   headerAmount: {
     width: 80,
-    textAlign: 'right',
+    textAlign: "right",
     fontSize: 10,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
     color: COLORS.GRAY_SHADES["888"],
   },
   list: {
@@ -239,7 +247,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 4,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 2,
     shadowColor: COLORS.BLACK,
     shadowOffset: { width: 0, height: 2 },
@@ -250,12 +258,12 @@ const styles = StyleSheet.create({
     elevation: 4,
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    borderWidth: Platform.OS === 'ios' ? 1 : 0,
+    borderWidth: Platform.OS === "ios" ? 1 : 0,
     borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   rowGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
   },
   rankContainer: {
@@ -263,18 +271,18 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: COLORS.ALPHA.BLACK_20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   rankText: {
     fontSize: 14,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
   },
   medalIcon: {
     width: 26,
     height: 26,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
   userInfo: {
     flex: 1,
@@ -282,51 +290,51 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 14,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
     marginBottom: 4,
   },
   youTag: {
-    fontFamily: 'Montserrat_400Regular',
+    fontFamily: "Montserrat_400Regular",
     fontSize: 12,
   },
   tierText: {
     fontSize: 10,
-    fontFamily: 'Montserrat_400Regular',
+    fontFamily: "Montserrat_400Regular",
   },
   amount: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   amountText: {
     fontSize: 16,
-    fontFamily: 'PlayfairDisplay_700Bold',
+    fontFamily: "PlayfairDisplay_700Bold",
   },
   separator: {
     height: 8,
   },
   emptyContainer: {
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyText: {
     fontSize: 14,
-    fontFamily: 'Montserrat_400Regular',
+    fontFamily: "Montserrat_400Regular",
     color: COLORS.GRAY_SHADES["888"],
-    textAlign: 'center',
+    textAlign: "center",
   },
   viewMoreButton: {
     marginTop: 8,
     marginBottom: 12,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: COLORS.GRAY_SHADES.ALMOST_BLACK,
   },
   viewMoreText: {
     fontSize: 12,
-    fontFamily: 'Montserrat_700Bold',
+    fontFamily: "Montserrat_700Bold",
     color: COLORS.GOLD_SHADES.PRIMARY,
     letterSpacing: 1,
   },
 });
 
-export default Leaderboard; 
+export default Leaderboard;

@@ -1,42 +1,42 @@
-import React from 'react';
+import React from "react";
 import {
   Text as RNText,
   TextProps as RNTextProps,
   StyleProp,
   TextStyle,
-} from 'react-native';
-import theme from '../theme';
+} from "react-native";
+import theme from "../theme";
 
 // Text variant options
-export type TextVariant = 
-  | 'h1'
-  | 'h2'
-  | 'h3'
-  | 'h4'
-  | 'subtitle1'
-  | 'subtitle2'
-  | 'body1'
-  | 'body2'
-  | 'caption'
-  | 'button'
-  | 'overline';
+export type TextVariant =
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "subtitle1"
+  | "subtitle2"
+  | "body1"
+  | "body2"
+  | "caption"
+  | "button"
+  | "overline";
 
 // Text color options
 export type TextColor =
-  | 'primary'
-  | 'secondary'
-  | 'tertiary'
-  | 'disabled'
-  | 'inverse'
-  | 'gold'
-  | 'error'
-  | 'success';
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "disabled"
+  | "inverse"
+  | "gold"
+  | "error"
+  | "success";
 
 // Text alignment options
-export type TextAlign = 'auto' | 'left' | 'center' | 'right' | 'justify';
+export type TextAlign = "auto" | "left" | "center" | "right" | "justify";
 
 // Text weight options
-export type TextWeight = 'normal' | 'bold' | 'semibold' | 'light';
+export type TextWeight = "normal" | "bold" | "semibold" | "light";
 
 // Text props interface extending React Native's TextProps
 export interface TextProps extends RNTextProps {
@@ -49,10 +49,10 @@ export interface TextProps extends RNTextProps {
 }
 
 const Text: React.FC<TextProps> = ({
-  variant = 'body1',
-  color = 'primary',
-  align = 'left',
-  weight = 'normal',
+  variant = "body1",
+  color = "primary",
+  align = "left",
+  weight = "normal",
   italic = false,
   style,
   children,
@@ -61,76 +61,112 @@ const Text: React.FC<TextProps> = ({
   // Get variant styles
   const getVariantStyle = (): TextStyle => {
     switch (variant) {
-      case 'h1':
+      case "h1":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.heading.bold : theme.typography.fontFamily.heading.regular,
-          fontSize: theme.typography.fontSize['4xl'],
-          lineHeight: theme.typography.fontSize['4xl'] * theme.typography.lineHeight.tight,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.heading.bold
+              : theme.typography.fontFamily.heading.regular,
+          fontSize: theme.typography.fontSize["4xl"],
+          lineHeight:
+            theme.typography.fontSize["4xl"] *
+            theme.typography.lineHeight.tight,
           letterSpacing: theme.typography.letterSpacing.tight,
         };
-      case 'h2':
+      case "h2":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.heading.bold : theme.typography.fontFamily.heading.regular,
-          fontSize: theme.typography.fontSize['3xl'],
-          lineHeight: theme.typography.fontSize['3xl'] * theme.typography.lineHeight.tight,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.heading.bold
+              : theme.typography.fontFamily.heading.regular,
+          fontSize: theme.typography.fontSize["3xl"],
+          lineHeight:
+            theme.typography.fontSize["3xl"] *
+            theme.typography.lineHeight.tight,
           letterSpacing: theme.typography.letterSpacing.tight,
         };
-      case 'h3':
+      case "h3":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.heading.bold : theme.typography.fontFamily.heading.regular,
-          fontSize: theme.typography.fontSize['2xl'],
-          lineHeight: theme.typography.fontSize['2xl'] * theme.typography.lineHeight.tight,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.heading.bold
+              : theme.typography.fontFamily.heading.regular,
+          fontSize: theme.typography.fontSize["2xl"],
+          lineHeight:
+            theme.typography.fontSize["2xl"] *
+            theme.typography.lineHeight.tight,
         };
-      case 'h4':
+      case "h4":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.heading.bold : theme.typography.fontFamily.heading.regular,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.heading.bold
+              : theme.typography.fontFamily.heading.regular,
           fontSize: theme.typography.fontSize.xl,
-          lineHeight: theme.typography.fontSize.xl * theme.typography.lineHeight.tight,
+          lineHeight:
+            theme.typography.fontSize.xl * theme.typography.lineHeight.tight,
         };
-      case 'subtitle1':
+      case "subtitle1":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.body.bold : theme.typography.fontFamily.body.regular,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.body.bold
+              : theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.lg,
-          lineHeight: theme.typography.fontSize.lg * theme.typography.lineHeight.normal,
+          lineHeight:
+            theme.typography.fontSize.lg * theme.typography.lineHeight.normal,
         };
-      case 'subtitle2':
+      case "subtitle2":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.body.bold : theme.typography.fontFamily.body.regular,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.body.bold
+              : theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.md,
-          lineHeight: theme.typography.fontSize.md * theme.typography.lineHeight.normal,
+          lineHeight:
+            theme.typography.fontSize.md * theme.typography.lineHeight.normal,
         };
-      case 'button':
+      case "button":
         return {
           fontFamily: theme.typography.fontFamily.body.bold,
           fontSize: theme.typography.fontSize.md,
           letterSpacing: theme.typography.letterSpacing.wide,
-          textTransform: 'uppercase' as const,
+          textTransform: "uppercase" as const,
         };
-      case 'body2':
+      case "body2":
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.body.bold : theme.typography.fontFamily.body.regular,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.body.bold
+              : theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.sm,
-          lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.normal,
+          lineHeight:
+            theme.typography.fontSize.sm * theme.typography.lineHeight.normal,
         };
-      case 'caption':
+      case "caption":
         return {
           fontFamily: theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.xs,
-          lineHeight: theme.typography.fontSize.xs * theme.typography.lineHeight.normal,
+          lineHeight:
+            theme.typography.fontSize.xs * theme.typography.lineHeight.normal,
         };
-      case 'overline':
+      case "overline":
         return {
           fontFamily: theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.xs,
           letterSpacing: theme.typography.letterSpacing.wider,
-          textTransform: 'uppercase' as const,
+          textTransform: "uppercase" as const,
         };
-      case 'body1':
+      case "body1":
       default:
         return {
-          fontFamily: weight === 'bold' ? theme.typography.fontFamily.body.bold : theme.typography.fontFamily.body.regular,
+          fontFamily:
+            weight === "bold"
+              ? theme.typography.fontFamily.body.bold
+              : theme.typography.fontFamily.body.regular,
           fontSize: theme.typography.fontSize.md,
-          lineHeight: theme.typography.fontSize.md * theme.typography.lineHeight.normal,
+          lineHeight:
+            theme.typography.fontSize.md * theme.typography.lineHeight.normal,
         };
     }
   };
@@ -138,21 +174,21 @@ const Text: React.FC<TextProps> = ({
   // Get color style
   const getColorStyle = (): TextStyle => {
     switch (color) {
-      case 'secondary':
+      case "secondary":
         return { color: theme.colors.text.secondary };
-      case 'tertiary':
+      case "tertiary":
         return { color: theme.colors.text.tertiary };
-      case 'disabled':
+      case "disabled":
         return { color: theme.colors.text.disabled };
-      case 'inverse':
+      case "inverse":
         return { color: theme.colors.text.inverse };
-      case 'gold':
+      case "gold":
         return { color: theme.colors.gold.main };
-      case 'error':
+      case "error":
         return { color: theme.colors.status.error };
-      case 'success':
+      case "success":
         return { color: theme.colors.status.success };
-      case 'primary':
+      case "primary":
       default:
         return { color: theme.colors.text.primary };
     }
@@ -166,15 +202,15 @@ const Text: React.FC<TextProps> = ({
   // Get weight style
   const getFontWeightStyle = (): TextStyle => {
     switch (weight) {
-      case 'bold':
-        return { fontWeight: '700' as const };
-      case 'semibold':
-        return { fontWeight: '600' as const };
-      case 'light':
-        return { fontWeight: '300' as const };
-      case 'normal':
+      case "bold":
+        return { fontWeight: "700" as const };
+      case "semibold":
+        return { fontWeight: "600" as const };
+      case "light":
+        return { fontWeight: "300" as const };
+      case "normal":
       default:
-        return { fontWeight: '400' as const };
+        return { fontWeight: "400" as const };
     }
   };
 
@@ -182,7 +218,7 @@ const Text: React.FC<TextProps> = ({
   const getItalicStyle = (): TextStyle => {
     if (italic) {
       return {
-        fontStyle: 'italic' as const,
+        fontStyle: "italic" as const,
       };
     }
     return {};
@@ -205,4 +241,4 @@ const Text: React.FC<TextProps> = ({
   );
 };
 
-export default Text; 
+export default Text;

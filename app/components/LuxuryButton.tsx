@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
@@ -6,19 +6,26 @@ import {
   ViewStyle,
   TextStyle,
   View,
-} from 'react-native';
-import { haptics } from '../utils/animations';
+} from "react-native";
+import { haptics } from "../utils/animations";
 
 // Props types
 interface LuxuryButtonProps {
   onPress: () => void;
   title: string;
-  variant?: 'gold' | 'platinum' | 'dark';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "gold" | "platinum" | "dark";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  hapticFeedback?: 'light' | 'medium' | 'heavy' | 'success' | 'premium' | 'error' | 'none';
+  hapticFeedback?:
+    | "light"
+    | "medium"
+    | "heavy"
+    | "success"
+    | "premium"
+    | "error"
+    | "none";
   icon?: React.ReactNode;
 }
 
@@ -26,21 +33,20 @@ interface LuxuryButtonProps {
 const LuxuryButton = ({
   onPress,
   title,
-  variant = 'gold',
-  size = 'medium',
+  variant = "gold",
+  size = "medium",
   disabled = false,
   style,
   textStyle,
-  hapticFeedback = 'medium',
+  hapticFeedback = "medium",
   icon,
 }: LuxuryButtonProps) => {
-
   // Handle press with haptic feedback
   const handlePress = () => {
     if (disabled) return;
 
     // Trigger haptic feedback
-    if (hapticFeedback !== 'none') {
+    if (hapticFeedback !== "none") {
       haptics[hapticFeedback]();
     }
 
@@ -51,44 +57,44 @@ const LuxuryButton = ({
   // Determine button colors based on variant
   const getVariantStyles = (): { button: ViewStyle; text: TextStyle } => {
     switch (variant) {
-      case 'gold':
+      case "gold":
         return {
-          button: { 
-            backgroundColor: '#F5D76E',
-            borderColor: '#D4AF37',
+          button: {
+            backgroundColor: "#F5D76E",
+            borderColor: "#D4AF37",
           },
-          text: { 
-            color: '#000000',
+          text: {
+            color: "#000000",
           },
         };
-      case 'platinum':
+      case "platinum":
         return {
-          button: { 
-            backgroundColor: '#E5E4E2',
-            borderColor: '#C0C0C0',
+          button: {
+            backgroundColor: "#E5E4E2",
+            borderColor: "#C0C0C0",
           },
-          text: { 
-            color: '#000000',
+          text: {
+            color: "#000000",
           },
         };
-      case 'dark':
+      case "dark":
         return {
-          button: { 
-            backgroundColor: '#333333',
-            borderColor: '#D4AF37',
+          button: {
+            backgroundColor: "#333333",
+            borderColor: "#D4AF37",
           },
-          text: { 
-            color: '#F5D76E',
+          text: {
+            color: "#F5D76E",
           },
         };
       default:
         return {
-          button: { 
-            backgroundColor: '#F5D76E',
-            borderColor: '#D4AF37',
+          button: {
+            backgroundColor: "#F5D76E",
+            borderColor: "#D4AF37",
           },
-          text: { 
-            color: '#000000',
+          text: {
+            color: "#000000",
           },
         };
     }
@@ -97,38 +103,38 @@ const LuxuryButton = ({
   // Get size-based styles
   const getSizeStyles = (): { button: ViewStyle; text: TextStyle } => {
     switch (size) {
-      case 'small':
+      case "small":
         return {
-          button: { 
-            paddingVertical: 8, 
-            paddingHorizontal: 14, 
+          button: {
+            paddingVertical: 8,
+            paddingHorizontal: 14,
             borderRadius: 6,
           },
-          text: { 
+          text: {
             fontSize: 14,
             letterSpacing: 1,
           },
         };
-      case 'large':
+      case "large":
         return {
-          button: { 
-            paddingVertical: 16, 
-            paddingHorizontal: 32, 
+          button: {
+            paddingVertical: 16,
+            paddingHorizontal: 32,
             borderRadius: 8,
           },
-          text: { 
+          text: {
             fontSize: 20,
             letterSpacing: 2,
           },
         };
       default:
         return {
-          button: { 
-            paddingVertical: 12, 
-            paddingHorizontal: 24, 
+          button: {
+            paddingVertical: 12,
+            paddingHorizontal: 24,
             borderRadius: 8,
           },
-          text: { 
+          text: {
             fontSize: 16,
             letterSpacing: 1.5,
           },
@@ -155,12 +161,9 @@ const LuxuryButton = ({
     >
       <View style={styles.contentContainer}>
         {icon && <View style={styles.iconContainer}>{icon}</View>}
-        <Text style={[
-          styles.text,
-          variantStyles.text,
-          sizeStyles.text,
-          textStyle,
-        ]}>
+        <Text
+          style={[styles.text, variantStyles.text, sizeStyles.text, textStyle]}
+        >
           {title.toUpperCase()}
         </Text>
       </View>
@@ -170,32 +173,32 @@ const LuxuryButton = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     borderWidth: 3,
     elevation: 15,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   contentContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
   iconContainer: {
     marginRight: 8,
   },
   text: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontFamily: 'Montserrat_700Bold',
+    textAlign: "center",
+    fontWeight: "bold",
+    fontFamily: "Montserrat_700Bold",
   },
   disabled: {
     opacity: 0.6,
   },
 });
 
-export default LuxuryButton; 
+export default LuxuryButton;

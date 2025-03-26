@@ -1,11 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../design/colors';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../design/colors";
 
-const WaitingList = () => {
+interface WaitingListProps {
+  initialCount?: number;
+}
+
+const WaitingList: React.FC<WaitingListProps> = ({ initialCount }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>This component has been removed in production.</Text>
+      <Text style={styles.text}>
+        This component has been removed in production.
+      </Text>
     </View>
   );
 };
@@ -22,4 +28,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WaitingList; 
+export default WaitingList;

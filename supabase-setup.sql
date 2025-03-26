@@ -27,21 +27,21 @@ ALTER TABLE public.leaderboard ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
 -- Users can read their own data
-CREATE POLICY "Users can read their own data" 
-  ON public.users 
-  FOR SELECT 
+CREATE POLICY "Users can read their own data"
+  ON public.users
+  FOR SELECT
   USING (auth.uid() = id);
 
 -- Users can update their own data
-CREATE POLICY "Users can update their own data" 
-  ON public.users 
-  FOR UPDATE 
+CREATE POLICY "Users can update their own data"
+  ON public.users
+  FOR UPDATE
   USING (auth.uid() = id);
 
 -- Anyone can read the leaderboard
-CREATE POLICY "Anyone can read leaderboard" 
-  ON public.leaderboard 
-  FOR SELECT 
+CREATE POLICY "Anyone can read leaderboard"
+  ON public.leaderboard
+  FOR SELECT
   TO anon, authenticated
   USING (true);
 
@@ -56,4 +56,4 @@ VALUES
   ('Jeff B.', 99999, 'god'),
   ('Mark Z.', 9999, 'elite'),
   ('Bill G.', 9999, 'elite'),
-  ('Warren B.', 999, 'regular'); 
+  ('Warren B.', 999, 'regular');

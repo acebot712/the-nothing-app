@@ -19,7 +19,10 @@
     "lint:fix:all": "npm run lint:fix && cd server && npm run lint:fix",
     "tsc": "tsc --noEmit",
     "check:all": "npm run tsc && npm run lint:all",
-    "postinstall": "npx expo-doctor || exit 0"
+    "preproduction": "node pre-production-check.js --experimental-modules",
+    "postinstall": "npx expo-doctor || exit 0",
+    "prepare": "husky",
+    "pre-commit": "pre-commit run --all-files"
   },
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.2.3",
@@ -71,6 +74,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-native": "^5.0.0",
     "globals": "^16.0.0",
+    "husky": "^9.0.11",
     "postcss": "^8.5.3",
     "react-native-dotenv": "^3.4.11",
     "sharp": "^0.33.5",
