@@ -24,26 +24,14 @@ import { getLeaderboard, LeaderboardEntry } from '../config/supabase';
 // Get screen dimensions for responsive layout
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Fake reviews for the app
-const FAKE_REVIEWS = [
-  "This app changed my life. You wouldn't understand.",
-  "Worth every penny. Best $999 I ever spent.",
-  "If you have to ask what it does, you can't afford it.",
-  "Finally, a way to show my friends I'm better than them.",
-  "My butler uses this to remind me how rich I am.",
-  "Does nothing. Costs everything. Absolutely perfect.",
-  "I spent $99,999 on this app. Made me feel alive again."
-];
-
 const DashboardScreen = () => {
   const navigation = useNavigation<any>();
   const { user, logout } = useUser();
   
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [randomReview, setRandomReview] = useState('');
   
-  // Load leaderboard data and a random review
+  // Load leaderboard data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -83,10 +71,6 @@ const DashboardScreen = () => {
         }
         
         setLeaderboardData(leaderboard);
-        
-        // Get a random review
-        const randomIndex = Math.floor(Math.random() * FAKE_REVIEWS.length);
-        setRandomReview(FAKE_REVIEWS[randomIndex]);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
       } finally {
@@ -129,11 +113,9 @@ const DashboardScreen = () => {
           text: "Log Out",
           onPress: async () => {
             haptics.medium();
-            console.log('Logging out user...');
             
             try {
               await logout();
-              console.log('User logged out successfully');
               
               // Force navigation to reset to the Invite screen
               navigation.reset({
@@ -148,21 +130,6 @@ const DashboardScreen = () => {
               );
             }
           }
-        }
-      ]
-    );
-  };
-  
-  const handleLongPressReview = () => {
-    haptics.success();
-    
-    Alert.alert(
-      "Hidden Feature Unlocked",
-      "You've found a hidden feature! In a real app, this would unlock something exclusive.",
-      [
-        {
-          text: "Neat!",
-          onPress: () => haptics.medium()
         }
       ]
     );
@@ -202,102 +169,48 @@ const DashboardScreen = () => {
           
           <ScrollView 
             style={styles.scrollView}
-            contentContainerStyle={styles.contentContainer}
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Top Grid Section */}
             {user && (
-              <View style={styles.topGrid}>
-                <View style={styles.profileHeader}>
-                  <LinearGradient
-                    colors={['rgba(212, 175, 55, 0.2)', 'rgba(212, 175, 55, 0.05)']}
-                    style={styles.profileHeaderGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <Text style={styles.welcomeText}>
-                      Welcome, <Text style={styles.userNameText}>{user?.username}</Text>
-                    </Text>
-                    <View style={styles.netWorthContainer}>
-                      <Text style={styles.netWorthLabel}>NET WORTH</Text>
-                      <Text style={styles.netWorthText}>
-                        ${user?.net_worth.toLocaleString()}
-                      </Text>
-                    </View>
-                  </LinearGradient>
-                </View>
-                
-                <View style={styles.reviewCard}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onLongPress={handleLongPressReview}
-                    style={styles.reviewContainer}
-                  >
-                    <LinearGradient
-                      colors={['#1E1E1E', '#242424']}
-                      style={styles.reviewGradient}
-                    >
-                      <Text style={styles.sectionTitle}>TESTIMONIAL</Text>
-                      <Text style={styles.reviewText}>"{randomReview}"</Text>
-                      <Text style={styles.reviewHint}>Long-press for hidden feature</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
+              <View style={styles.userSection}>
+                <FlexBadge 
+                  username={user.username}
+                  tier={user.tier}
+                  amount={user.purchase_amount}
+                  serialNumber={user.serial_number}
+                  onShare={handleShare}
+                />
               </View>
             )}
             
-            {/* Badge Horizontal View */}
-            {user && (
-              <View style={styles.badgeSection}>
-                <Text style={styles.sectionHeading}>YOUR STATUS</Text>
-                <View style={styles.badgeContainer}>
-                  <FlexBadge
-                    tier={user.tier}
-                    amount={user.purchase_amount}
-                    serialNumber={user.serial_number}
-                    username={user.username}
-                    onShare={handleShare}
-                  />
-                </View>
-              </View>
-            )}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>LEADERBOARD</Text>
+              <Leaderboard entries={leaderboardData} currentUserId={user?.id} />
+            </View>
             
-            {/* Leaderboard Section */}
-            <View style={styles.leaderboardSection}>
-              <Text style={styles.sectionHeading}>WEALTH LEADERBOARD</Text>
-              <Leaderboard
-                entries={leaderboardData}
-                currentUserId={user?.id}
-                scrollEnabled={false}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>YOUR STATUS</Text>
+              <Text style={styles.quote}>
+                "You've joined an exclusive club of individuals who understand that true luxury is not explaining yourself."
+              </Text>
+            </View>
+            
+            <View style={styles.ctaSection}>
+              <LuxuryButton 
+                title="UPGRADE YOUR STATUS"
+                onPress={() => {
+                  haptics.medium();
+                  navigation.navigate('Pricing');
+                }}
+                style={styles.upgradeButton}
               />
             </View>
             
-            {/* Action Buttons Grid */}
-            <View style={styles.actionGrid}>
-              <LuxuryButton
-                title="SHARE YOUR FLEX"
-                onPress={handleShare}
-                variant="gold"
-                style={styles.primaryButton}
-                hapticFeedback="heavy"
-                size="large"
-              />
-              
-              <View style={styles.supportButtonRow}>
-                <TouchableOpacity
-                  style={styles.supportButton}
-                  onPress={() => Alert.alert("Support", "Premium support is available 24/7 for our elite users.")}
-                >
-                  <Text style={styles.supportButtonText}>SUPPORT</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={styles.supportButton}
-                  onPress={() => Alert.alert("Premium", "You already have the best experience money can buy.")}
-                >
-                  <Text style={styles.supportButtonText}>PREMIUM</Text>
-                </TouchableOpacity>
-              </View>
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                THE NOTHING APP • EXCLUSIVE MEMBERSHIP
+              </Text>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -348,126 +261,40 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  contentContainer: {
+  scrollContent: {
     paddingBottom: 40,
     padding: 16,
   },
-  topGrid: {
-    flexDirection: SCREEN_WIDTH > 400 ? 'row' : 'column',
+  userSection: {
     marginBottom: 24,
-  },
-  profileHeader: {
-    flex: SCREEN_WIDTH > 400 ? 1 : undefined,
-    marginRight: SCREEN_WIDTH > 400 ? 12 : 0,
-    marginBottom: SCREEN_WIDTH > 400 ? 0 : 12,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  profileHeaderGradient: {
     padding: 20,
-    height: SCREEN_WIDTH > 400 ? 'auto' : 120,
-    justifyContent: 'center',
-  },
-  welcomeText: {
-    fontSize: 16,
-    fontFamily: 'PlayfairDisplay_400Regular',
-    color: '#FFF',
-    marginBottom: 8,
-  },
-  userNameText: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    color: '#D4AF37',
-  },
-  netWorthContainer: {
-    marginTop: 8,
-  },
-  netWorthLabel: {
-    fontSize: 12,
-    fontFamily: 'Montserrat_400Regular',
-    color: '#888',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  netWorthText: {
-    fontSize: 24,
-    fontFamily: 'PlayfairDisplay_700Bold',
-    color: '#D4AF37',
-  },
-  reviewCard: {
-    flex: SCREEN_WIDTH > 400 ? 1 : undefined,
     borderRadius: 16,
-    overflow: 'hidden',
     backgroundColor: '#1A1A1A',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
-  reviewContainer: {
-    width: '100%',
-    height: '100%',
-  },
-  reviewGradient: {
+  section: {
+    marginBottom: 24,
     padding: 20,
-    height: '100%',
-    justifyContent: 'space-between',
+    borderRadius: 16,
+    backgroundColor: '#1A1A1A',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Montserrat_700Bold',
     color: '#D4AF37',
     letterSpacing: 1,
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  reviewText: {
-    fontSize: 16,
+  quote: {
+    fontSize: 14,
     fontFamily: 'PlayfairDisplay_400Regular_Italic',
     color: '#FFF',
     marginBottom: 16,
     lineHeight: 24,
   },
-  reviewHint: {
-    fontSize: 10,
-    fontFamily: 'Montserrat_400Regular',
-    color: '#666',
-    textAlign: 'center',
-    position: 'absolute',
-    bottom: 10,
-    left: 0,
-    right: 0,
-  },
-  sectionHeading: {
-    fontSize: 16,
-    fontFamily: 'Montserrat_700Bold',
-    color: '#D4AF37',
-    letterSpacing: 1,
-    marginBottom: 16,
-  },
-  badgeSection: {
-    marginBottom: 24,
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: '#1A1A1A',
-  },
-  badgeContainer: {
-    alignItems: 'center',
-  },
-  leaderboardSection: {
-    marginBottom: 24,
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: '#1A1A1A',
-  },
-  actionGrid: {
+  ctaSection: {
     marginBottom: 20,
   },
-  primaryButton: {
+  upgradeButton: {
     marginBottom: 16,
     width: '100%',
     borderRadius: 16,
@@ -477,23 +304,17 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  supportButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  supportButton: {
-    width: '48%',
-    padding: 16,
-    alignItems: 'center',
+  footer: {
+    marginTop: 20,
+    padding: 20,
     borderRadius: 16,
     backgroundColor: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
-  supportButtonText: {
+  footerText: {
     fontFamily: 'Montserrat_700Bold',
     color: '#D4AF37',
     fontSize: 14,
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,

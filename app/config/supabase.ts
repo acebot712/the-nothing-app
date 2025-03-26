@@ -56,14 +56,7 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
     
   if (error) {
     console.error('Error fetching leaderboard:', error);
-    // Fallback to mock data if there's an error
-    return [
-      { id: '1', username: 'Elon M.', purchase_amount: 99999, tier: 'god', created_at: new Date().toISOString() },
-      { id: '2', username: 'Jeff B.', purchase_amount: 99999, tier: 'god', created_at: new Date().toISOString() },
-      { id: '3', username: 'Mark Z.', purchase_amount: 9999, tier: 'elite', created_at: new Date().toISOString() },
-      { id: '4', username: 'Bill G.', purchase_amount: 9999, tier: 'elite', created_at: new Date().toISOString() },
-      { id: '5', username: 'Warren B.', purchase_amount: 999, tier: 'regular', created_at: new Date().toISOString() },
-    ];
+    return [];
   }
   
   return data as LeaderboardEntry[];
@@ -162,37 +155,18 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
  */
 export const getInviteCode = async (code: string): Promise<any | null> => {
   try {
-    // For production, this would validate against a table of valid invite codes
-    // For development, we'll accept certain codes as valid
+    const { data, error } = await supabase
+      .from('invite_codes')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .single();
     
-    // These are mock invite codes for development
-    const validCodes = ['RICH12', 'LUXURY', 'WEALTH', 'ELITE', 'MONEY', 'ACCESS'];
-    
-    if (validCodes.includes(code.toUpperCase())) {
-      // Return mock invite data
-      return {
-        id: `invite_${Math.random().toString(36).substring(2, 9)}`,
-        code: code.toUpperCase(),
-        valid: true,
-        created_at: new Date().toISOString(),
-      };
+    if (error || !data) {
+      console.error('Error fetching invite code:', error);
+      return null;
     }
     
-    // In production, we would query the database
-    // const { data, error } = await supabase
-    //   .from('invite_codes')
-    //   .select('*')
-    //   .eq('code', code.toUpperCase())
-    //   .single();
-    
-    // if (error || !data) {
-    //   console.error('Error fetching invite code:', error);
-    //   return null;
-    // }
-    
-    // return data;
-    
-    return null; // Code not valid
+    return data;
   } catch (error) {
     console.error('Exception in getInviteCode:', error);
     return null;

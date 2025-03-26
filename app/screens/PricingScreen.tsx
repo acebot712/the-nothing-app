@@ -127,86 +127,94 @@ const PricingScreen = () => {
   const [selectedTier, setSelectedTier] = useState<'REGULAR' | 'ELITE' | 'GOD'>('REGULAR');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
-  const [apiStatus, setApiStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [apiAvailable, setApiAvailable] = useState<boolean | null>(null);
   
-  // Check if the API is available
+  // Check if our backend API is available
   useEffect(() => {
     const checkApiStatus = async () => {
       try {
-        console.log('Checking API server status...');
-        const response = await fetch(`${API_URL}/api/health`, {
+        setApiAvailable(null); // Loading state
+        
+        // Set the base URL for the API
+        const BASE_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+        
+        // Try to ping the API health endpoint
+        const response = await fetch(`${BASE_URL}/health`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          }
+          },
         });
         
         if (response.ok) {
-          console.log('API server is available');
-          setApiStatus('available');
+          setApiAvailable(true);
         } else {
-          console.log('API server returned error:', response.status);
-          setApiStatus('unavailable');
+          setApiAvailable(false);
         }
       } catch (error) {
-        console.error('API server is unavailable:', error);
-        setApiStatus('unavailable');
+        setApiAvailable(false);
       }
     };
     
     checkApiStatus();
   }, []);
   
-  const handlePurchase = () => {
-    console.log('handlePurchase called');
+  // Handle purchase button tap
+  const handlePurchase = async () => {
+    haptics.medium();
+    
+    // Check if we have a user
     if (!user) {
-      console.log('No user found, cannot proceed with purchase');
-      Alert.alert('Error', 'You need to be logged in to make a purchase.');
+      Alert.alert(
+        "Error",
+        "You must be logged in to make a purchase."
+      );
       return;
     }
     
-    // Get the selected tier details
+    // Get tier details
     const tierDetails = PRICING_TIERS[selectedTier];
-    console.log('Selected tier:', selectedTier, 'Details:', tierDetails);
+    if (!tierDetails) return;
     
     // If API is unavailable, show warning
-    if (apiStatus === 'unavailable') {
-      console.log('API is unavailable, showing warning');
+    if (apiAvailable === false) {
       Alert.alert(
-        "Service Notice",
-        "Our payment server appears to be unavailable. You can continue with a simulated payment for demonstration purposes.",
+        "Connection Issue",
+        "We're having trouble connecting to our payment processor. Would you like to continue anyway?",
         [
           {
             text: "Cancel",
             style: "cancel"
           },
-          {
-            text: "Continue Anyway",
-            onPress: () => {
-              haptics.medium();
-              setShowPaymentSheet(true);
-            }
+          { 
+            text: "Continue", 
+            onPress: () => showPaymentConfirmation(selectedTier, tierDetails)
           }
         ]
       );
-      return;
+    } else {
+      // API available or unknown, proceed directly
+      showPaymentConfirmation(selectedTier, tierDetails);
     }
+  };
+  
+  // Show payment confirmation
+  const showPaymentConfirmation = (tier: 'REGULAR' | 'ELITE' | 'GOD', tierDetails: typeof PRICING_TIERS[keyof typeof PRICING_TIERS]) => {
+    haptics.light();
     
-    // Confirm the purchase
     Alert.alert(
-      "Confirm Purchase",
-      `You are about to spend $${tierDetails.price.toLocaleString()} on absolutely nothing. Continue?`,
+      `Confirm ${tierDetails.name} Purchase`,
+      `You are about to spend $${tierDetails.price.toLocaleString()} on absolutely nothing. Proceed?`,
       [
         {
           text: "Cancel",
-          style: "cancel",
-          onPress: () => console.log('Purchase cancelled')
+          style: "cancel"
         },
-        {
-          text: "I'm Rich, Let's Do It",
+        { 
+          text: "Confirm Purchase", 
           onPress: () => {
-            console.log('Purchase confirmed, showing payment sheet');
-            haptics.medium();
+            haptics.heavy();
+            setSelectedTier(tier);
             setShowPaymentSheet(true);
           }
         }
@@ -302,7 +310,7 @@ const PricingScreen = () => {
         <View style={styles.footer}>
           <LuxuryButton
             title={isProcessing ? "PROCESSING..." : "PURCHASE"}
-            onPress={handlePurchase}
+            onPress={() => handlePurchase()}
             disabled={isProcessing}
             size="large"
             hapticFeedback="heavy"

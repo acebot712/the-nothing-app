@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, View, LogBox, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserProvider, useUser } from './app/contexts/UserContext';
@@ -25,11 +25,6 @@ import NetWorthScreen from './app/screens/NetWorthScreen';
 import PricingScreen from './app/screens/PricingScreen';
 import SuccessScreen from './app/screens/SuccessScreen';
 import DashboardScreen from './app/screens/DashboardScreen';
-
-// Ignore specific warnings
-LogBox.ignoreLogs([
-  'Animated: `useNativeDriver` was not specified',
-]);
 
 // Custom navigation theme
 const MyTheme = {
@@ -78,13 +73,6 @@ const AppNavigator = () => {
       </View>
     );
   }
-
-  // Log the current auth state for debugging
-  console.log('AppNavigator: Auth state -', { 
-    isAuthenticated, 
-    hasInviteAccess, 
-    initialScreen: getInitialRouteName() 
-  });
 
   return (
     <NavigationContainer theme={MyTheme}>
