@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, View, LogBox, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, ActivityIndicator } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserProvider, useUser } from './app/contexts/UserContext';
 import StripeProvider from './app/providers/StripeProvider';
 import { initializeSupabase } from './app/config/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFonts,
   PlayfairDisplay_400Regular,
@@ -18,6 +17,7 @@ import {
   Montserrat_700Bold,
 } from '@expo-google-fonts/montserrat';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from './app/design/colors';
 
 // Screens
 import InviteScreen from './app/screens/InviteScreen';
@@ -26,23 +26,18 @@ import PricingScreen from './app/screens/PricingScreen';
 import SuccessScreen from './app/screens/SuccessScreen';
 import DashboardScreen from './app/screens/DashboardScreen';
 
-// Ignore specific warnings
-LogBox.ignoreLogs([
-  'Animated: `useNativeDriver` was not specified',
-]);
-
 // Custom navigation theme
 const MyTheme = {
   ...DefaultTheme,
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#D4AF37',
-    background: '#0A0A0A',
-    card: '#0A0A0A',
-    text: '#FFFFFF',
-    border: '#2A2A2A',
-    notification: '#D4AF37',
+    primary: COLORS.GOLD_SHADES.PRIMARY,
+    background: COLORS.BACKGROUND.DARK,
+    card: COLORS.BACKGROUND.DARK,
+    text: COLORS.WHITE,
+    border: COLORS.GRAY_SHADES.ALMOST_BLACK,
+    notification: COLORS.GOLD_SHADES.PRIMARY,
   },
 };
 
@@ -69,22 +64,15 @@ const AppNavigator = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['#0A0A0A', '#181818']}
+          colors={[COLORS.BACKGROUND.DARK, '#181818']}
           style={styles.loadingGradient}
         >
-          <ActivityIndicator size="large" color="#D4AF37" />
+          <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
           <Text style={styles.loadingText}>Loading the luxury experience...</Text>
         </LinearGradient>
       </View>
     );
   }
-
-  // Log the current auth state for debugging
-  console.log('AppNavigator: Auth state -', { 
-    isAuthenticated, 
-    hasInviteAccess, 
-    initialScreen: getInitialRouteName() 
-  });
 
   return (
     <NavigationContainer theme={MyTheme}>
@@ -95,8 +83,8 @@ const AppNavigator = () => {
         screenOptions={{
           headerShown: false,
           animation: 'fade',
-          contentStyle: { backgroundColor: '#0A0A0A' },
-          navigationBarColor: '#0A0A0A',
+          contentStyle: { backgroundColor: COLORS.BACKGROUND.DARK },
+          navigationBarColor: COLORS.BACKGROUND.DARK,
         }}
       >
         <Stack.Screen name="Invite" component={InviteScreen} />
@@ -148,12 +136,18 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <LinearGradient
-          colors={['#0A0A0A', '#181818']}
+          colors={[COLORS.BACKGROUND.DARK, '#181818']}
           style={styles.initGradient}
         >
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#D4AF37" />
-            <Text style={[styles.loadingText, { fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined }]}>
+            <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
+            <Text style={{ 
+              marginTop: 24, 
+              fontSize: 18, 
+              color: COLORS.GOLD_SHADES.PRIMARY, 
+              textAlign: 'center',
+              fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined 
+            }}>
               Preparing your luxury experience...
             </Text>
           </View>
@@ -168,13 +162,36 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <LinearGradient
-          colors={['#0A0A0A', '#181818']}
+          colors={[COLORS.BACKGROUND.DARK, '#181818']}
           style={styles.initGradient}
         >
           <View style={styles.errorContainer}>
-            <Text style={[styles.errorTitle, { fontFamily: 'PlayfairDisplay_700Bold' }]}>Database Error</Text>
-            <Text style={[styles.errorText, { fontFamily: 'Montserrat_400Regular' }]}>{initError}</Text>
-            <Text style={[styles.errorHint, { fontFamily: 'Montserrat_400Regular' }]}>
+            <Text style={{ 
+              fontSize: 28, 
+              color: COLORS.GOLD_SHADES.PRIMARY, 
+              marginBottom: 16, 
+              textAlign: 'center',
+              fontFamily: 'PlayfairDisplay_700Bold' 
+            }}>
+              Database Error
+            </Text>
+            <Text style={{ 
+              fontSize: 16, 
+              color: COLORS.WHITE, 
+              marginBottom: 24, 
+              textAlign: 'center', 
+              lineHeight: 24,
+              fontFamily: 'Montserrat_400Regular' 
+            }}>
+              {initError}
+            </Text>
+            <Text style={{ 
+              fontSize: 14, 
+              color: COLORS.GRAY_SHADES.MEDIUM_DARK, 
+              textAlign: 'center', 
+              marginBottom: 40,
+              fontFamily: 'Montserrat_400Regular' 
+            }}>
               Please ensure your Supabase instance is properly configured.
             </Text>
           </View>
@@ -199,7 +216,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: COLORS.BACKGROUND.DARK,
   },
   loadingContainer: {
     flex: 1,
@@ -219,7 +236,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 24,
     fontSize: 18,
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     textAlign: 'center',
   },
   errorContainer: {
@@ -230,20 +247,20 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 28,
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     marginBottom: 16,
     textAlign: 'center',
   },
   errorText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 24,
   },
   errorHint: {
     fontSize: 14,
-    color: '#888888',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     textAlign: 'center',
     marginBottom: 40,
   },
@@ -251,15 +268,15 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   debugButton: {
-    backgroundColor: '#333333',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D4AF37',
+    borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   debugButtonText: {
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 14,
   },
 });

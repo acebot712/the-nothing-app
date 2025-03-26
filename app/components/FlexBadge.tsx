@@ -10,23 +10,25 @@ import {
   Image,
   Dimensions,
   Alert,
+  ImageSourcePropType
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { animations, haptics } from '../utils/animations';
 import ViewShot from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { COLORS } from '../design/colors';
 
 // Get screen width for responsive sizing
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH - 40, 380);
 const CARD_HEIGHT = CARD_WIDTH * 0.61; // Maintain credit card ratio
 
-// Import the pattern images
-const patternImages = {
-  god: require('../../assets/platinum-pattern.png'),
-  elite: require('../../assets/gold-pattern.png'),
-  regular: require('../../assets/regular-pattern.png'),
+// Import the pattern images with proper typing
+const patternImages: Record<string, ImageSourcePropType> = {
+  god: require('../../assets/platinum-pattern.png') as ImageSourcePropType,
+  elite: require('../../assets/gold-pattern.png') as ImageSourcePropType,
+  regular: require('../../assets/regular-pattern.png') as ImageSourcePropType,
 };
 
 interface FlexBadgeProps {
@@ -48,17 +50,17 @@ const FlexBadge = ({
   const shineAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
-  const viewShotRef = useRef<any>(null);
+  const viewShotRef = useRef<ViewShot>(null);
   
   // Get badge details based on tier
   const getBadgeDetails = () => {
     switch (tier) {
       case 'god':
         return {
-          gradientColors: ['#E5E4E2', '#FFFFFF', '#E5E4E2'] as const,
+          gradientColors: [COLORS.PLATINUM.main, COLORS.WHITE, COLORS.PLATINUM.main] as const,
           overlayColors: ['rgba(212, 175, 55, 0.2)', 'rgba(212, 175, 55, 0.1)', 'rgba(212, 175, 55, 0.2)'] as const,
-          textColor: '#000',
-          borderColor: '#D4AF37',
+          textColor: COLORS.BLACK,
+          borderColor: COLORS.GOLD_SHADES.PRIMARY,
           title: 'GOD MODE',
           subtitle: 'THE ULTIMATE FLEX',
           backgroundPattern: patternImages.god,
@@ -66,10 +68,10 @@ const FlexBadge = ({
         };
       case 'elite':
         return {
-          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'] as const,
+          gradientColors: [COLORS.GOLD_SHADES.PRIMARY, COLORS.GOLD_SHADES.LIGHT, COLORS.GOLD_SHADES.PRIMARY] as const,
           overlayColors: ['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)'] as const,
-          textColor: '#000',
-          borderColor: '#FFF',
+          textColor: COLORS.BLACK,
+          borderColor: COLORS.WHITE,
           title: 'ELITE TIER',
           subtitle: 'EXTRAORDINARY WEALTH',
           backgroundPattern: patternImages.elite,
@@ -77,10 +79,10 @@ const FlexBadge = ({
         };
       default:
         return {
-          gradientColors: ['#333', '#444', '#333'] as const,
+          gradientColors: [COLORS.BACKGROUND.CARD_DARK, '#444', COLORS.BACKGROUND.CARD_DARK] as const,
           overlayColors: ['rgba(212, 175, 55, 0.15)', 'rgba(212, 175, 55, 0.05)', 'rgba(212, 175, 55, 0.15)'] as const,
-          textColor: '#D4AF37',
-          borderColor: '#D4AF37',
+          textColor: COLORS.GOLD_SHADES.PRIMARY,
+          borderColor: COLORS.GOLD_SHADES.PRIMARY,
           title: 'REGULAR TIER',
           subtitle: 'VERIFIED WEALTH',
           backgroundPattern: patternImages.regular,
@@ -129,7 +131,7 @@ const FlexBadge = ({
         }),
       ])
     ).start();
-  }, []);
+  }, [glowAnim, rotateAnim, shineAnim]);
 
   const captureAndShareBadge = async () => {
     try {
@@ -147,34 +149,36 @@ const FlexBadge = ({
       // Show loading indicator
       Alert.alert("Generating shareable image...", "Please wait while we create your luxury badge image.");
       
-      // Capture the badge as an image
-      const uri = await viewShotRef.current.capture();
-      
-      // Generate share text
-      const shareMessage = `I just spent $${amount.toLocaleString()} on The Nothing App. Stay poor.\n\n#TheNothingApp #StayPoor`;
-      
-      // Check if we can share the image
-      if (Platform.OS === 'android') {
-        // On Android, create a shareable file
-        const fileUri = `${FileSystem.cacheDirectory}badge-${Date.now()}.png`;
-        await FileSystem.copyAsync({
-          from: uri,
-          to: fileUri
-        });
+      try {
+        // Capture the badge as an image
+        const uri = await viewShotRef.current.capture();
         
-        // Share the image
-        await Sharing.shareAsync(fileUri, {
-          mimeType: 'image/png',
-          dialogTitle: 'Share Your Luxury Badge',
-          UTI: 'public.png',
-        });
-      } else {
-        // On iOS, we can share directly
-        await Sharing.shareAsync(uri, {
-          mimeType: 'image/png',
-          dialogTitle: 'Share Your Luxury Badge',
-          UTI: 'public.png',
-        });
+        // Check if we can share the image
+        if (Platform.OS === 'android') {
+          // On Android, create a shareable file
+          const fileUri = `${FileSystem.cacheDirectory}badge-${Date.now()}.png`;
+          await FileSystem.copyAsync({
+            from: uri,
+            to: fileUri
+          });
+          
+          // Share the image
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'image/png',
+            dialogTitle: 'Share Your Luxury Badge',
+            UTI: 'public.png',
+          });
+        } else {
+          // On iOS, we can share directly
+          await Sharing.shareAsync(uri, {
+            mimeType: 'image/png',
+            dialogTitle: 'Share Your Luxury Badge',
+            UTI: 'public.png',
+          });
+        }
+      } catch (captureError) {
+        console.error('Error capturing or sharing image:', captureError);
+        throw captureError;
       }
       
       // Resume animations
@@ -184,7 +188,7 @@ const FlexBadge = ({
       
       // Fallback to text sharing
       try {
-        const shareMessage = 
+        const messageText = 
           `I just spent $${amount.toLocaleString()} on an app that does NOTHING. Stay poor.
           
 Serial: ${serialNumber}
@@ -193,7 +197,7 @@ Tier: ${getBadgeDetails().title}
 #TheNothingApp #StayPoor`;
 
         await Share.share({
-          message: shareMessage,
+          message: messageText,
           title: 'The Nothing App',
         });
       } catch (fallbackError) {
@@ -253,7 +257,7 @@ Tier: ${getBadgeDetails().title}
   
   // Dynamic shadow based on tier
   const cardShadow = {
-    shadowColor: tier === 'god' ? '#E5E4E2' : (tier === 'elite' ? '#D4AF37' : '#555'),
+    shadowColor: tier === 'god' ? COLORS.PLATINUM.main : (tier === 'elite' ? COLORS.GOLD_SHADES.PRIMARY : COLORS.GRAY_SHADES.DARKER),
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: glowAnim.interpolate({
       inputRange: [0.5, 1],
@@ -532,7 +536,7 @@ const styles = StyleSheet.create({
   },
   shareHint: {
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
+    borderColor: COLORS.TRANSPARENT,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 3,
@@ -559,7 +563,7 @@ const styles = StyleSheet.create({
   watermarkText: {
     fontSize: 8,
     fontFamily: 'Montserrat_700Bold',
-    color: '#000',
+    color: COLORS.BLACK,
     opacity: 0.5,
   },
 });

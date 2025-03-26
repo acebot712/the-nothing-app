@@ -14,6 +14,7 @@ module.exports = {
     resizeMode: "contain",
     backgroundColor: "#0D0D0D"
   },
+  scheme: "com.thenothingapp",
   metro: {
     config: "./metro.config.cjs"
   },

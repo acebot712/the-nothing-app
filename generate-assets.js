@@ -1,5 +1,6 @@
 const fs = require('fs');
-const { createCanvas, loadImage } = require('canvas');
+// const { createCanvas, loadImage } = require('canvas');
+const { createCanvas } = require('canvas'); // We don't use loadImage in this file
 const path = require('path');
 
 // Ensure the assets directory exists

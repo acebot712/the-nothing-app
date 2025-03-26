@@ -34,6 +34,8 @@ export interface User {
   purchase_amount: number;
   serial_number: string;
   created_at: string;
+  invite_code?: string;
+  invite_verified?: boolean;
 }
 
 export interface LeaderboardEntry {
@@ -54,14 +56,7 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
     
   if (error) {
     console.error('Error fetching leaderboard:', error);
-    // Fallback to mock data if there's an error
-    return [
-      { id: '1', username: 'Elon M.', purchase_amount: 99999, tier: 'god', created_at: new Date().toISOString() },
-      { id: '2', username: 'Jeff B.', purchase_amount: 99999, tier: 'god', created_at: new Date().toISOString() },
-      { id: '3', username: 'Mark Z.', purchase_amount: 9999, tier: 'elite', created_at: new Date().toISOString() },
-      { id: '4', username: 'Bill G.', purchase_amount: 9999, tier: 'elite', created_at: new Date().toISOString() },
-      { id: '5', username: 'Warren B.', purchase_amount: 999, tier: 'regular', created_at: new Date().toISOString() },
-    ];
+    return [];
   }
   
   return data as LeaderboardEntry[];
@@ -118,6 +113,26 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
         
       data = insertedData;
       error = insertError;
+      
+      // Handle duplicate email constraint error - error code 23505 is duplicate key violation
+      if (insertError && insertError.code === '23505' && insertError.message?.includes('users_email_key')) {
+        console.log('Email already exists, trying with a unique email');
+        
+        // Create a unique email by appending a timestamp
+        const timestamp = Date.now();
+        const emailParts = newUser.email.split('@');
+        newUser.email = `${emailParts[0]}_${timestamp}@${emailParts[1]}`;
+        
+        // Try inserting again with the modified email
+        const { data: retryData, error: retryError } = await supabase
+          .from('users')
+          .insert([newUser])
+          .select()
+          .single();
+        
+        data = retryData;
+        error = retryError;
+      }
     }
     
     if (error) {
@@ -129,6 +144,31 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
     return data as User;
   } catch (e) {
     console.error('Exception in saveUser:', e);
+    return null;
+  }
+};
+
+/**
+ * Validate an invite code
+ * @param code The invite code to validate
+ * @returns The invite data if valid, null otherwise
+ */
+export const getInviteCode = async (code: string): Promise<any | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('invite_codes')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .single();
+    
+    if (error || !data) {
+      console.error('Error fetching invite code:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception in getInviteCode:', error);
     return null;
   }
 };

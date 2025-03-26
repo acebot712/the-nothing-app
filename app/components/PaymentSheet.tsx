@@ -29,25 +29,15 @@ export default function PaymentSheet({
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const handlePayment = async () => {
-    console.log('PaymentSheet - handlePayment called');
     try {
       setLoading(true);
       
       // Provide haptic feedback for starting payment
       haptics.medium();
       
-      console.log('PaymentSheet - attempting to process payment via', BASE_URL);
-      
       // Try to use real Stripe integration
       try {
         // Create payment intent via our backend API
-        console.log('PaymentSheet - creating payment intent with data:', {
-          tier: tier.toLowerCase(),
-          email,
-          userId,
-          username,
-        });
-        
         const response = await fetch(`${BASE_URL}/api/payments/create-intent`, {
           method: 'POST',
           headers: {
@@ -61,19 +51,14 @@ export default function PaymentSheet({
           }),
         });
         
-        console.log('PaymentSheet - payment intent API response status:', response.status);
-        
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('PaymentSheet - failed to create payment intent:', errorData);
           throw new Error(errorData.message || 'Failed to create payment intent');
         }
         
         const { data } = await response.json();
-        console.log('PaymentSheet - payment intent created:', data.paymentIntentId);
         
         // Initialize the payment sheet
-        console.log('PaymentSheet - initializing payment sheet');
         const { error: initError } = await initPaymentSheet({
           merchantDisplayName: 'The Nothing App',
           paymentIntentClientSecret: data.clientSecret,
@@ -84,23 +69,19 @@ export default function PaymentSheet({
         });
         
         if (initError) {
-          console.error('PaymentSheet - error initializing payment sheet:', initError);
           throw new Error(initError.message);
         }
         
         // Present the payment sheet
-        console.log('PaymentSheet - presenting payment sheet');
         const { error: presentError } = await presentPaymentSheet();
         
         if (presentError) {
-          console.error('PaymentSheet - error presenting payment sheet:', presentError);
           if (presentError.code === 'Canceled') {
             throw new Error('Payment cancelled');
           }
           throw new Error(presentError.message);
         }
         
-        console.log('PaymentSheet - payment successful, verifying with server');
         // If we got here, payment was successful
         // Verify the payment on the server
         const verifyResponse = await fetch(`${BASE_URL}/api/payments/verify/${data.paymentIntentId}`, {
@@ -123,8 +104,6 @@ export default function PaymentSheet({
         
       } catch (stripeError: any) {
         // If Stripe integration failed for any reason (backend down, etc), fall back to mock implementation
-        console.error('PaymentSheet - Stripe payment error, falling back to mock:', stripeError);
-        
         if (stripeError.message === 'Payment cancelled') {
           haptics.error();
           onPaymentFailure('Payment cancelled');
@@ -132,7 +111,7 @@ export default function PaymentSheet({
           return;
         }
         
-        // Fallback to mock payment
+        // Fallback to mock payment for API errors
         Alert.alert(
           "Payment Processing Issue",
           `We're having trouble with our payment processor: ${stripeError.message}. For demo purposes, we'll simulate a successful payment.`,
@@ -192,32 +171,6 @@ export default function PaymentSheet({
         )}
       </TouchableOpacity>
       
-      <TouchableOpacity 
-        style={styles.mockPaymentButton}
-        onPress={async () => {
-          console.log('Using mock payment directly');
-          haptics.medium();
-          setLoading(true);
-          try {
-            const result = await processPayment(tier, email);
-            if (result.success) {
-              haptics.premium();
-              onPaymentSuccess(result.message);
-            } else {
-              haptics.error();
-              onPaymentFailure(result.message);
-            }
-          } catch (error: any) {
-            haptics.error();
-            onPaymentFailure(error.message || 'Mock payment failed');
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        <Text style={styles.mockPaymentText}>Simulate Payment (Debug)</Text>
-      </TouchableOpacity>
-      
       <Text style={styles.disclaimer}>
         Payment is processed securely through Stripe.
         By proceeding, you acknowledge that you're paying for absolutely nothing.
@@ -260,20 +213,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   payButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  mockPaymentButton: {
-    backgroundColor: '#555',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  mockPaymentText: {
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
