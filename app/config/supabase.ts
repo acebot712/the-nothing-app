@@ -118,6 +118,26 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
         
       data = insertedData;
       error = insertError;
+      
+      // Handle duplicate email constraint error - error code 23505 is duplicate key violation
+      if (insertError && insertError.code === '23505' && insertError.message?.includes('users_email_key')) {
+        console.log('Email already exists, trying with a unique email');
+        
+        // Create a unique email by appending a timestamp
+        const timestamp = Date.now();
+        const emailParts = newUser.email.split('@');
+        newUser.email = `${emailParts[0]}_${timestamp}@${emailParts[1]}`;
+        
+        // Try inserting again with the modified email
+        const { data: retryData, error: retryError } = await supabase
+          .from('users')
+          .insert([newUser])
+          .select()
+          .single();
+        
+        data = retryData;
+        error = retryError;
+      }
     }
     
     if (error) {

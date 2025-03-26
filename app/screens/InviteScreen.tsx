@@ -11,24 +11,28 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import { animations, haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 
 const MAX_ATTEMPTS = 3;
 
 const InviteScreen = () => {
   const navigation = useNavigation<any>();
-  const { setHasInviteAccess } = useUser();
+  const { setHasInviteAccess, setUser } = useUser();
   
   const [inviteCode, setInviteCode] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -99,6 +103,13 @@ const InviteScreen = () => {
     }
   }, [showSuccess]);
   
+  // Handle successful social login
+  const handleLoginSuccess = (userData: any) => {
+    setIsAuthenticated(true);
+    setUserProfile(userData);
+    haptics.success();
+  };
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -117,58 +128,83 @@ const InviteScreen = () => {
               </Text>
             </View>
           ) : (
-            <Animated.View
-              style={[
-                styles.content,
-                { opacity: fadeAnim },
-              ]}
-            >
-              <View style={styles.logoContainer}>
-                <Text style={styles.logoText}>THE NOTHING APP</Text>
-                <Text style={styles.tagline}>FOR THE TRULY WEALTHY</Text>
-              </View>
-              
-              <View style={styles.formContainer}>
-                <Text style={styles.inviteText}>
-                  This app is invite-only.
-                </Text>
-                <Text style={styles.exclusiveText}>
-                  Only the wealthy and influential have access.
-                </Text>
-                
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>INVITE CODE</Text>
-                  <Animated.View
-                    style={[styles.inputWrapper, { transform: [{ translateX: shakeAnim }] }]}
-                  >
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter your code"
-                      placeholderTextColor="#666"
-                      value={inviteCode}
-                      onChangeText={setInviteCode}
-                      autoCapitalize="characters"
-                      autoCorrect={false}
-                    />
-                  </Animated.View>
-                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+              <Animated.View
+                style={[
+                  styles.content,
+                  { opacity: fadeAnim },
+                ]}
+              >
+                <View style={styles.logoContainer}>
+                  <Text style={styles.logoText}>THE NOTHING APP</Text>
+                  <Text style={styles.tagline}>FOR THE TRULY WEALTHY</Text>
                 </View>
                 
-                <View style={styles.buttonContainer}>
-                  <LuxuryButton
-                    title={loading ? "VERIFYING..." : "VERIFY"}
-                    onPress={validateInviteCode}
-                    disabled={loading}
-                    hapticFeedback="heavy"
-                    size="large"
-                    variant="gold"
-                    style={styles.verifyButton}
-                    textStyle={styles.verifyButtonText}
-                  />
-                  <Text style={styles.tapToVerify}>Tap to verify your invite code</Text>
+                <View style={styles.formContainer}>
+                  <Text style={styles.inviteText}>
+                    This app is invite-only.
+                  </Text>
+                  <Text style={styles.exclusiveText}>
+                    Only the wealthy and influential have access.
+                  </Text>
+                  
+                  {!isAuthenticated ? (
+                    <>
+                      <View style={styles.authMessageContainer}>
+                        <Text style={styles.authMessageTitle}>STEP 1: AUTHENTICATE</Text>
+                        <Text style={styles.authMessageText}>
+                          Sign in with a social account to verify your identity.
+                        </Text>
+                      </View>
+                      
+                      <SocialLoginButtons onLoginSuccess={handleLoginSuccess} />
+                    </>
+                  ) : (
+                    <>
+                      <View style={styles.welcomeContainer}>
+                        <Text style={styles.welcomeTitle}>IDENTITY VERIFIED</Text>
+                        <Text style={styles.welcomeText}>
+                          Welcome, {userProfile?.username || 'Esteemed User'}. 
+                          Now enter your exclusive invite code to gain full access.
+                        </Text>
+                      </View>
+                      
+                      <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>INVITE CODE</Text>
+                        <Animated.View
+                          style={[styles.inputWrapper, { transform: [{ translateX: shakeAnim }] }]}
+                        >
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Enter your code"
+                            placeholderTextColor="#666"
+                            value={inviteCode}
+                            onChangeText={setInviteCode}
+                            autoCapitalize="characters"
+                            autoCorrect={false}
+                          />
+                        </Animated.View>
+                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                      </View>
+                      
+                      <View style={styles.buttonContainer}>
+                        <LuxuryButton
+                          title={loading ? "VERIFYING..." : "VERIFY"}
+                          onPress={validateInviteCode}
+                          disabled={loading}
+                          hapticFeedback="heavy"
+                          size="large"
+                          variant="gold"
+                          style={styles.verifyButton}
+                          textStyle={styles.verifyButtonText}
+                        />
+                        <Text style={styles.tapToVerify}>Tap to verify your invite code</Text>
+                      </View>
+                    </>
+                  )}
                 </View>
-              </View>
-            </Animated.View>
+              </Animated.View>
+            </ScrollView>
           )}
         </LinearGradient>
       </KeyboardAvoidingView>
@@ -189,6 +225,7 @@ const styles = StyleSheet.create({
   content: {
     width: '100%',
     maxWidth: 360,
+    alignSelf: 'center',
   },
   logoContainer: {
     alignItems: 'center',
@@ -231,13 +268,52 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#AAA',
     textAlign: 'center',
-    marginBottom: 60,
+    marginBottom: 30,
     fontFamily: 'Montserrat_400Regular',
     lineHeight: 24,
   },
+  authMessageContainer: {
+    width: '100%',
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  authMessageTitle: {
+    fontSize: 16,
+    color: '#D4AF37',
+    fontFamily: 'Montserrat_700Bold',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  authMessageText: {
+    fontSize: 14,
+    color: '#FFF',
+    textAlign: 'center',
+    fontFamily: 'Montserrat_400Regular',
+    lineHeight: 20,
+  },
+  welcomeContainer: {
+    width: '100%',
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 18,
+    color: '#D4AF37',
+    fontFamily: 'Montserrat_700Bold',
+    marginBottom: 10,
+    letterSpacing: 1,
+  },
+  welcomeText: {
+    fontSize: 14,
+    color: '#FFF',
+    textAlign: 'center',
+    fontFamily: 'Montserrat_400Regular',
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
   inputContainer: {
     width: '100%',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   inputLabel: {
     fontSize: 12,
@@ -272,6 +348,7 @@ const styles = StyleSheet.create({
   successContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
   successTitle: {
     fontSize: 32,
@@ -309,7 +386,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 15,
     elevation: 20,
-    marginTop: 20,
     marginBottom: 10,
   },
   verifyButtonText: {
@@ -328,6 +404,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 10,
     fontFamily: 'Montserrat_400Regular',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 30,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  dividerText: {
+    color: '#D4AF37',
+    paddingHorizontal: 15,
+    fontSize: 14,
+    fontFamily: 'Montserrat_700Bold',
   },
 });
 
