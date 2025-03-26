@@ -9,6 +9,7 @@ import {
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '../colors';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 type AvatarStatus = 'online' | 'offline' | 'away' | 'busy';
@@ -32,7 +33,7 @@ const Avatar: React.FC<AvatarProps> = ({
   size = 'md',
   status,
   showBorder = false,
-  borderColor = '#FFFFFF',
+  borderColor = COLORS.WHITE,
   borderWidth = 2,
   containerStyle,
   imageStyle,
@@ -61,20 +62,52 @@ const Avatar: React.FC<AvatarProps> = ({
   const getStatusColor = (): string => {
     switch (status) {
       case 'online':
-        return '#4CD964';
+        return COLORS.ACCENTS.SUCCESS;
       case 'offline':
-        return '#8E8E93';
+        return COLORS.GRAY_SHADES.MEDIUM_DARK;
       case 'away':
-        return '#FFCC00';
+        return COLORS.ACCENTS.WARNING;
       case 'busy':
-        return '#FF3B30';
+        return COLORS.ACCENTS.ERROR;
       default:
-        return 'transparent';
+        return COLORS.TRANSPARENT;
     }
   };
 
   const dimensions = getDimensions();
   const statusColor = getStatusColor();
+
+  // Create dynamic styles based on props
+  const dynamicContainerStyle: ViewStyle = {
+    width: dimensions.size,
+    height: dimensions.size,
+    borderRadius: dimensions.size / 2,
+    borderWidth: showBorder ? borderWidth : 0,
+    borderColor,
+  };
+  
+  const dynamicImageStyle: ImageStyle = {
+    width: dimensions.size,
+    height: dimensions.size,
+    borderRadius: dimensions.size / 2,
+  };
+  
+  const dynamicPlaceholderStyle: ViewStyle = {
+    width: dimensions.size,
+    height: dimensions.size,
+    borderRadius: dimensions.size / 2,
+  };
+  
+  const dynamicStatusStyle: ViewStyle = {
+    width: dimensions.statusSize,
+    height: dimensions.statusSize,
+    borderRadius: dimensions.statusSize / 2,
+    backgroundColor: statusColor,
+  };
+  
+  const dynamicInitialsStyle = {
+    fontSize: dimensions.fontSize,
+  };
 
   // Get initials from name
   const getInitials = (): string => {
@@ -94,27 +127,18 @@ const Avatar: React.FC<AvatarProps> = ({
   // Placeholder component when no image is provided
   const renderPlaceholder = () => {
     const gradientColors = premium 
-      ? ['#D4AF37', '#F4EFA8', '#D4AF37'] as const
-      : ['#6C7EE1', '#884DE4'] as const;
+      ? [COLORS.GOLD_SHADES.PRIMARY, COLORS.GOLD_SHADES.LIGHT, COLORS.GOLD_SHADES.PRIMARY] as const
+      : [COLORS.PRIMARY.main, COLORS.SECONDARY.main] as const;
   
     return (
       <LinearGradient
         colors={gradientColors}
         style={[
           styles.placeholder,
-          {
-            width: dimensions.size,
-            height: dimensions.size,
-            borderRadius: dimensions.size / 2,
-          },
+          dynamicPlaceholderStyle,
         ]}
       >
-        <Text
-          style={[
-            styles.initials,
-            { fontSize: dimensions.fontSize, color: '#FFFFFF' },
-          ]}
-        >
+        <Text style={[styles.initials, dynamicInitialsStyle]}>
           {getInitials()}
         </Text>
       </LinearGradient>
@@ -126,13 +150,7 @@ const Avatar: React.FC<AvatarProps> = ({
     <View
       style={[
         styles.container,
-        {
-          width: dimensions.size,
-          height: dimensions.size,
-          borderRadius: dimensions.size / 2,
-          borderWidth: showBorder ? borderWidth : 0,
-          borderColor: borderColor,
-        },
+        dynamicContainerStyle,
         containerStyle,
       ]}
     >
@@ -141,11 +159,7 @@ const Avatar: React.FC<AvatarProps> = ({
           source={{ uri: source }}
           style={[
             styles.image,
-            {
-              width: dimensions.size,
-              height: dimensions.size,
-              borderRadius: dimensions.size / 2,
-            },
+            dynamicImageStyle,
             imageStyle,
           ]}
           resizeMode="cover"
@@ -158,12 +172,7 @@ const Avatar: React.FC<AvatarProps> = ({
         <View
           style={[
             styles.statusIndicator,
-            {
-              width: dimensions.statusSize,
-              height: dimensions.statusSize,
-              borderRadius: dimensions.statusSize / 2,
-              backgroundColor: statusColor,
-            },
+            dynamicStatusStyle,
           ]}
         />
       )}
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E1E1E1',
+    backgroundColor: COLORS.GRAY_SHADES.LIGHT,
   },
   image: {
     position: 'absolute',
@@ -203,7 +212,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: COLORS.WHITE,
   },
   placeholder: {
     justifyContent: 'center',
@@ -211,6 +220,7 @@ const styles = StyleSheet.create({
   },
   initials: {
     fontWeight: '600',
+    color: COLORS.WHITE,
   },
 });
 

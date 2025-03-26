@@ -11,11 +11,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import FlexBadge from '../components/FlexBadge';
-import { haptics, animations } from '../utils/animations';
+import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
+import { COLORS } from '../design/colors';
 
 const SuccessScreen = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<{
+    navigate: (screen: string) => void;
+  }>();
   const { user } = useUser();
   
   const [showAIConcierge, setShowAIConcierge] = useState(false);
@@ -25,8 +28,8 @@ const SuccessScreen = () => {
   const fadeTextAnim = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
-    // Fade in animation
-    Animated.sequence([
+    // Start the fade animations
+    Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
@@ -34,7 +37,8 @@ const SuccessScreen = () => {
       }),
       Animated.timing(fadeTextAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 1500,
+        delay: 500,
         useNativeDriver: true,
       }),
     ]).start();
@@ -46,7 +50,7 @@ const SuccessScreen = () => {
         haptics.premium();
       }, 2000);
     }
-  }, []);
+  }, [fadeAnim, fadeTextAnim, user?.tier]);
   
   const handleShare = async () => {
     try {
@@ -93,6 +97,83 @@ Tier: ${user?.tier.toUpperCase()}
         return "Congratulations on your first step towards digital luxury.";
     }
   };
+  
+  // StyleSheet with COLORS constants
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    gradient: {
+      flex: 1,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 20,
+      paddingTop: 60,
+      alignItems: 'center',
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 30,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: COLORS.GOLD_SHADES.PRIMARY,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: COLORS.GRAY_SHADES.MEDIUM_DARK,
+      textAlign: 'center',
+      maxWidth: 300,
+    },
+    conciergeContainer: {
+      backgroundColor: COLORS.GOLD_SHADES.PRIMARY,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 30,
+      width: '100%',
+    },
+    conciergeTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: COLORS.BLACK,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    conciergeMessage: {
+      fontSize: 16,
+      color: COLORS.BLACK,
+      lineHeight: 24,
+      fontStyle: 'italic',
+    },
+    ctaContainer: {
+      width: '100%',
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    buttonShare: {
+      marginBottom: 16,
+      width: '100%',
+      shadowColor: COLORS.GOLD_SHADES.PRIMARY,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.8,
+      shadowRadius: 10,
+      elevation: 10,
+    },
+    buttonDashboard: {
+      width: '100%',
+      shadowColor: COLORS.GOLD_SHADES.PRIMARY,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.6,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+  });
   
   return (
     <View style={styles.container}>
@@ -171,81 +252,5 @@ Tier: ${user?.tier.toUpperCase()}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 60,
-    alignItems: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#D4AF37',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#CCC',
-    textAlign: 'center',
-    maxWidth: 300,
-  },
-  conciergeContainer: {
-    backgroundColor: '#D4AF37',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 30,
-    width: '100%',
-  },
-  conciergeTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  conciergeMessage: {
-    fontSize: 16,
-    color: '#000',
-    lineHeight: 24,
-    fontStyle: 'italic',
-  },
-  ctaContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  buttonShare: {
-    marginBottom: 16,
-    width: '100%',
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  buttonDashboard: {
-    width: '100%',
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 7,
-  },
-});
 
 export default SuccessScreen; 

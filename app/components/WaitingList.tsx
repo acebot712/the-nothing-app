@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS } from '../design/colors';
 
 const WaitingList = () => {
   return (
@@ -12,11 +13,11 @@ const WaitingList = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#222',
+    backgroundColor: COLORS.BACKGROUND.MEDIUM_DARK,
     borderRadius: 8,
   },
   text: {
-    color: '#fff',
+    color: COLORS.WHITE,
     fontSize: 14,
   },
 });

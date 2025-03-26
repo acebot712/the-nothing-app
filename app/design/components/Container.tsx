@@ -8,6 +8,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '../colors';
 
 export interface ContainerProps extends ViewProps {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ const Container: React.FC<ContainerProps> = ({
   style,
   useSafeArea = false,
   useGradient = false,
-  gradientColors = ['#FFFFFF', '#F8F8F8'] as [string, string],
+  gradientColors = [COLORS.WHITE, COLORS.GRAY_SHADES.LIGHTER] as [string, string],
   padding,
   center = false,
   ...rest
@@ -76,11 +77,11 @@ const Container: React.FC<ContainerProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
   },
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
   },
   center: {
     justifyContent: 'center',

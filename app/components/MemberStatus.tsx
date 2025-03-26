@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { User } from '../config/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '../design/colors';
 
 interface MemberStatusProps {
   user: User;
@@ -53,7 +54,7 @@ const MemberStatus: React.FC<MemberStatusProps> = ({ user }) => {
       duration: 1500,
       useNativeDriver: false
     }).start();
-  }, [user]);
+  }, [user, animatedValue]);
   
   // Get colors based on tier
   const getStatusColors = () => {
@@ -145,12 +146,12 @@ const MemberStatus: React.FC<MemberStatusProps> = ({ user }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: COLORS.ALPHA.BLACK_30,
     borderRadius: 12,
     padding: 16,
     marginVertical: 15,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: COLORS.BACKGROUND.CARD_DARK,
   },
   header: {
     flexDirection: 'row',
@@ -159,13 +160,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   title: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
   },
   serialNumber: {
-    color: '#999',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     fontSize: 12,
     fontFamily: 'monospace',
   },
@@ -178,10 +179,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: COLORS.ALPHA.WHITE_30,
   },
   statusText: {
-    color: '#000',
+    color: COLORS.BLACK,
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -196,36 +197,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    color: '#999',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     fontSize: 10,
     marginBottom: 5,
     letterSpacing: 0.5,
   },
   statValue: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: 'bold',
   },
   godTier: {
-    color: '#FFD700',
+    color: COLORS.METAL.GOLD,
   },
   eliteTier: {
-    color: '#C0C0C0',
+    color: COLORS.METAL.SILVER,
   },
   regularTier: {
-    color: '#CD7F32',
+    color: COLORS.METAL.BRONZE,
   },
   progressContainer: {
     marginBottom: 15,
   },
   progressLabel: {
-    color: '#999',
+    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
     fontSize: 12,
     marginBottom: 8,
   },
   progressBar: {
     height: 10,
-    backgroundColor: '#333',
+    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
     borderRadius: 5,
     overflow: 'hidden',
     marginBottom: 5,
@@ -234,30 +235,30 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   godFill: {
-    backgroundColor: '#FFD700',
+    backgroundColor: COLORS.METAL.GOLD,
   },
   eliteFill: {
-    backgroundColor: '#C0C0C0',
+    backgroundColor: COLORS.METAL.SILVER,
   },
   regularFill: {
-    backgroundColor: '#CD7F32',
+    backgroundColor: COLORS.METAL.BRONZE,
   },
   progressValue: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 12,
     textAlign: 'right',
   },
   exclusiveMessage: {
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: COLORS.ALPHA.WHITE_10,
+    padding: 12,
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#D4AF37',
+    borderLeftColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   messageText: {
-    color: '#AAA',
+    color: COLORS.GRAY_SHADES.AAA,
     fontSize: 14,
-    fontStyle: 'italic',
+    lineHeight: 20,
   },
 });
 

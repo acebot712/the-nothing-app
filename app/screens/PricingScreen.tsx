@@ -1,25 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Animated,
   Alert,
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import LuxuryButton from '../components/LuxuryButton';
 import { haptics } from '../utils/animations';
 import { useUser } from '../contexts/UserContext';
 import { PRICING_TIERS } from '../config/stripe';
 import PaymentSheet from '../components/PaymentSheet';
 import { EXPO_PUBLIC_API_URL } from '@env';
+import { COLORS } from '../design/colors';
+
+// Define the navigation type
+type RootStackParamList = {
+  Home: undefined;
+  Pricing: undefined;
+  Success: undefined;
+};
 
 // Default API URL if environment variable is not set
-const API_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const BASE_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 interface PricingTierProps {
   title: string;
@@ -45,26 +52,31 @@ const PricingTier = ({
     switch (variant) {
       case 'god':
         return {
-          gradientColors: ['#E5E4E2', '#FFF', '#E5E4E2'] as const,
-          textColor: '#000',
-          shadowColor: '#D4AF37',
+          gradientColors: [COLORS.GRAY_SHADES.LIGHTER, COLORS.WHITE, COLORS.GRAY_SHADES.LIGHTER] as const,
+          textColor: COLORS.BLACK,
         };
       case 'elite':
         return {
-          gradientColors: ['#D4AF37', '#F4EFA8', '#D4AF37'] as const,
-          textColor: '#000',
-          shadowColor: '#F4EFA8',
+          gradientColors: [COLORS.GOLD_SHADES.PRIMARY, COLORS.GOLD_SHADES.LIGHT, COLORS.GOLD_SHADES.PRIMARY] as const,
+          textColor: COLORS.BLACK,
         };
       default:
         return {
-          gradientColors: ['#222', '#333', '#222'] as const,
-          textColor: '#D4AF37',
-          shadowColor: '#000',
+          gradientColors: [COLORS.GRAY_SHADES.DARKEST, COLORS.GRAY_SHADES.DARK, COLORS.GRAY_SHADES.DARKEST] as const,
+          textColor: COLORS.GOLD_SHADES.PRIMARY,
         };
     }
   };
 
-  const { gradientColors, textColor, shadowColor } = getColors();
+  const { gradientColors, textColor } = getColors();
+
+  // Dynamic styles based on selection state and variant
+  const selectedTierStyle = isSelected ? {
+    borderColor: variant === 'regular' ? COLORS.GOLD_SHADES.PRIMARY : 
+                variant === 'elite' ? COLORS.GOLD_SHADES.LIGHT : COLORS.WHITE,
+    borderWidth: 2,
+    transform: [{ scale: 1.05 }]
+  } : {};
 
   return (
     <TouchableOpacity
@@ -75,12 +87,7 @@ const PricingTier = ({
       }}
       style={[
         styles.tierContainer,
-        isSelected && { 
-          borderColor: variant === 'regular' ? '#D4AF37' : 
-                      variant === 'elite' ? '#F4EFA8' : '#FFF',
-          borderWidth: 2,
-          transform: [{ scale: 1.05 }]
-        },
+        selectedTierStyle,
       ]}
     >
       <LinearGradient
@@ -121,7 +128,7 @@ const PricingTier = ({
 };
 
 const PricingScreen = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, purchaseTier } = useUser();
   
   const [selectedTier, setSelectedTier] = useState<'REGULAR' | 'ELITE' | 'GOD'>('REGULAR');
@@ -134,9 +141,6 @@ const PricingScreen = () => {
     const checkApiStatus = async () => {
       try {
         setApiAvailable(null); // Loading state
-        
-        // Set the base URL for the API
-        const BASE_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
         
         // Try to ping the API health endpoint
         const response = await fetch(`${BASE_URL}/health`, {
@@ -151,7 +155,9 @@ const PricingScreen = () => {
         } else {
           setApiAvailable(false);
         }
-      } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
+        // If there's any error fetching, API is not available
         setApiAvailable(false);
       }
     };
@@ -162,6 +168,7 @@ const PricingScreen = () => {
   // Handle purchase button tap
   const handlePurchase = async () => {
     haptics.medium();
+    setIsProcessing(true);
     
     // Check if we have a user
     if (!user) {
@@ -169,6 +176,7 @@ const PricingScreen = () => {
         "Error",
         "You must be logged in to make a purchase."
       );
+      setIsProcessing(false);
       return;
     }
     
@@ -208,7 +216,8 @@ const PricingScreen = () => {
       [
         {
           text: "Cancel",
-          style: "cancel"
+          style: "cancel",
+          onPress: () => setIsProcessing(false)
         },
         { 
           text: "Confirm Purchase", 
@@ -216,13 +225,15 @@ const PricingScreen = () => {
             haptics.heavy();
             setSelectedTier(tier);
             setShowPaymentSheet(true);
+            // Reset the processing state once we show the payment sheet
+            setIsProcessing(false);
           }
         }
       ]
     );
   };
 
-  const handlePaymentSuccess = async (message: string) => {
+  const handlePaymentSuccess = async (_message: string) => {
     try {
       // Get the selected tier details
       const tierDetails = PRICING_TIERS[selectedTier];
@@ -244,8 +255,10 @@ const PricingScreen = () => {
       
       // Navigate to success screen
       navigation.navigate('Success');
-    } catch (error) {
-      console.error('Error updating user after payment:', error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // Log error but with a more generic message to the user
+      console.error('Error updating user after payment');
       Alert.alert(
         "Update Error",
         "Payment successful, but there was an error updating your account. Please contact support."
@@ -261,7 +274,7 @@ const PricingScreen = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#0D0D0D', '#1A1A1A']}
+        colors={[COLORS.BACKGROUND.DARKER, COLORS.BACKGROUND.LIGHT_DARK]}
         style={styles.gradient}
       >
         <View style={styles.header}>
@@ -376,13 +389,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#CCC',
+    color: COLORS.GRAY_SHADES.MEDIUM,
     textAlign: 'center',
   },
   scrollView: {
@@ -398,7 +411,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     overflow: 'hidden',
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: COLORS.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -438,7 +451,7 @@ const styles = StyleSheet.create({
   selectButton: {
     marginTop: 15,
     width: '80%',
-    shadowColor: '#D4AF37',
+    shadowColor: COLORS.GOLD_SHADES.PRIMARY,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
@@ -451,7 +464,7 @@ const styles = StyleSheet.create({
   purchaseButton: {
     width: '100%',
     marginBottom: 12,
-    shadowColor: '#D4AF37',
+    shadowColor: COLORS.GOLD_SHADES.PRIMARY,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
@@ -465,7 +478,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: COLORS.ALPHA.BLACK_80,
     padding: 20,
   },
   modalContent: {
@@ -477,12 +490,12 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: 15,
     padding: 15,
-    backgroundColor: '#333',
+    backgroundColor: COLORS.GRAY_SHADES.DARK,
     borderRadius: 10,
     alignItems: 'center',
   },
   closeButtonText: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: 'bold',
   },

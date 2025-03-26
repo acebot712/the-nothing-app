@@ -5,13 +5,14 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Animated,
   Image,
   Platform,
+  ImageSourcePropType,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LeaderboardEntry } from '../config/supabase';
 import { haptics } from '../utils/animations';
+import { COLORS } from '../design/colors';
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
@@ -22,10 +23,14 @@ interface LeaderboardProps {
 }
 
 // Medal icons for top positions
+// We use type assertions to avoid TypeScript errors while keeping require for dynamic imports
 const MEDALS = {
-  first: require('../../assets/gold-medal.png'),
-  second: require('../../assets/silver-medal.png'),
-  third: require('../../assets/bronze-medal.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  first: require('../../assets/gold-medal.png') as ImageSourcePropType,
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  second: require('../../assets/silver-medal.png') as ImageSourcePropType,
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  third: require('../../assets/bronze-medal.png') as ImageSourcePropType,
 };
 
 const LeaderboardRow = ({ 
@@ -87,21 +92,11 @@ const LeaderboardRow = ({
   };
 
   // Determine if a medal should be shown
-  const getMedal = () => {
+  const getMedal = (): ImageSourcePropType | undefined => {
     if (index === 0) return MEDALS.first;
     if (index === 1) return MEDALS.second;
     if (index === 2) return MEDALS.third;
-    return null;
-  };
-
-  // Format the purchase amount
-  const formatAmount = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(1)}K`;
-    }
-    return `$${amount}`;
+    return undefined;
   };
 
   return (
@@ -215,27 +210,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2A2A2A',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderBottomColor: COLORS.GRAY_SHADES.ALMOST_BLACK,
+    backgroundColor: COLORS.ALPHA.BLACK_20,
   },
   headerRank: {
     width: 50,
     fontSize: 10,
     fontFamily: 'Montserrat_700Bold',
-    color: '#888',
+    color: COLORS.GRAY_SHADES["888"],
   },
   headerUser: {
     flex: 1,
     fontSize: 10,
     fontFamily: 'Montserrat_700Bold',
-    color: '#888',
+    color: COLORS.GRAY_SHADES["888"],
   },
   headerAmount: {
     width: 80,
     textAlign: 'right',
     fontSize: 10,
     fontFamily: 'Montserrat_700Bold',
-    color: '#888',
+    color: COLORS.GRAY_SHADES["888"],
   },
   list: {
     paddingVertical: 8,
@@ -246,7 +241,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -256,7 +251,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     borderWidth: Platform.OS === 'ios' ? 1 : 0,
-    borderColor: '#D4AF37',
+    borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
   rowGradient: {
     flexDirection: 'row',
@@ -267,7 +262,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: COLORS.ALPHA.BLACK_20,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -315,7 +310,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     fontFamily: 'Montserrat_400Regular',
-    color: '#888',
+    color: COLORS.GRAY_SHADES["888"],
     textAlign: 'center',
   },
   viewMoreButton: {
@@ -324,12 +319,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#2A2A2A',
+    borderTopColor: COLORS.GRAY_SHADES.ALMOST_BLACK,
   },
   viewMoreText: {
     fontSize: 12,
     fontFamily: 'Montserrat_700Bold',
-    color: '#D4AF37',
+    color: COLORS.GOLD_SHADES.PRIMARY,
     letterSpacing: 1,
   },
 });

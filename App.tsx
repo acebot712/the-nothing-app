@@ -141,13 +141,10 @@ export default function App() {
         >
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
-            <Text style={{ 
-              marginTop: 24, 
-              fontSize: 18, 
-              color: COLORS.GOLD_SHADES.PRIMARY, 
-              textAlign: 'center',
-              fontFamily: fontsLoaded ? 'PlayfairDisplay_400Regular' : undefined 
-            }}>
+            <Text style={[
+              styles.loadingText,
+              fontsLoaded ? styles.playfairRegular : null
+            ]}>
               Preparing your luxury experience...
             </Text>
           </View>
@@ -166,32 +163,22 @@ export default function App() {
           style={styles.initGradient}
         >
           <View style={styles.errorContainer}>
-            <Text style={{ 
-              fontSize: 28, 
-              color: COLORS.GOLD_SHADES.PRIMARY, 
-              marginBottom: 16, 
-              textAlign: 'center',
-              fontFamily: 'PlayfairDisplay_700Bold' 
-            }}>
+            <Text style={[
+              styles.errorTitle,
+              styles.playfairBold
+            ]}>
               Database Error
             </Text>
-            <Text style={{ 
-              fontSize: 16, 
-              color: COLORS.WHITE, 
-              marginBottom: 24, 
-              textAlign: 'center', 
-              lineHeight: 24,
-              fontFamily: 'Montserrat_400Regular' 
-            }}>
+            <Text style={[
+              styles.errorText,
+              styles.montserratRegular
+            ]}>
               {initError}
             </Text>
-            <Text style={{ 
-              fontSize: 14, 
-              color: COLORS.GRAY_SHADES.MEDIUM_DARK, 
-              textAlign: 'center', 
-              marginBottom: 40,
-              fontFamily: 'Montserrat_400Regular' 
-            }}>
+            <Text style={[
+              styles.errorHint,
+              styles.montserratRegular
+            ]}>
               Please ensure your Supabase instance is properly configured.
             </Text>
           </View>
@@ -278,5 +265,15 @@ const styles = StyleSheet.create({
   debugButtonText: {
     color: COLORS.GOLD_SHADES.PRIMARY,
     fontSize: 14,
+  },
+  // Font styles
+  playfairRegular: {
+    fontFamily: 'PlayfairDisplay_400Regular'
+  },
+  playfairBold: {
+    fontFamily: 'PlayfairDisplay_700Bold'
+  },
+  montserratRegular: {
+    fontFamily: 'Montserrat_400Regular'
   },
 });

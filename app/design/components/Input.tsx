@@ -10,8 +10,11 @@ import {
   ViewStyle,
   TextStyle,
   Animated,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../colors';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -68,13 +71,13 @@ const Input: React.FC<InputProps> = ({
     }).start();
   }, [isFocused, hasValue, animatedLabelPosition]);
 
-  const handleFocus = (e: any) => {
+  const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setInternalFocus(true);
     if (onInputFocus) onInputFocus();
     if (rest.onFocus) rest.onFocus(e);
   };
 
-  const handleBlur = (e: any) => {
+  const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setInternalFocus(false);
     if (onInputBlur) onInputBlur();
     if (rest.onBlur) rest.onBlur(e);
@@ -95,10 +98,37 @@ const Input: React.FC<InputProps> = ({
     outputRange: [16, 12],
   });
 
+  // Dynamic styles based on component state
+  const getLabelColor = () => {
+    if (error) return COLORS.ACCENTS.ERROR;
+    if (isFocused) return COLORS.ACCENTS.INFO;
+    return COLORS.GRAY_SHADES.DARK;
+  };
+
   const getInputBorderColor = () => {
-    if (error) return '#FF3B30';
-    if (isFocused) return '#007AFF';
-    return '#CCCCCC';
+    if (error) return COLORS.ACCENTS.ERROR;
+    if (isFocused) return COLORS.ACCENTS.INFO;
+    return COLORS.GRAY_SHADES.MEDIUM;
+  };
+
+  const animatedLabelStyle = {
+    top: labelTop,
+    fontSize: labelFontSize,
+    color: getLabelColor(),
+  };
+
+  const dynamicInputContainerStyle = {
+    borderColor: getInputBorderColor(),
+    borderWidth: 1,
+    backgroundColor: isFocused ? COLORS.WHITE : COLORS.GRAY_SHADES.LIGHTER,
+  };
+
+  const dynamicInputStyle = {
+    paddingLeft: leftIcon ? 5 : 16,
+  };
+
+  const helperTextStyle = {
+    color: error ? COLORS.ACCENTS.ERROR : COLORS.GRAY_SHADES.DARK,
   };
 
   const renderPasswordToggle = () => {
@@ -113,7 +143,7 @@ const Input: React.FC<InputProps> = ({
         <Ionicons 
           name={secureEntry ? 'eye-off' : 'eye'} 
           size={20} 
-          color="#777777"
+          color={COLORS.GRAY_SHADES["888"]}
         />
       </TouchableOpacity>
     );
@@ -125,11 +155,7 @@ const Input: React.FC<InputProps> = ({
         <Animated.Text
           style={[
             styles.label,
-            { 
-              color: error ? '#FF3B30' : isFocused ? '#007AFF' : '#666666',
-              top: labelTop,
-              fontSize: labelFontSize,
-            },
+            animatedLabelStyle,
             labelStyle,
           ]}
         >
@@ -139,11 +165,7 @@ const Input: React.FC<InputProps> = ({
 
       <View style={[
         styles.inputContainer,
-        {
-          borderColor: getInputBorderColor(),
-          borderWidth: 1,
-          backgroundColor: isFocused ? '#FFFFFF' : '#F5F5F5',
-        },
+        dynamicInputContainerStyle,
       ]}>
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
@@ -152,11 +174,7 @@ const Input: React.FC<InputProps> = ({
             <Animated.Text
               style={[
                 styles.insetLabel,
-                { 
-                  top: labelTop,
-                  fontSize: labelFontSize,
-                  color: error ? '#FF3B30' : isFocused ? '#007AFF' : '#666666',
-                },
+                animatedLabelStyle,
                 labelStyle,
               ]}
             >
@@ -167,11 +185,11 @@ const Input: React.FC<InputProps> = ({
           <TextInput
             style={[
               styles.input,
-              { paddingLeft: leftIcon ? 5 : 16 },
+              dynamicInputStyle,
               inputStyle,
             ]}
             placeholder={insetLabel && !isFocused && !hasValue ? label : placeholder}
-            placeholderTextColor="#999999"
+            placeholderTextColor={COLORS.GRAY_SHADES.MEDIUM_DARK}
             secureTextEntry={secureEntry}
             value={value}
             onChangeText={onChangeText}
@@ -192,7 +210,7 @@ const Input: React.FC<InputProps> = ({
         <Text
           style={[
             styles.helper,
-            { color: error ? '#FF3B30' : '#666666' },
+            helperTextStyle,
             error ? errorStyle : helperStyle,
           ]}
         >
@@ -214,13 +232,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     zIndex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     paddingHorizontal: 4,
   },
   insetLabel: {
     position: 'absolute',
     left: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: COLORS.TRANSPARENT,
     paddingHorizontal: 4,
     fontWeight: '500',
   },
@@ -240,7 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     fontSize: 16,
-    color: '#000000',
+    color: COLORS.BLACK,
     paddingRight: 16,
     ...Platform.select({
       web: {

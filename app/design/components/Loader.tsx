@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '../colors';
 
 interface LoaderProps {
   size?: 'small' | 'large';
@@ -22,7 +23,7 @@ interface LoaderProps {
 
 const Loader: React.FC<LoaderProps> = ({
   size = 'large',
-  color = '#0066CC',
+  color = COLORS.ACCENTS.INFO,
   text,
   fullscreen = false,
   style,
@@ -30,11 +31,16 @@ const Loader: React.FC<LoaderProps> = ({
 }) => {
   // Animation values
   const spinValue = useRef(new Animated.Value(0)).current;
-  const scaleValues = [
-    useRef(new Animated.Value(1)).current,
-    useRef(new Animated.Value(1)).current,
-    useRef(new Animated.Value(1)).current,
-  ];
+  
+  // Create refs outside of useMemo
+  const scaleValue1 = useRef(new Animated.Value(1)).current;
+  const scaleValue2 = useRef(new Animated.Value(1)).current;
+  const scaleValue3 = useRef(new Animated.Value(1)).current;
+  
+  // Use useMemo to create the array to avoid re-creation on each render
+  const scaleValues = useMemo(() => [
+    scaleValue1, scaleValue2, scaleValue3
+  ], [scaleValue1, scaleValue2, scaleValue3]);
 
   // Start animation when component mounts
   useEffect(() => {
@@ -82,6 +88,26 @@ const Loader: React.FC<LoaderProps> = ({
     outputRange: ['0deg', '360deg'],
   });
 
+  // Dynamic styles based on props
+  const getSpinnerStyle = () => ({
+    borderColor: color,
+    width: size === 'small' ? 24 : 40,
+    height: size === 'small' ? 24 : 40,
+    borderWidth: size === 'small' ? 2 : 3,
+    transform: [{ rotate: spin }],
+  });
+
+  const getDotStyle = (animatedValue: Animated.Value) => ({
+    backgroundColor: color,
+    width: size === 'small' ? 8 : 12,
+    height: size === 'small' ? 8 : 12,
+    marginHorizontal: size === 'small' ? 2 : 4,
+    transform: [{ scale: animatedValue }],
+    ...(type === 'pulse' ? { borderRadius: size === 'small' ? 4 : 6 } : {}),
+  });
+
+  const textStyle = { color };
+
   // Render spinner type
   const renderSpinner = () => {
     if (type === 'spinner') {
@@ -89,13 +115,7 @@ const Loader: React.FC<LoaderProps> = ({
         <Animated.View
           style={[
             styles.spinner,
-            {
-              borderColor: color,
-              width: size === 'small' ? 24 : 40,
-              height: size === 'small' ? 24 : 40,
-              borderWidth: size === 'small' ? 2 : 3,
-              transform: [{ rotate: spin }],
-            },
+            getSpinnerStyle(),
           ]}
         />
       );
@@ -107,16 +127,7 @@ const Loader: React.FC<LoaderProps> = ({
               key={index}
               style={[
                 styles.dot,
-                {
-                  backgroundColor: color,
-                  width: size === 'small' ? 8 : 12,
-                  height: size === 'small' ? 8 : 12,
-                  marginHorizontal: size === 'small' ? 2 : 4,
-                  transform: [{ scale: value }],
-                },
-                type === 'pulse' && {
-                  borderRadius: size === 'small' ? 4 : 6,
-                },
+                getDotStyle(value),
               ]}
             />
           ))}
@@ -139,13 +150,13 @@ const Loader: React.FC<LoaderProps> = ({
       <View style={styles.loaderContainer}>
         {fullscreen && (
           <LinearGradient
-            colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.7)']}
+            colors={[COLORS.ALPHA.BLACK_50, COLORS.ALPHA.BLACK_80]}
             style={styles.background}
           />
         )}
         <View style={styles.content}>
           {renderSpinner()}
-          {text && <Text style={[styles.text, { color }]}>{text}</Text>}
+          {text && <Text style={[styles.text, textStyle]}>{text}</Text>}
         </View>
       </View>
     </View>
@@ -182,8 +193,8 @@ const styles = StyleSheet.create({
   },
   spinner: {
     borderRadius: 100,
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
+    borderTopColor: COLORS.TRANSPARENT,
+    borderRightColor: COLORS.TRANSPARENT,
   },
   dotsContainer: {
     flexDirection: 'row',

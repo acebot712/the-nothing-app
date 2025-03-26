@@ -4,12 +4,12 @@ import {
   Modal as RNModal,
   StyleSheet,
   TouchableOpacity,
-  Animated,
   Dimensions,
   ViewStyle,
   StyleProp,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../../design/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -106,7 +106,7 @@ const Modal: React.FC<ModalProps> = ({
               onPress={onClose}
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
             >
-              <Ionicons name="close" size={24} color="#555555" />
+              <Ionicons name="close" size={24} color={COLORS.GRAY_SHADES.DARKER} />
             </TouchableOpacity>
           )}
           
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.ALPHA.BLACK_50,
   },
   backdropTouchable: {
     position: 'absolute',
@@ -131,10 +131,10 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT,
   },
   content: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: COLORS.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

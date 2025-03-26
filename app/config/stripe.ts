@@ -64,7 +64,7 @@ export const PRICING_TIERS = {
 // Fallback mock payment process for when the server is not available
 export const processPayment = async (
   tier: 'REGULAR' | 'ELITE' | 'GOD', 
-  email: string
+  _email: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
     console.info('Using fallback mock payment processing for tier:', tier);
@@ -77,11 +77,11 @@ export const processPayment = async (
       success: true,
       message: `Congratulations! You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Mock payment error:', error);
     return {
       success: false,
-      message: error.message || 'Payment failed. Please try again.'
+      message: error instanceof Error ? error.message : 'Payment failed. Please try again.'
     };
   }
 }; 

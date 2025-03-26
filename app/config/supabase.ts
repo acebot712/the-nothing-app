@@ -16,7 +16,8 @@ export const supabase = createClient(
   supabaseAnonKey || '',
   {
     auth: {
-      storage: AsyncStorage as any,
+      // @ts-expect-error - AsyncStorage matches the interface Supabase needs but has type incompatibilities
+      storage: AsyncStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
@@ -116,7 +117,7 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
       
       // Handle duplicate email constraint error - error code 23505 is duplicate key violation
       if (insertError && insertError.code === '23505' && insertError.message?.includes('users_email_key')) {
-        console.log('Email already exists, trying with a unique email');
+        console.info('Email already exists, trying with a unique email');
         
         // Create a unique email by appending a timestamp
         const timestamp = Date.now();
@@ -137,7 +138,7 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
     
     if (error) {
       console.error('Error saving user:', error);
-      console.log('Attempted to save user with data:', newUser);
+      console.info('Attempted to save user with data:', newUser);
       return null;
     }
     
@@ -153,7 +154,12 @@ export const saveUser = async (user: Partial<User>): Promise<User | null> => {
  * @param code The invite code to validate
  * @returns The invite data if valid, null otherwise
  */
-export const getInviteCode = async (code: string): Promise<any | null> => {
+export const getInviteCode = async (code: string): Promise<{
+  id: string;
+  code: string;
+  used: boolean;
+  created_at: string;
+} | null> => {
   try {
     const { data, error } = await supabase
       .from('invite_codes')
@@ -176,7 +182,7 @@ export const getInviteCode = async (code: string): Promise<any | null> => {
 // Initialize and check required tables
 export const initializeSupabase = async (): Promise<boolean> => {
   try {
-    console.log('Checking Supabase connection and tables...');
+    console.info('Checking Supabase connection and tables...');
     
     // Test the connection by checking if we can access the "users" table
     const { error } = await supabase
@@ -189,8 +195,8 @@ export const initializeSupabase = async (): Promise<boolean> => {
       
       // If the table doesn't exist, suggest creating it
       if (error.code === '42P01') { // PostgreSQL code for undefined_table
-        console.log('Users table does not exist. Use the following SQL to create it:');
-        console.log(`
+        console.info('Users table does not exist. Use the following SQL to create it:');
+        console.info(`
 CREATE TABLE public.users (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -226,7 +232,7 @@ CREATE TABLE public.leaderboard (
       return false;
     }
     
-    console.log('Supabase connection and tables verified successfully.');
+    console.info('Supabase connection and tables verified successfully.');
     return true;
   } catch (error) {
     console.error('Exception during Supabase initialization:', error);

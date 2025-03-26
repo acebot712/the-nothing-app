@@ -41,11 +41,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // Load user data
         const userJson = await AsyncStorage.getItem(USER_STORAGE_KEY);
         if (userJson) {
           setUser(JSON.parse(userJson));
           setIsAuthenticated(true);
         }
+        
+        // Check invite access
+        const inviteAccess = await AsyncStorage.getItem(INVITE_ACCESS_KEY);
+        setHasInviteAccess(inviteAccess === 'true');
       } catch (error) {
         console.error('Failed to load user from storage', error);
       } finally {
@@ -70,6 +75,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     saveUserToStorage();
   }, [user]);
+
+  // Update invite access in storage when state changes
+  useEffect(() => {
+    const updateInviteAccess = async () => {
+      try {
+        await AsyncStorage.setItem(INVITE_ACCESS_KEY, hasInviteAccess ? 'true' : 'false');
+      } catch (error) {
+        console.error('Failed to save invite access to storage', error);
+      }
+    };
+    
+    updateInviteAccess();
+  }, [hasInviteAccess]);
 
   // Handle purchasing a tier
   const purchaseTier = async (tier: 'regular' | 'elite' | 'god', amount: number) => {
@@ -111,16 +129,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = async () => {
     try {
+      // Clear user data
       await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      // Also clear invite access
       await AsyncStorage.removeItem(INVITE_ACCESS_KEY);
       
-      // Reset state
       setUser(null);
       setIsAuthenticated(false);
       setHasInviteAccess(false);
       
       return true;
-    } catch (error) {
+    } catch {
+      // Silently fail but return false
       return false;
     }
   };

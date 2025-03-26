@@ -4,6 +4,13 @@ import { useStripe } from '@stripe/stripe-react-native';
 import { processPayment, PRICING_TIERS } from '../config/stripe';
 import { haptics } from '../utils/animations';
 import { EXPO_PUBLIC_API_URL } from '@env';
+import { COLORS } from '../design/colors';
+
+// Error type for better error handling
+interface PaymentError {
+  message: string;
+  code?: string;
+}
 
 // Default to localhost if no API_URL is provided
 const BASE_URL = EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -102,9 +109,12 @@ export default function PaymentSheet({
         haptics.premium(); // Premium haptic feedback for successful payment
         onPaymentSuccess(`You've successfully wasted $${PRICING_TIERS[tier].price} on absolutely nothing!`);
         
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
+        // Check if it's a PaymentError with the expected properties
+        const paymentError = stripeError as PaymentError;
+        
         // If Stripe integration failed for any reason (backend down, etc), fall back to mock implementation
-        if (stripeError.message === 'Payment cancelled') {
+        if (paymentError.message === 'Payment cancelled') {
           haptics.error();
           onPaymentFailure('Payment cancelled');
           setLoading(false);
@@ -114,7 +124,7 @@ export default function PaymentSheet({
         // Fallback to mock payment for API errors
         Alert.alert(
           "Payment Processing Issue",
-          `We're having trouble with our payment processor: ${stripeError.message}. For demo purposes, we'll simulate a successful payment.`,
+          `We're having trouble with our payment processor: ${paymentError.message || 'Unknown error'}. For demo purposes, we'll simulate a successful payment.`,
           [
             {
               text: "Cancel",
@@ -142,9 +152,10 @@ export default function PaymentSheet({
           ]
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       haptics.error();
-      onPaymentFailure(error.message || 'An unknown error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      onPaymentFailure(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -165,7 +176,7 @@ export default function PaymentSheet({
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="#FFF" />
+          <ActivityIndicator color={COLORS.WHITE} />
         ) : (
           <Text style={styles.payButtonText}>Complete Purchase</Text>
         )}
@@ -183,24 +194,24 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#0D0D0D',
+    backgroundColor: COLORS.BACKGROUND.DARKER,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: COLORS.GRAY_SHADES.DARK,
   },
   pricingInfo: {
     fontSize: 18,
-    color: '#FFF',
+    color: COLORS.WHITE,
     marginBottom: 10,
   },
   price: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FFD700',
+    color: COLORS.GOLD_SHADES.ACCENT,
     marginBottom: 30,
   },
   payButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLORS.ACCENTS.INFO,
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
@@ -209,17 +220,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   payButtonDisabled: {
-    backgroundColor: '#555',
+    backgroundColor: COLORS.GRAY_SHADES.DARKER,
     opacity: 0.7,
   },
   payButtonText: {
-    color: '#FFF',
+    color: COLORS.WHITE,
     fontSize: 18,
     fontWeight: 'bold',
   },
   disclaimer: {
     fontSize: 12,
-    color: '#888',
+    color: COLORS.GRAY_SHADES["888"],
     textAlign: 'center',
   },
 }); 

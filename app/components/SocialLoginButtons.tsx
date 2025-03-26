@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithGoogle, signInWithApple } from '../config/auth';
 import { User } from '../config/supabase';
+import { COLORS } from '../design/colors';
 
 interface SocialLoginButtonsProps {
   onLoginSuccess: (userData: User) => void;
@@ -57,10 +58,10 @@ export const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         disabled={loading !== null}
       >
         {loading === 'google' ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={COLORS.WHITE} size="small" />
         ) : (
           <>
-            <Ionicons name="logo-google" size={24} color="#fff" />
+            <Ionicons name="logo-google" size={24} color={COLORS.WHITE} />
             <Text style={styles.buttonText}>Continue with Google</Text>
           </>
         )}
@@ -72,10 +73,10 @@ export const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         disabled={loading !== null}
       >
         {loading === 'apple' ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={COLORS.WHITE} size="small" />
         ) : (
           <>
-            <Ionicons name="logo-apple" size={24} color="#fff" />
+            <Ionicons name="logo-apple" size={24} color={COLORS.WHITE} />
             <Text style={styles.buttonText}>Continue with Apple</Text>
           </>
         )}
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#DB4437',
+    backgroundColor: COLORS.ACCENTS.GOOGLE,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -103,14 +104,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: COLORS.ACCENTS.APPLE,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     gap: 10,
   },
   buttonText: {
-    color: 'white',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '600',
   },

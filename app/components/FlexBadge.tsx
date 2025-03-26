@@ -5,12 +5,12 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Share,
   Platform,
   Image,
   Dimensions,
   Alert,
-  ImageSourcePropType
+  ImageSourcePropType,
+  Share
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { animations, haptics } from '../utils/animations';
@@ -25,11 +25,13 @@ const CARD_WIDTH = Math.min(SCREEN_WIDTH - 40, 380);
 const CARD_HEIGHT = CARD_WIDTH * 0.61; // Maintain credit card ratio
 
 // Import the pattern images with proper typing
+/* eslint-disable @typescript-eslint/no-require-imports */
 const patternImages: Record<string, ImageSourcePropType> = {
   god: require('../../assets/platinum-pattern.png') as ImageSourcePropType,
   elite: require('../../assets/gold-pattern.png') as ImageSourcePropType,
   regular: require('../../assets/regular-pattern.png') as ImageSourcePropType,
 };
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 interface FlexBadgeProps {
   tier: 'regular' | 'elite' | 'god';
@@ -150,8 +152,8 @@ const FlexBadge = ({
       Alert.alert("Generating shareable image...", "Please wait while we create your luxury badge image.");
       
       try {
-        // Capture the badge as an image
-        const uri = await viewShotRef.current.capture();
+        // Type assertion for current to ensure TypeScript knows capture method exists
+        const uri = await (viewShotRef.current as unknown as { capture(): Promise<string> }).capture();
         
         // Check if we can share the image
         if (Platform.OS === 'android') {
@@ -178,16 +180,8 @@ const FlexBadge = ({
         }
       } catch (captureError) {
         console.error('Error capturing or sharing image:', captureError);
-        throw captureError;
-      }
-      
-      // Resume animations
-      animations.shine(shineAnim);
-    } catch (error) {
-      console.error('Error sharing badge image:', error);
-      
-      // Fallback to text sharing
-      try {
+        
+        // Fallback to text sharing
         const messageText = 
           `I just spent $${amount.toLocaleString()} on an app that does NOTHING. Stay poor.
           
@@ -200,10 +194,13 @@ Tier: ${getBadgeDetails().title}
           message: messageText,
           title: 'The Nothing App',
         });
-      } catch (fallbackError) {
-        console.error('Error with fallback sharing:', fallbackError);
-        Alert.alert("Sharing Error", "Could not share your badge. Please try again later.");
       }
+      
+      // Resume animations
+      animations.shine(shineAnim);
+    } catch (error) {
+      console.error('Error sharing badge image:', error);
+      Alert.alert("Sharing Error", "Could not share your badge. Please try again later.");
     }
   };
 
@@ -235,25 +232,27 @@ Tier: ${getBadgeDetails().title}
   });
 
   // Shine effect styles
-  const shineStyle = {
+  const createShineStyle = (animValue: Animated.Value, width: number) => ({
     position: 'absolute' as const,
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: shineAnim.interpolate({
+    opacity: animValue.interpolate({
       inputRange: [0, 0.5, 1],
       outputRange: [0, 0.7, 0],
     }),
     transform: [
       {
-        translateX: shineAnim.interpolate({
+        translateX: animValue.interpolate({
           inputRange: [0, 1],
-          outputRange: [-CARD_WIDTH, CARD_WIDTH],
+          outputRange: [-width, width],
         }),
       },
     ],
-  };
+  });
+
+  const shineStyle = createShineStyle(shineAnim, CARD_WIDTH);
   
   // Dynamic shadow based on tier
   const cardShadow = {
@@ -280,10 +279,7 @@ Tier: ${getBadgeDetails().title}
         <ViewShot
           ref={viewShotRef}
           options={{ format: 'png', quality: 1.0 }}
-          style={{
-            width: CARD_WIDTH,
-            height: CARD_HEIGHT,
-          }}
+          style={styles.viewShotStyle}
         >
           <Animated.View
             style={[
@@ -372,13 +368,11 @@ Tier: ${getBadgeDetails().title}
         <Animated.View
           style={[
             styles.container,
+            styles.absolutePosition,
             { 
               borderColor,
               width: CARD_WIDTH,
               height: CARD_HEIGHT,
-              position: 'absolute',
-              top: 0,
-              left: 0,
               transform: [
                 { scale: scaleAnim },
                 { rotateY: rotateInterpolation }
@@ -565,6 +559,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat_700Bold',
     color: COLORS.BLACK,
     opacity: 0.5,
+  },
+  viewShotStyle: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+  },
+  absolutePosition: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 });
 
