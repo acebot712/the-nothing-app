@@ -10,7 +10,7 @@ Our CI/CD pipeline is implemented using GitHub Actions and provides:
 - Test execution
 - Build automation
 - Deployment to multiple environments
-- Release management
+- Release managemen
 
 ## Workflow Files
 
@@ -84,7 +84,7 @@ It includes the following stages:
 
 1. **Pre-deployment Checks**:
    - Runs linting and type checking
-   - Verifies no critical issues exist
+   - Verifies no critical issues exis
 
 2. **iOS Build and Submission**:
    - Builds the iOS application
@@ -95,7 +95,7 @@ It includes the following stages:
    - Submits to Play Store (only for tagged releases)
 
 4. **Backend Deployment**:
-   - Deploys server components to the appropriate environment
+   - Deploys server components to the appropriate environmen
 
 5. **Release Creation**:
    - Creates a GitHub release with automatic changelog
@@ -121,12 +121,12 @@ The following secrets must be configured in the GitHub repository:
 - `EXPO_TOKEN`: For Expo/EAS integration
 - `EXPO_PUBLIC_SUPABASE_URL`: Supabase URL
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
-- `EXPO_PUBLIC_API_URL`: API URL for the environment
+- `EXPO_PUBLIC_API_URL`: API URL for the environmen
 - `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Stripe publishable key
 - `CODECOV_TOKEN`: For uploading test coverage reports
 - `GITHUB_TOKEN`: Automatically provided by GitHub
 
-## Build Script
+## Build Scrip
 
 A helper script is provided to simplify build processes both locally and in CI:
 
@@ -143,7 +143,7 @@ Options:
 - `-u, --upload`: Upload build to EAS/Expo
 - `-h, --help`: Show help message
 
-## Manual Deployment
+## Manual Deploymen
 
 To manually trigger a deployment:
 
@@ -151,7 +151,7 @@ To manually trigger a deployment:
 2. Select the "Deploy" workflow
 3. Click "Run workflow"
 4. Select the target environment (staging or production)
-5. Click "Run workflow" to start the deployment
+5. Click "Run workflow" to start the deploymen
 
 ## Release Process
 
@@ -216,7 +216,7 @@ chmod +x scripts/ci-build.sh
 
 This is especially important when running the script locally or in environments where file permissions are strictly enforced.
 
-## Contact
+## Contac
 
 For questions or issues related to the CI/CD pipeline, contact:
 

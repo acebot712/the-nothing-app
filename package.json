@@ -1,5 +1,5 @@
 {
-  "name": "the-nothing-app",
+  "name": "the-badge-app",
   "version": "1.0.0",
   "main": "./index.ts",
   "type": "module",
@@ -8,89 +8,25 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:android": "eas build --platform android --profile production",
-    "build:ios": "eas build --platform ios --profile production",
-    "build:all": "eas build --platform all --profile production",
-    "submit:ios": "eas submit --platform ios",
-    "submit:android": "eas submit --platform android",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:all": "npm run lint && cd server && npm run lint",
-    "lint:fix:all": "npm run lint:fix && cd server && npm run lint:fix",
-    "tsc": "tsc --noEmit",
-    "check:all": "npm run tsc && npm run lint:all",
-    "preproduction": "node pre-production-check.js --experimental-modules",
-    "postinstall": "npx expo-doctor || exit 0",
-    "prepare": "husky",
-    "pre-commit": "pre-commit run --all-files"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@expo-google-fonts/montserrat": "^0.2.3",
-    "@expo-google-fonts/playfair-display": "^0.2.3",
     "@react-native-async-storage/async-storage": "~1.23.1",
-    "@react-navigation/native": "^7.0.18",
-    "@react-navigation/native-stack": "^7.3.2",
-    "@stripe/stripe-react-native": "~0.38.6",
-    "@supabase/supabase-js": "^2.49.1",
-    "canvas": "^3.1.0",
     "expo": "~52.0.40",
-    "expo-auth-session": "^6.0.3",
-    "expo-clipboard": "^7.0.1",
-    "expo-file-system": "~18.0.11",
     "expo-font": "^13.0.4",
     "expo-linear-gradient": "~14.0.2",
-    "expo-random": "^14.0.1",
-    "expo-router": "^4.0.19",
-    "expo-sharing": "~13.0.1",
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
-    "expo-system-ui": "^4.0.8",
-    "expo-web-browser": "^14.0.2",
-    "lottie-react-native": "^7.2.2",
-    "nativewind": "^4.1.23",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "react-native": "0.76.7",
-    "react-native-gesture-handler": "~2.20.2",
     "react-native-haptic-feedback": "^2.3.3",
-    "react-native-reanimated": "~3.16.1",
-    "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "^4.9.2",
-    "react-native-share": "^12.0.9",
-    "react-native-svg": "15.8.0",
-    "react-native-url-polyfill": "^2.0.0",
-    "react-native-view-shot": "~4.0.3",
-    "react-native-web": "^0.19.13"
+    "react-native-safe-area-context": "4.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
-    "@eslint/js": "^9.23.0",
     "@types/react": "~18.3.12",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "autoprefixer": "^10.4.21",
     "eslint": "^9.23.0",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-native": "^5.0.0",
-    "globals": "^16.0.0",
-    "husky": "^9.0.11",
-    "postcss": "^8.5.3",
-    "react-native-dotenv": "^3.4.11",
-    "sharp": "^0.33.5",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.28.0"
-  },
-  "expo": {
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": [
-          "@stripe/stripe-react-native",
-          "canvas"
-        ]
-      }
-    }
+    "typescript": "^5.8.2"
   },
   "private": true
 }

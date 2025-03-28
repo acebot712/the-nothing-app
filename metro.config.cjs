@@ -1,7 +1,7 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 /* global require, module, __dirname */
 const { getDefaultConfig } = require('expo/metro-config');
-// We're not using path, so let's remove it
+// We're not using path, so let's remove i
 // const path = require('path');
 
 /** @type {import('expo/metro-config').MetroConfig} */

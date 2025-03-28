@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -8,271 +8,166 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { UserProvider, useUser } from "./app/contexts/UserContext";
-import StripeProvider from "./app/providers/StripeProvider";
-import {
-  initializeSupabase,
-  debugSupabaseConnection,
-} from "./app/config/supabase";
-import { useFonts } from "@expo-google-fonts/playfair-display";
-import {
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_700Bold,
-  PlayfairDisplay_400Regular_Italic,
-} from "@expo-google-fonts/playfair-display";
-import {
-  Montserrat_400Regular,
-  Montserrat_700Bold,
-} from "@expo-google-fonts/montserrat";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "./app/design/colors";
 import * as SplashScreen from "expo-splash-screen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import FlexBadge from "./app/components/FlexBadge";
+import { haptics } from "./app/utils/animations";
 
 // Keep the splash screen visible while we initialize the app
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* Ignore errors */
 });
 
-// Screens
-import InviteScreen from "./app/screens/InviteScreen";
-import NetWorthScreen from "./app/screens/NetWorthScreen";
-import PricingScreen from "./app/screens/PricingScreen";
-import SuccessScreen from "./app/screens/SuccessScreen";
-import DashboardScreen from "./app/screens/DashboardScreen";
-
-// Custom navigation theme
-const MyTheme = {
-  ...DefaultTheme,
-  dark: true,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: COLORS.GOLD_SHADES.PRIMARY,
-    background: COLORS.BACKGROUND.DARK,
-    card: COLORS.BACKGROUND.DARK,
-    text: COLORS.WHITE,
-    border: COLORS.GRAY_SHADES.ALMOST_BLACK,
-    notification: COLORS.GOLD_SHADES.PRIMARY,
-  },
+// Simplified colors
+const COLORS = {
+  DARK: "#0A0A0A",
+  DARKER: "#000000",
+  GOLD: "#D4AF37",
+  WHITE: "#FFFFFF",
 };
 
-// Create stack navigator
-const Stack = createNativeStackNavigator();
-
-// Main app navigation
-const AppNavigator = () => {
-  const { isAuthenticated, hasInviteAccess, isLoading } = useUser();
-
-  // Determine starting screen based on authentication state
-  const initialRouteName = useMemo(() => {
-    if (isAuthenticated) {
-      return "Dashboard";
-    } else if (hasInviteAccess) {
-      return "NetWorth";
-    } else {
-      return "Invite";
-    }
-  }, [isAuthenticated, hasInviteAccess]);
-
-  // Don't render navigation until loading is complete
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]}
-          style={styles.loadingGradient}
-        >
-          <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
-          <Text style={styles.loadingText}>
-            Loading the luxury experience...
-          </Text>
-        </LinearGradient>
-      </View>
-    );
-  }
-
-  return (
-    <NavigationContainer theme={MyTheme}>
-      <StatusBar style="light" />
-      <Stack.Navigator
-        key={isAuthenticated ? "auth" : "unauth"} // Force navigator to reset when auth state changes
-        initialRouteName={initialRouteName}
-        screenOptions={{
-          headerShown: false,
-          animation: "fade",
-          contentStyle: { backgroundColor: COLORS.BACKGROUND.DARK },
-          navigationBarColor: COLORS.BACKGROUND.DARK,
-        }}
-      >
-        <Stack.Screen name="Invite" component={InviteScreen} />
-        <Stack.Screen name="NetWorth" component={NetWorthScreen} />
-        <Stack.Screen name="Pricing" component={PricingScreen} />
-        <Stack.Screen name="Success" component={SuccessScreen} />
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-};
-
-// Error Dialog component for database connection issues
-interface ErrorDialogProps {
-  error: string;
-  onRetry: () => void;
-  onContinue: () => void;
+// Define User type
+interface User {
+  id: string;
+  username: string;
+  tier: "regular" | "elite" | "god";
+  purchase_amount: number;
+  serial_number: string;
+  created_at: string;
 }
 
-const ErrorDialog = ({ error, onRetry, onContinue }: ErrorDialogProps) => (
-  <View style={styles.errorContainer}>
-    <Text style={[styles.errorTitle, styles.playfairBold]}>Database Error</Text>
-    <Text style={[styles.errorText, styles.montserratRegular]}>{error}</Text>
-    <Text style={[styles.errorHint, styles.montserratRegular]}>
-      The app will function in demo mode with mock data. Your information will
-      not be saved.
-    </Text>
-
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-        <Text style={styles.buttonText}>Retry Connection</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.continueButton} onPress={onContinue}>
-        <Text style={styles.buttonText}>Continue in Demo Mode</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
-
-// Root component with providers
+// Root component
 export default function App() {
-  const [appReady, setAppReady] = useState(false);
-  const [dbStatus, setDbStatus] = useState<
-    "initializing" | "connected" | "error" | "demo"
-  >("initializing");
-  const [initError, setInitError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load custom fonts
-  const [fontsLoaded] = useFonts({
-    PlayfairDisplay_400Regular,
-    PlayfairDisplay_700Bold,
-    PlayfairDisplay_400Regular_Italic,
-    Montserrat_400Regular,
-    Montserrat_700Bold,
-  });
-
-  // Initialize Supabase on app load
-  const initializeApp = async () => {
-    try {
-      console.log("Initializing app...");
-      await debugSupabaseConnection();
-
-      // Initialize database
-      const success = await initializeSupabase();
-
-      if (success) {
-        setDbStatus("connected");
-        console.log("Database connected and initialized successfully!");
-      } else {
-        setDbStatus("error");
-        setInitError(
-          "Could not connect to the database. Check your Supabase configuration and required tables.",
-        );
-        console.error(
-          "Database initialization failed. See instructions in FIX-DATABASE-CONNECTION.md",
-        );
-      }
-    } catch (error) {
-      console.error("Error during app initialization:", error);
-      setDbStatus("error");
-      setInitError("An unexpected error occurred during initialization.");
-    } finally {
-      setAppReady(true);
-
-      // Hide the splash screen after everything is initialized
-      try {
-        await SplashScreen.hideAsync();
-      } catch (e) {
-        // Ignore errors
-      }
-    }
-  };
-
+  // Initialize app
   useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Check if user is logged in
+        const userJson = await AsyncStorage.getItem("@user");
+        if (userJson) {
+          const parsedUser = JSON.parse(userJson) as User;
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Error initializing app:", error);
+      } finally {
+        setIsLoading(false);
+        // Hide the splash screen
+        try {
+          await SplashScreen.hideAsync();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_error) {
+          // Ignore errors
+        }
+      }
+    };
+
     initializeApp();
   }, []);
 
-  const handleRetryConnection = () => {
-    setDbStatus("initializing");
-    setInitError(null);
-    initializeApp();
+  const handleLogin = async () => {
+    haptics.medium();
+
+    try {
+      // Create dummy user
+      const newUser: User = {
+        id: `user_${Math.random().toString(36).substring(2, 11)}`,
+        username: "Special User",
+        tier: "elite",
+        purchase_amount: 9999,
+        serial_number: `BADGE-${Math.floor(Math.random() * 1000000)}`,
+        created_at: new Date().toISOString(),
+      };
+
+      // Save user to storage
+      await AsyncStorage.setItem("@user", JSON.stringify(newUser));
+
+      // Update state
+      setUser(newUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
   };
 
-  const handleContinueInDemoMode = () => {
-    setDbStatus("demo");
+  const handleLogout = async () => {
+    haptics.medium();
+
+    try {
+      // Clear user from storage
+      await AsyncStorage.removeItem("@user");
+
+      // Update state
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
-  // Show loading screen while fonts are loading or checking database
-  if (!fontsLoaded || !appReady) {
+  // Show loading screen
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]}
-          style={styles.initGradient}
+          colors={[COLORS.DARKER, COLORS.DARK]}
+          style={styles.gradient}
         >
           <View style={styles.loadingContainer}>
-            <ActivityIndicator
-              size="large"
-              color={COLORS.GOLD_SHADES.PRIMARY}
-            />
-            <Text
-              style={[
-                styles.loadingText,
-                fontsLoaded ? styles.playfairRegular : null,
-              ]}
-            >
-              Preparing your luxury experience...
-            </Text>
+            <ActivityIndicator size="large" color={COLORS.GOLD} />
+            <Text style={styles.loadingText}>Loading...</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
     );
   }
 
-  // Show error screen if there's an issue with the database
-  if (dbStatus === "error") {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
-        <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, COLORS.BACKGROUND.DARKER]}
-          style={styles.initGradient}
-        >
-          <ErrorDialog
-            error={initError || "Unknown database error"}
-            onRetry={handleRetryConnection}
-            onContinue={handleContinueInDemoMode}
-          />
-        </LinearGradient>
-      </SafeAreaView>
-    );
-  }
-
-  // Main app with providers
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      <UserProvider>
-        <StripeProvider>
-          <AppNavigator />
-        </StripeProvider>
-      </UserProvider>
-
-      {dbStatus === "demo" && (
-        <View style={styles.demoModeIndicator}>
-          <Text style={styles.demoModeText}>DEMO MODE</Text>
+      <LinearGradient
+        colors={[COLORS.DARKER, COLORS.DARK]}
+        style={styles.gradient}
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerText}>THE BADGE APP</Text>
         </View>
-      )}
+
+        <View style={styles.content}>
+          {isAuthenticated && user ? (
+            <View style={styles.badgeContainer}>
+              <FlexBadge
+                username={user.username}
+                tier={user.tier}
+                amount={user.purchase_amount}
+                serialNumber={user.serial_number}
+              />
+              <TouchableOpacity style={styles.button} onPress={handleLogout}>
+                <Text style={styles.buttonText}>LOGOUT</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.loginContainer}>
+              <Text style={styles.welcomeText}>
+                Login to see your special badge
+              </Text>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.buttonText}>LOGIN</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -280,108 +175,69 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND.DARK,
+    backgroundColor: COLORS.DARK,
+  },
+  gradient: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  header: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  headerText: {
+    fontSize: 28,
+    color: COLORS.GOLD,
+    letterSpacing: 1,
+    marginVertical: 20,
+    fontWeight: "bold",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
-  },
-  loadingGradient: {
-    flex: 1,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  initGradient: {
-    flex: 1,
   },
   loadingText: {
-    marginTop: 24,
+    marginTop: 20,
     fontSize: 18,
-    color: COLORS.GOLD_SHADES.PRIMARY,
-    textAlign: "center",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  errorTitle: {
-    fontSize: 28,
-    color: COLORS.GOLD_SHADES.PRIMARY,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  errorText: {
-    fontSize: 16,
     color: COLORS.WHITE,
-    marginBottom: 24,
-    textAlign: "center",
-    lineHeight: 24,
   },
-  errorHint: {
-    fontSize: 14,
-    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
+  welcomeText: {
+    fontSize: 24,
+    color: COLORS.WHITE,
     textAlign: "center",
     marginBottom: 40,
   },
-  buttonContainer: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
+  loginContainer: {
     width: "100%",
-    marginTop: 20,
-  },
-  retryButton: {
-    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    borderWidth: 1,
-    width: "80%",
     alignItems: "center",
-    borderColor: COLORS.GOLD_SHADES.PRIMARY,
-    marginBottom: 12,
   },
-  continueButton: {
-    backgroundColor: COLORS.GOLD_SHADES.PRIMARY,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    width: "80%",
+  badgeContainer: {
+    width: "100%",
     alignItems: "center",
+  },
+  loginButton: {
+    backgroundColor: COLORS.GOLD,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+  },
+  button: {
+    backgroundColor: COLORS.GOLD,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 40,
   },
   buttonText: {
-    color: COLORS.WHITE,
-    fontSize: 14,
+    color: COLORS.DARK,
+    fontSize: 16,
+    letterSpacing: 1,
     fontWeight: "bold",
-  },
-  demoModeIndicator: {
-    position: "absolute",
-    top: 40,
-    right: 0,
-    backgroundColor: COLORS.ACCENTS.WARNING,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-  },
-  demoModeText: {
-    color: COLORS.BACKGROUND.DARKER,
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-  // Font styles
-  playfairRegular: {
-    fontFamily: "PlayfairDisplay_400Regular",
-  },
-  playfairBold: {
-    fontFamily: "PlayfairDisplay_700Bold",
-  },
-  montserratRegular: {
-    fontFamily: "Montserrat_400Regular",
   },
 });

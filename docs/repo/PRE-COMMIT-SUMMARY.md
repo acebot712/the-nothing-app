@@ -41,7 +41,7 @@ We've configured several code quality hooks to run automatically before commits:
 ### 4. Added Scripts and Validation Tools
 
 - Added a `pre-commit` npm script for manually running hooks
-- Included pre-commit validation in the pre-production check script
+- Included pre-commit validation in the pre-production check scrip
 - Added integration with the CI/CD pipeline
 
 ### 5. Improved Project Structure
@@ -66,13 +66,13 @@ For developers working with this repository:
 
 1. **Installation**:
    ```bash
-   pip install pre-commit
+   pip install pre-commi
    pre-commit install
    ```
 
 2. **Running Manually**:
    ```bash
-   npm run pre-commit
+   npm run pre-commi
    # or
    pre-commit run --all-files
    ```

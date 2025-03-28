@@ -26,7 +26,7 @@ chmod +x server/scripts/*.sh
 
 ```bash
 # Install pre-commit if you don't have it already
-pip install pre-commit
+pip install pre-commi
 
 # Install the git hooks
 pre-commit install
@@ -121,7 +121,7 @@ If pre-commit hooks aren't running:
 
 1. Make sure pre-commit is installed:
    ```bash
-   pip install pre-commit
+   pip install pre-commi
    ```
 
 2. Ensure hooks are installed in the git repository:

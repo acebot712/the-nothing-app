@@ -1,4 +1,4 @@
-# Chapter 5: Optimization and Deployment
+# Chapter 5: Optimization and Deploymen
 
 ## Introduction
 
@@ -12,7 +12,7 @@ Before deploying to production, optimizing your app's performance is essential f
 
 The first step in optimization is establishing reliable metrics:
 
-```typescript
+```typescrip
 // app/utils/performance.ts
 import { InteractionManager } from 'react-native';
 import * as Sentry from '@sentry/react-native';
@@ -125,7 +125,7 @@ function UserList({ users }) {
   const keyExtractor = useCallback((item) => item.id, []);
 
   return (
-    <FlatList
+    <FlatLis
       data={users}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
 
 Efficient API calls significantly improve perceived performance:
 
-```typescript
+```typescrip
 // app/services/api.ts
 import { createClient } from './client';
 
@@ -269,7 +269,7 @@ function processQueue() {
   request.execute()
     .finally(() => {
       isProcessingQueue = false;
-      processQueue(); // Process next request
+      processQueue(); // Process next reques
     });
 }
 
@@ -316,7 +316,7 @@ export function queueBackgroundRequest(endpoint, params, callback) {
 
 Optimizing how we manage application state:
 
-```typescript
+```typescrip
 // app/contexts/OptimizedUserContext.tsx
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 
@@ -364,10 +364,10 @@ function userReducer(state, action) {
   }
 }
 
-// Create the context
+// Create the contex
 const UserContext = createContext(null);
 
-// Provider component
+// Provider componen
 export function UserProvider({ children }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
 
@@ -483,13 +483,13 @@ function ProfileScreen({ userId }) {
 }
 ```
 
-## Preparing for Deployment
+## Preparing for Deploymen
 
 ### Environment-Specific Configuration
 
 "The Nothing App" uses different configurations for development, staging, and production:
 
-```javascript
+```javascrip
 // app.config.js
 const packageJson = require('./package.json');
 
@@ -603,7 +603,7 @@ module.exports = {
 
 "The Nothing App" implements feature flags to safely roll out new features:
 
-```typescript
+```typescrip
 // app/utils/featureFlags.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -669,7 +669,7 @@ export function isFeatureEnabled(featureName) {
     return true;
   }
 
-  // Check remote flag first, fall back to default
+  // Check remote flag first, fall back to defaul
   return REMOTE_FLAGS[featureName] !== undefined
     ? REMOTE_FLAGS[featureName]
     : DEFAULT_FLAGS[featureName] || false;
@@ -680,7 +680,7 @@ export function isFeatureEnabled(featureName) {
 
 Implementing robust error monitoring for production:
 
-```typescript
+```typescrip
 // app/utils/errorReporting.ts
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
@@ -715,7 +715,7 @@ export function reportError(error, context = {}) {
   });
 }
 
-// Create error boundary component
+// Create error boundary componen
 export const ErrorBoundary = Sentry.withErrorBoundary(
   ({ children }) => children,
   {
@@ -789,8 +789,8 @@ Expo Application Services (EAS) provides powerful tools for building and deployi
 ### Building for Different Platforms
 
 ```bash
-# Build for iOS development
-eas build --platform ios --profile development
+# Build for iOS developmen
+eas build --platform ios --profile developmen
 
 # Build for Android internal testing
 eas build --platform android --profile preview
@@ -818,7 +818,7 @@ on:
 jobs:
   build:
     name: Install and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-lates
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -832,7 +832,7 @@ jobs:
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: lates
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
@@ -840,7 +840,7 @@ jobs:
 
       - name: Run lint and type checking
         run: |
-          npm run lint
+          npm run lin
           npm run typecheck
 
       - name: Determine build profile
@@ -866,7 +866,7 @@ The final step is submitting your application to the app stores:
 
 Before submitting to Apple's App Store:
 
-1. Create an app entry in App Store Connect
+1. Create an app entry in App Store Connec
 2. Prepare marketing materials (screenshots, descriptions)
 3. Configure pricing and availability
 4. Set up privacy information and permissions
@@ -881,7 +881,7 @@ Before submitting to Google Play:
 4. Complete the content rating questionnaire
 5. Set up privacy policy
 
-### EAS Submit
+### EAS Submi
 
 Using EAS to submit builds to the app stores:
 
@@ -897,7 +897,7 @@ eas submit --platform android --profile production
 
 After deployment, monitoring the app's performance in production is crucial:
 
-```typescript
+```typescrip
 // app/utils/analytics.ts
 import Analytics from '@segment/analytics-react-native';
 import * as Sentry from '@sentry/react-native';
@@ -967,7 +967,7 @@ export function trackPerformance(name, durationMs) {
 
 One of Expo's most powerful features is the ability to push updates without going through the app stores using EAS Update:
 
-```typescript
+```typescrip
 // app/utils/updates.ts
 import * as Updates from 'expo-updates';
 import { Alert } from 'react-native';
@@ -1010,7 +1010,7 @@ async function fetchAndApplyUpdate() {
         channel: Updates.channel,
       });
 
-      // Prompt the user to restart
+      // Prompt the user to restar
       Alert.alert(
         'Update Available',
         'A new version is available. Restart now to apply updates?',

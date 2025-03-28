@@ -29,16 +29,16 @@ EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 To complete the Supabase setup, you need to create the necessary tables in your Supabase project. Follow these steps:
 
 1. Log in to the [Supabase Dashboard](https://app.supabase.io)
-2. Navigate to your project
+2. Navigate to your projec
 3. Go to the SQL Editor
-4. Copy and paste the contents of the `supabase-schema.sql` file in this project
+4. Copy and paste the contents of the `supabase-schema.sql` file in this projec
 5. Run the script to create the necessary tables and policies
 
 Alternatively, you can use the initialization script:
 
 ```bash
 cd server
-npm run db:init
+npm run db:ini
 ```
 
 The script will check if the tables exist and create sample data.
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS public.invite_codes (
 
 The Supabase client is configured in `app/config/supabase.ts` with:
 
-```typescript
+```typescrip
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -108,7 +108,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-// Ensure environment variables are set
+// Ensure environment variables are se
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase credentials are missing. Please check your environment variables.');
 }
@@ -127,7 +127,7 @@ export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
 
 The following functions are implemented to interact with Supabase:
 
-- `getLeaderboard()` - Fetches the leaderboard entries sorted by purchase amount
+- `getLeaderboard()` - Fetches the leaderboard entries sorted by purchase amoun
 - `saveUser(user)` - Saves a new user to the database or updates an existing one
 - `getInviteCode(code)` - Validates an invitation code
 - `markInviteCodeAsUsed(code, userId)` - Marks an invitation code as used
@@ -150,7 +150,7 @@ node test-database-connection.js
 
 The script will:
 1. Test the connection to your Supabase instance
-2. Verify that all required tables exist
+2. Verify that all required tables exis
 3. Check row-level security policies
 4. Report any issues found
 

@@ -43,56 +43,15 @@ const safelyTriggerHaptic = (type: string) => {
   }
 };
 
-// Luxury app haptic patterns
+// Minimal haptic patterns
 export const haptics = {
-  // Light tap for simple interactions
-  light: () => safelyTriggerHaptic("impactLight"),
-
-  // Medium tap for confirmations
+  // Medium tap for button presses
   medium: () => safelyTriggerHaptic("impactMedium"),
-
-  // Heavy tap for important actions
-  heavy: () => safelyTriggerHaptic("impactHeavy"),
-
-  // Success pattern
-  success: () => {
-    safelyTriggerHaptic("impactMedium");
-    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 150);
-  },
-
-  // Premium success pattern (for purchases)
-  premium: () => {
-    safelyTriggerHaptic("impactMedium");
-    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 150);
-    setTimeout(() => safelyTriggerHaptic("impactLight"), 300);
-    setTimeout(() => safelyTriggerHaptic("impactHeavy"), 450);
-  },
-
-  // Error pattern
-  error: () => safelyTriggerHaptic("notificationError"),
 };
 
-// Animation utilities
+// Minimal animation utilities
 export const animations = {
-  // Pulse animation
-  pulse: (value: Animated.Value, toValue = 1.1, duration = 800) => {
-    Animated.sequence([
-      Animated.timing(value, {
-        toValue,
-        duration: duration / 2,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(value, {
-        toValue: 1,
-        duration: duration / 2,
-        easing: Easing.in(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  },
-
-  // Shine animation for gold elements
+  // Shine animation for badge
   shine: (value: Animated.Value, _duration = 2000) => {
     Animated.sequence([
       Animated.timing(value, {
@@ -107,41 +66,5 @@ export const animations = {
         useNativeDriver: false,
       }),
     ]).start(() => animations.shine(value, _duration));
-  },
-
-  // Fade in animation
-  fadeIn: (value: Animated.Value, duration = 500) => {
-    Animated.timing(value, {
-      toValue: 1,
-      duration,
-      useNativeDriver: true,
-    }).start();
-  },
-
-  // Fade out animation
-  fadeOut: (value: Animated.Value, duration = 500) => {
-    Animated.timing(value, {
-      toValue: 0,
-      duration,
-      useNativeDriver: true,
-    }).start();
-  },
-
-  // Bounce animation
-  bounce: (value: Animated.Value, toValue = 1.2, _duration = 1000) => {
-    Animated.sequence([
-      Animated.spring(value, {
-        toValue,
-        friction: 3,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-      Animated.spring(value, {
-        toValue: 1,
-        friction: 3,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-    ]).start();
   },
 };

@@ -38,7 +38,7 @@ Expo simplifies React Native development in several key ways:
 At a fundamental level, Expo consists of:
 
 - **Expo CLI**: A command-line interface for creating, developing, and building Expo apps
-- **Expo SDK**: A library of pre-built native modules accessible via JavaScript
+- **Expo SDK**: A library of pre-built native modules accessible via JavaScrip
 - **Expo Go app**: A container app for quickly testing your code on devices
 - **EAS (Expo Application Services)**: Cloud services for builds, updates, and submissions
 
@@ -53,7 +53,7 @@ the-nothing-app/
 ├── app.config.js          # Dynamic configuration
 ├── assets/                # Static assets
 ├── babel.config.js        # Babel transpiler settings
-├── index.ts               # Entry point
+├── index.ts               # Entry poin
 ├── metro.config.js        # Metro bundler configuration
 ├── package.json           # Dependencies and scripts
 ├── server/                # Backend server code
@@ -102,7 +102,7 @@ The `dependencies` section lists all the packages your app needs to run. Note th
 
 These files configure your Expo project. The `app.json` contains static configuration, while `app.config.js` allows for dynamic configuration that can depend on environment variables or other factors.
 
-```javascript
+```javascrip
 // app.config.js example
 export default {
   // Spread app.json config
@@ -123,11 +123,11 @@ This configuration determines how your app is built, what permissions it require
 
 This is the entry point to your application where everything begins:
 
-```typescript
+```typescrip
 import { registerRootComponent } from 'expo';
 import App from './App';
 
-// Registers the main App component as the root component
+// Registers the main App component as the root componen
 registerRootComponent(App);
 ```
 
@@ -139,7 +139,7 @@ Let's walk through the exact steps to set up your development environment and un
 
 ### Development Environment Setup
 
-1. **Node.js and npm**: Expo runs on Node.js and uses npm for package management
+1. **Node.js and npm**: Expo runs on Node.js and uses npm for package managemen
 2. **Expo CLI**: The command-line interface for creating and managing Expo projects
 3. **Mobile Simulators**: iOS Simulator (macOS only) and/or Android Emulator
 4. **Physical Devices**: For real-world testing with Expo Go
@@ -157,7 +157,7 @@ When you run `expo start`, several things happen:
 2. **Development Server Launches**: This server:
    - Hosts your bundled JavaScript code
    - Provides a web interface to manage connected devices
-   - Enables live reloading and hot module replacement
+   - Enables live reloading and hot module replacemen
    - Serves the Expo manifest (a JSON file describing your app)
 
 3. **QR Code Generated**: Scanning this connects the Expo Go app to your dev server
@@ -170,7 +170,7 @@ Understanding this flow helps you troubleshoot issues and optimize your developm
 
 React Native, like React for the web, uses a component-based architecture. Let's examine how components work in our application.
 
-### Anatomy of a React Native Component
+### Anatomy of a React Native Componen
 
 Here's a simplified example from our app:
 
@@ -256,9 +256,9 @@ The key hooks to understand are:
 
 Expo provides numerous APIs that abstract complex native functionality. Let's explore some of the most important ones used in our app:
 
-### Expo Font
+### Expo Fon
 
-```javascript
+```javascrip
 import * as Font from 'expo-font';
 
 async function loadFonts() {
@@ -271,14 +271,14 @@ async function loadFonts() {
 
 This API manages font loading, automatically handling the complexities of registering custom fonts with each platform.
 
-### Expo Linear Gradient
+### Expo Linear Gradien
 
 ```jsx
 import { LinearGradient } from 'expo-linear-gradient';
 
 function GradientButton() {
   return (
-    <LinearGradient
+    <LinearGradien
       colors={['#D4AF37', '#F4EFA8', '#D4AF37']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -296,7 +296,7 @@ This component creates beautiful gradient effects with a simple API, hiding the 
 
 Managing environment variables properly is crucial for separating configuration from code. Expo provides a structured way to handle this:
 
-```javascript
+```javascrip
 // In your .env file
 EXPO_PUBLIC_API_URL=https://api.example.com
 

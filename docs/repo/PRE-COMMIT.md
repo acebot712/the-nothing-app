@@ -13,7 +13,7 @@ To set up the pre-commit hooks:
 1. Install pre-commit (if not already installed):
 
 ```bash
-pip install pre-commit
+pip install pre-commi
 ```
 
 2. Install the git hooks:
@@ -50,7 +50,7 @@ The following hooks are configured in `.pre-commit-config.yaml`:
 
 This repository also uses Husky to integrate pre-commit with the standard Git workflow. The Husky configuration in `.husky/pre-commit` will:
 
-1. Try to run pre-commit hooks first
+1. Try to run pre-commit hooks firs
 2. If pre-commit is not installed, fall back to a set of manual checks:
    - TypeScript type checking
    - ESLint on staged files

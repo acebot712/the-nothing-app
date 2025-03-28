@@ -10,7 +10,7 @@ Before diving into specific implementations, let's understand the core principle
 
 ### Types of State
 
-1. **Local Component State**: Managed with `useState` and confined to a single component
+1. **Local Component State**: Managed with `useState` and confined to a single componen
 2. **Shared Application State**: Data needed across multiple components
 3. **Server State**: Data that originates from and syncs with a backend
 4. **Navigation State**: The current screen hierarchy and parameters
@@ -18,7 +18,7 @@ Before diving into specific implementations, let's understand the core principle
 
 Understanding which type of state you're dealing with helps determine the appropriate management approach.
 
-## React's Built-in State Management
+## React's Built-in State Managemen
 
 React provides several mechanisms for managing state:
 
@@ -75,10 +75,10 @@ function Counter() {
 For sharing state across the component tree:
 
 ```jsx
-// Create a context
+// Create a contex
 const ThemeContext = createContext('light');
 
-// Provider component
+// Provider componen
 function App() {
   const [theme, setTheme] = useState('light');
 
@@ -89,7 +89,7 @@ function App() {
   );
 }
 
-// Consumer component
+// Consumer componen
 function ThemedButton() {
   const { theme, setTheme } = useContext(ThemeContext);
 
@@ -172,7 +172,7 @@ export function UserProvider({ children }) {
   );
 }
 
-// Custom hook for using the context
+// Custom hook for using the contex
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
@@ -189,14 +189,14 @@ Supabase is an open-source Firebase alternative that provides:
 1. **PostgreSQL Database**: A powerful relational database
 2. **Authentication**: Built-in user management with multiple providers
 3. **Real-time Subscriptions**: Live data updates via WebSockets
-4. **Storage**: File storage and management
+4. **Storage**: File storage and managemen
 5. **Edge Functions**: Serverless functions for custom logic
 
 ### Setting Up Supabase in "The Nothing App"
 
 The app initializes Supabase in a dedicated client:
 
-```javascript
+```javascrip
 // lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -261,7 +261,7 @@ The app uses several patterns to interact with Supabase:
 
 #### Basic CRUD Operations
 
-```typescript
+```typescrip
 // Create a new profile
 const createProfile = async (userId: string, username: string) => {
   const { data, error } = await supabase
@@ -308,7 +308,7 @@ const deleteAchievement = async (achievementId: string) => {
 
 #### Real-time Subscriptions
 
-```typescript
+```typescrip
 // Subscribe to profile changes
 const subscribeToProfile = (userId: string, callback: (profile: any) => void) => {
   const subscription = supabase
@@ -330,7 +330,7 @@ const subscribeToProfile = (userId: string, callback: (profile: any) => void) =>
 
 "The Nothing App" encapsulates Supabase interactions in custom hooks:
 
-```typescript
+```typescrip
 // hooks/useProfile.ts
 export function useProfile(userId: string) {
   const [profile, setProfile] = useState(null);
@@ -382,7 +382,7 @@ export function useProfile(userId: string) {
 
 The app implements a caching strategy for improved performance:
 
-```typescript
+```typescrip
 // Cache manager
 const cache = new Map();
 
@@ -426,7 +426,7 @@ const getUserAchievements = async (userId) => {
 
 ### Sign Up
 
-```typescript
+```typescrip
 const signUp = async (email: string, password: string, username: string) => {
   // Create the user in Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -455,7 +455,7 @@ const signUp = async (email: string, password: string, username: string) => {
 
 ### Social Authentication
 
-```typescript
+```typescrip
 const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -466,12 +466,12 @@ const signInWithGoogle = async () => {
 };
 ```
 
-## Error Handling and Offline Support
+## Error Handling and Offline Suppor
 
 "The Nothing App" implements robust error handling:
 
-```typescript
-// API wrapper with error handling and offline support
+```typescrip
+// API wrapper with error handling and offline suppor
 export async function safelyExecuteQuery(queryFn) {
   try {
     // Check for internet connection
@@ -491,7 +491,7 @@ export async function safelyExecuteQuery(queryFn) {
       await storeForRetry(queryFn);
     }
 
-    // Rethrow with more context
+    // Rethrow with more contex
     throw new AppError('Database operation failed', {
       originalError: error,
       isOffline: !netInfo.isConnected,
@@ -505,13 +505,13 @@ export async function safelyExecuteQuery(queryFn) {
 
 The app includes comprehensive tests for database operations:
 
-```typescript
+```typescrip
 // __tests__/profile.test.ts
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../lib/supabase';
 
-// Mock Supabase client
+// Mock Supabase clien
 jest.mock('../lib/supabase', () => ({
   supabase: {
     from: jest.fn(),
@@ -556,7 +556,7 @@ describe('useProfile hook', () => {
     // Wait for the hook to update
     await waitForNextUpdate();
 
-    // Check the result
+    // Check the resul
     expect(result.current.loading).toBe(false);
     expect(result.current.profile).toEqual({ id: '123', username: 'testuser' });
     expect(result.current.error).toBe(null);

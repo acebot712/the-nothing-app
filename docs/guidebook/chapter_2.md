@@ -1,4 +1,4 @@
-# Chapter 2: Navigation and Screen Management
+# Chapter 2: Navigation and Screen Managemen
 
 ## Introduction
 
@@ -103,7 +103,7 @@ This pattern of nesting navigators creates a hierarchical navigation tree that c
 
 One of the strengths of our app is its use of TypeScript to ensure type safety in navigation. Let's explore how this works:
 
-```typescript
+```typescrip
 // Define the type for our navigation parameters
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -115,7 +115,7 @@ export type RootStackParamList = {
 // Type the navigation prop
 type Props = NativeStackScreenProps<RootStackParamList, 'Success'>;
 
-// Use in a component
+// Use in a componen
 function SuccessScreen({ route, navigation }: Props) {
   // TypeScript now knows that route.params.tier exists and is one of the defined values
   const { tier } = route.params;
@@ -161,7 +161,7 @@ function ExpensiveScreen() {
 
 Key navigation lifecycle hooks include:
 
-1. **useNavigation**: Provides the navigation object for any component
+1. **useNavigation**: Provides the navigation object for any componen
 2. **useFocusEffect**: Runs effects when a screen gains focus
 3. **useIsFocused**: Returns a boolean indicating if the screen is focused
 4. **useNavigationState**: Accesses the current navigation state
@@ -269,7 +269,7 @@ const linking = {
 
 This configuration allows deep links like `thenothingapp://profile/123` to navigate directly to a specific profile.
 
-## Navigation State Management
+## Navigation State Managemen
 
 Navigation state in React Navigation is entirely controlled by JavaScript, making it accessible and modifiable. This enables powerful patterns like:
 
@@ -361,7 +361,7 @@ const nextScreenComponent = useMemo(() => <NextScreen />, []);
 />
 ```
 
-### Memory Management
+### Memory Managemen
 
 Screens that are no longer needed can be unmounted to free up resources:
 

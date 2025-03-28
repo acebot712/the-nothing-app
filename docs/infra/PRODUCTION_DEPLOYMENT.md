@@ -2,18 +2,18 @@
 
 This document provides instructions for deploying The Nothing App to production environments.
 
-## Pre-Deployment Checklist
+## Pre-Deployment Checklis
 
 Before deploying to production, ensure you have completed the following tasks:
 
 - [ ] Run `npm run lint:all` to check for linting errors
 - [ ] Run `npm run tsc` to verify TypeScript types
 - [ ] Verify all environment variables are correctly set for production
-- [ ] Test the application in a staging environment
+- [ ] Test the application in a staging environmen
 - [ ] Ensure Supabase is properly configured with all required tables
 - [ ] Verify Stripe integration is working correctly
 - [ ] Check that all API endpoints are secured
-- [ ] Run a complete test of the user flow from registration to payment
+- [ ] Run a complete test of the user flow from registration to paymen
 - [ ] Execute `npm run preproduction` to perform automated pre-production checks
 
 ## Environment Configuration
@@ -74,7 +74,7 @@ Ensure your Supabase production database:
 3. Has backups enabled
 4. Has database migrations applied if you've made schema changes
 
-## API Server Deployment
+## API Server Deploymen
 
 Deploy the server component:
 
@@ -93,12 +93,12 @@ CORS_ORIGIN=https://your-app-domain.com
 SUPABASE_URL=your-production-supabase-url
 SUPABASE_SERVICE_KEY=your-supabase-service-key
 STRIPE_SECRET_KEY=your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secre
 ```
 
 ## Building for Production
 
-### Using the CI Build Script
+### Using the CI Build Scrip
 
 The easiest way to build for production is using our CI build script:
 
@@ -141,7 +141,7 @@ After building, follow these steps:
 2. Submit to Google Play using `npm run submit:android` or manually through Google Play Console
 3. Complete Play Store submission requirements (screenshots, descriptions, etc.)
 
-## Progressive Rollout
+## Progressive Rollou
 
 For major updates, consider using a phased rollout:
 
@@ -164,7 +164,7 @@ Set up the following for production monitoring:
 When making schema changes in production:
 
 1. Always back up the database before migrations
-2. Test migrations on a staging environment first
+2. Test migrations on a staging environment firs
 3. Schedule migrations during off-peak hours
 4. Have a rollback plan in case of issues
 
@@ -192,7 +192,7 @@ As user base grows:
 If users report database connection errors:
 1. Check Supabase status page
 2. Verify network connectivity between app and Supabase
-3. Confirm environment variables are correctly set
+3. Confirm environment variables are correctly se
 4. Check for database service disruptions
 5. Verify the application is using the fallback mechanism for database connection issues
 
