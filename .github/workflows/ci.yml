@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, productionize ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -53,10 +53,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: |
-          # If you have tests, uncomment the line below
-          # npm test
-          echo "No tests configured yet. Consider adding tests for production readiness."
+        run: npm test
 
   build-preview:
     name: Build Preview

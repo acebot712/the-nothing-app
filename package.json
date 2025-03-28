@@ -8,7 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "echo \"No tests yet - tests will be added later\" && exit 0",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "~1.23.1",

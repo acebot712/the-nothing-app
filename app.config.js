@@ -18,6 +18,7 @@ module.exports = {
     bundleIdentifier: "com.thebadgeapp",
     buildNumber: "1",
     icon: "./assets/icon.png",
+    jsEngine: "jsc",
   },
   android: {
     adaptiveIcon: {
@@ -28,6 +29,7 @@ module.exports = {
     package: "com.thebadgeapp",
     versionCode: 1,
     permissions: [],
+    jsEngine: "jsc",
   },
   web: {
     favicon: "./assets/favicon.png",
