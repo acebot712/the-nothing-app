@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run pre-commit if it's installed
+if command -v pre-commit >/dev/null 2>&1; then
+  echo "🧰 Running pre-commit hooks..."
+  pre-commit run --hook-stage pre-commit || {
+    echo "❌ Pre-commit hooks failed. Please fix errors before committing."
+    exit 1
+  }
+  echo "✅ Pre-commit hooks passed!"
+  exit 0
+fi
+
+# If pre-commit is not installed or failed, continue with manual checks
+echo "⚠️ pre-commit not found or failed, using manual checks."
+
+# Check for staged JS/TS files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx)$')
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No JS/TS files to check"
+  exit 0
+fi
+
+# Run TypeScript type checking
+echo "📝 Running TypeScript checks..."
+npx tsc --noEmit || {
+  echo "❌ TypeScript check failed. Please fix errors before committing."
+  exit 1
+}
+
+# Run ESLint on staged files only
+echo "🧹 Running ESLint on staged files..."
+npx eslint --fix $STAGED_FILES || {
+  echo "❌ ESLint check failed. Please fix errors before committing."
+  exit 1
+}
+
+# Re-add fixed files to staging
+echo "📥 Adding fixed files back to staging..."
+git add $STAGED_FILES
+
+# Check for console.log statements
+echo "🔎 Checking for console.log statements..."
+if grep -r "console\.log" --include="*.ts" --include="*.tsx" $STAGED_FILES; then
+  echo "⚠️ Warning: console.log statements found in staged files."
+  echo "   Consider removing them before pushing to production."
+  # Not failing the commit, just warning
+fi
+
+echo "✅ Pre-commit checks passed!"

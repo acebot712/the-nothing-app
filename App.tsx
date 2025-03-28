@@ -1,201 +1,173 @@
-import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, View, Text, ActivityIndicator } from 'react-native';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { UserProvider, useUser } from './app/contexts/UserContext';
-import StripeProvider from './app/providers/StripeProvider';
-import { initializeSupabase } from './app/config/supabase';
+import React, { useState, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
-  useFonts,
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_700Bold,
-  PlayfairDisplay_400Regular_Italic,
-} from '@expo-google-fonts/playfair-display';
-import {
-  Montserrat_400Regular,
-  Montserrat_700Bold,
-} from '@expo-google-fonts/montserrat';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from './app/design/colors';
+  StyleSheet,
+  SafeAreaView,
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as SplashScreen from "expo-splash-screen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import FlexBadge from "./app/components/FlexBadge";
+import { haptics } from "./app/utils/animations";
 
-// Screens
-import InviteScreen from './app/screens/InviteScreen';
-import NetWorthScreen from './app/screens/NetWorthScreen';
-import PricingScreen from './app/screens/PricingScreen';
-import SuccessScreen from './app/screens/SuccessScreen';
-import DashboardScreen from './app/screens/DashboardScreen';
+// Keep the splash screen visible while we initialize the app
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* Ignore errors */
+});
 
-// Custom navigation theme
-const MyTheme = {
-  ...DefaultTheme,
-  dark: true,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: COLORS.GOLD_SHADES.PRIMARY,
-    background: COLORS.BACKGROUND.DARK,
-    card: COLORS.BACKGROUND.DARK,
-    text: COLORS.WHITE,
-    border: COLORS.GRAY_SHADES.ALMOST_BLACK,
-    notification: COLORS.GOLD_SHADES.PRIMARY,
-  },
+// Simplified colors
+const COLORS = {
+  DARK: "#0A0A0A",
+  DARKER: "#000000",
+  GOLD: "#D4AF37",
+  WHITE: "#FFFFFF",
 };
 
-// Create stack navigator
-const Stack = createNativeStackNavigator();
+// Define User type
+interface User {
+  id: string;
+  username: string;
+  tier: "regular" | "elite" | "god";
+  purchase_amount: number;
+  serial_number: string;
+  created_at: string;
+}
 
-// Main app navigation
-const AppNavigator = () => {
-  const { isAuthenticated, hasInviteAccess, isLoading } = useUser();
-
-  // Determine starting screen based on authentication state
-  const getInitialRouteName = () => {
-    if (isAuthenticated) {
-      return 'Dashboard';
-    } else if (hasInviteAccess) {
-      return 'NetWorth';
-    } else {
-      return 'Invite';
-    }
-  };
-
-  // Don't render navigation until loading is complete
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, '#181818']}
-          style={styles.loadingGradient}
-        >
-          <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
-          <Text style={styles.loadingText}>Loading the luxury experience...</Text>
-        </LinearGradient>
-      </View>
-    );
-  }
-
-  return (
-    <NavigationContainer theme={MyTheme}>
-      <StatusBar style="light" />
-      <Stack.Navigator
-        key={isAuthenticated ? 'auth' : 'unauth'} // Force navigator to reset when auth state changes
-        initialRouteName={getInitialRouteName()}
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-          contentStyle: { backgroundColor: COLORS.BACKGROUND.DARK },
-          navigationBarColor: COLORS.BACKGROUND.DARK,
-        }}
-      >
-        <Stack.Screen name="Invite" component={InviteScreen} />
-        <Stack.Screen name="NetWorth" component={NetWorthScreen} />
-        <Stack.Screen name="Pricing" component={PricingScreen} />
-        <Stack.Screen name="Success" component={SuccessScreen} />
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-};
-
-// Root component with providers
+// Root component
 export default function App() {
-  const [dbInitialized, setDbInitialized] = useState<boolean | null>(null);
-  const [initError, setInitError] = useState<string | null>(null);
-  
-  // Load custom fonts
-  const [fontsLoaded] = useFonts({
-    PlayfairDisplay_400Regular,
-    PlayfairDisplay_700Bold,
-    PlayfairDisplay_400Regular_Italic,
-    Montserrat_400Regular,
-    Montserrat_700Bold,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize Supabase on app load
+  // Initialize app
   useEffect(() => {
-    const initialize = async () => {
+    const initializeApp = async () => {
       try {
-        const success = await initializeSupabase();
-        setDbInitialized(success);
-        if (!success) {
-          setInitError('Could not connect to the database. Please check your Supabase configuration and ensure the required tables exist.');
+        // Check if user is logged in
+        const userJson = await AsyncStorage.getItem("@user");
+        if (userJson) {
+          const parsedUser = JSON.parse(userJson) as User;
+          setUser(parsedUser);
+          setIsAuthenticated(true);
         }
       } catch (error) {
-        console.error('Error initializing app:', error);
-        setDbInitialized(false);
-        setInitError('An unexpected error occurred during initialization.');
+        console.error("Error initializing app:", error);
+      } finally {
+        setIsLoading(false);
+        // Hide the splash screen
+        try {
+          await SplashScreen.hideAsync();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_error) {
+          // Ignore errors
+        }
       }
     };
 
-    initialize();
+    initializeApp();
   }, []);
 
-  // Show loading screen while fonts are loading or checking database
-  if (!fontsLoaded || dbInitialized === null) {
+  const handleLogin = async () => {
+    haptics.medium();
+
+    try {
+      // Create dummy user
+      const newUser: User = {
+        id: `user_${Math.random().toString(36).substring(2, 11)}`,
+        username: "Special User",
+        tier: "elite",
+        purchase_amount: 9999,
+        serial_number: `BADGE-${Math.floor(Math.random() * 1000000)}`,
+        created_at: new Date().toISOString(),
+      };
+
+      // Save user to storage
+      await AsyncStorage.setItem("@user", JSON.stringify(newUser));
+
+      // Update state
+      setUser(newUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    haptics.medium();
+
+    try {
+      // Clear user from storage
+      await AsyncStorage.removeItem("@user");
+
+      // Update state
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
+  // Show loading screen
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, '#181818']}
-          style={styles.initGradient}
+          colors={[COLORS.DARKER, COLORS.DARK]}
+          style={styles.gradient}
         >
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.GOLD_SHADES.PRIMARY} />
-            <Text style={[
-              styles.loadingText,
-              fontsLoaded ? styles.playfairRegular : null
-            ]}>
-              Preparing your luxury experience...
-            </Text>
+            <ActivityIndicator size="large" color={COLORS.GOLD} />
+            <Text style={styles.loadingText}>Loading...</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
     );
   }
 
-  // Show error screen if there's an issue with the database
-  if (!dbInitialized) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
-        <LinearGradient
-          colors={[COLORS.BACKGROUND.DARK, '#181818']}
-          style={styles.initGradient}
-        >
-          <View style={styles.errorContainer}>
-            <Text style={[
-              styles.errorTitle,
-              styles.playfairBold
-            ]}>
-              Database Error
-            </Text>
-            <Text style={[
-              styles.errorText,
-              styles.montserratRegular
-            ]}>
-              {initError}
-            </Text>
-            <Text style={[
-              styles.errorHint,
-              styles.montserratRegular
-            ]}>
-              Please ensure your Supabase instance is properly configured.
-            </Text>
-          </View>
-        </LinearGradient>
-      </SafeAreaView>
-    );
-  }
-
-  // Main app with providers
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      <UserProvider>
-        <StripeProvider>
-          <AppNavigator />
-        </StripeProvider>
-      </UserProvider>
+      <LinearGradient
+        colors={[COLORS.DARKER, COLORS.DARK]}
+        style={styles.gradient}
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerText}>THE BADGE APP</Text>
+        </View>
+
+        <View style={styles.content}>
+          {isAuthenticated && user ? (
+            <View style={styles.badgeContainer}>
+              <FlexBadge
+                username={user.username}
+                tier={user.tier}
+                amount={user.purchase_amount}
+                serialNumber={user.serial_number}
+              />
+              <TouchableOpacity style={styles.button} onPress={handleLogout}>
+                <Text style={styles.buttonText}>LOGOUT</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.loginContainer}>
+              <Text style={styles.welcomeText}>
+                Login to see your special badge
+              </Text>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.buttonText}>LOGIN</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -203,77 +175,69 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND.DARK,
+    backgroundColor: COLORS.DARK,
+  },
+  gradient: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  header: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  headerText: {
+    fontSize: 28,
+    color: COLORS.GOLD,
+    letterSpacing: 1,
+    marginVertical: 20,
+    fontWeight: "bold",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  loadingGradient: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  initGradient: {
-    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
-    marginTop: 24,
+    marginTop: 20,
     fontSize: 18,
-    color: COLORS.GOLD_SHADES.PRIMARY,
-    textAlign: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorTitle: {
-    fontSize: 28,
-    color: COLORS.GOLD_SHADES.PRIMARY,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 16,
     color: COLORS.WHITE,
-    marginBottom: 24,
-    textAlign: 'center',
-    lineHeight: 24,
   },
-  errorHint: {
-    fontSize: 14,
-    color: COLORS.GRAY_SHADES.MEDIUM_DARK,
-    textAlign: 'center',
+  welcomeText: {
+    fontSize: 24,
+    color: COLORS.WHITE,
+    textAlign: "center",
     marginBottom: 40,
   },
-  debugTools: {
-    marginTop: 24,
+  loginContainer: {
+    width: "100%",
+    alignItems: "center",
   },
-  debugButton: {
-    backgroundColor: COLORS.BACKGROUND.CARD_DARK,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  badgeContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+  loginButton: {
+    backgroundColor: COLORS.GOLD,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.GOLD_SHADES.PRIMARY,
   },
-  debugButtonText: {
-    color: COLORS.GOLD_SHADES.PRIMARY,
-    fontSize: 14,
+  button: {
+    backgroundColor: COLORS.GOLD,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 40,
   },
-  // Font styles
-  playfairRegular: {
-    fontFamily: 'PlayfairDisplay_400Regular'
-  },
-  playfairBold: {
-    fontFamily: 'PlayfairDisplay_700Bold'
-  },
-  montserratRegular: {
-    fontFamily: 'Montserrat_400Regular'
+  buttonText: {
+    color: COLORS.DARK,
+    fontSize: 16,
+    letterSpacing: 1,
+    fontWeight: "bold",
   },
 });

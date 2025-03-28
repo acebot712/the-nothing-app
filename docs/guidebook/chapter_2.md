@@ -1,4 +1,4 @@
-# Chapter 2: Navigation and Screen Management
+# Chapter 2: Navigation and Screen Managemen
 
 ## Introduction
 
@@ -103,7 +103,7 @@ This pattern of nesting navigators creates a hierarchical navigation tree that c
 
 One of the strengths of our app is its use of TypeScript to ensure type safety in navigation. Let's explore how this works:
 
-```typescript
+```typescrip
 // Define the type for our navigation parameters
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -115,11 +115,11 @@ export type RootStackParamList = {
 // Type the navigation prop
 type Props = NativeStackScreenProps<RootStackParamList, 'Success'>;
 
-// Use in a component
+// Use in a componen
 function SuccessScreen({ route, navigation }: Props) {
   // TypeScript now knows that route.params.tier exists and is one of the defined values
   const { tier } = route.params;
-  
+
   return (
     <View>
       <Text>Congratulations on purchasing the {tier} tier!</Text>
@@ -147,21 +147,21 @@ function ExpensiveScreen() {
     useCallback(() => {
       // Set up expensive resources (e.g., API polling, subscriptions)
       console.info('Screen focused - setting up resources');
-      
+
       // Return a cleanup function that runs when the screen loses focus
       return () => {
         console.info('Screen unfocused - cleaning up resources');
       };
     }, [])
   );
-  
+
   return <View>{/* Screen content */}</View>;
 }
 ```
 
 Key navigation lifecycle hooks include:
 
-1. **useNavigation**: Provides the navigation object for any component
+1. **useNavigation**: Provides the navigation object for any componen
 2. **useFocusEffect**: Runs effects when a screen gains focus
 3. **useIsFocused**: Returns a boolean indicating if the screen is focused
 4. **useNavigationState**: Accesses the current navigation state
@@ -209,7 +209,7 @@ When the user selects a pricing tier, we present the payment flow as a modal to 
 function PricingScreen({ navigation }) {
   const handlePurchase = (tier) => {
     // Present the payment sheet as a modal
-    navigation.navigate('PaymentSheet', { 
+    navigation.navigate('PaymentSheet', {
       tier,
       // Pass a callback to handle success
       onComplete: (result) => {
@@ -219,7 +219,7 @@ function PricingScreen({ navigation }) {
       }
     });
   };
-  
+
   return (
     <View>
       {/* Pricing tiers with purchase buttons */}
@@ -269,7 +269,7 @@ const linking = {
 
 This configuration allows deep links like `thenothingapp://profile/123` to navigate directly to a specific profile.
 
-## Navigation State Management
+## Navigation State Managemen
 
 Navigation state in React Navigation is entirely controlled by JavaScript, making it accessible and modifiable. This enables powerful patterns like:
 
@@ -291,7 +291,7 @@ useEffect(() => {
       console.warn('Failed to restore navigation state:', e);
     }
   };
-  
+
   restoreState();
 }, []);
 
@@ -316,7 +316,7 @@ This pattern allows the app to restore the user's exact navigation state after r
 ```jsx
 function AppNavigator() {
   const { user } = useUser();
-  
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -361,7 +361,7 @@ const nextScreenComponent = useMemo(() => <NextScreen />, []);
 />
 ```
 
-### Memory Management
+### Memory Managemen
 
 Screens that are no longer needed can be unmounted to free up resources:
 
@@ -426,7 +426,7 @@ function TestNavigator({ component, params = {} }) {
 // Test a navigation action
 test('navigates to pricing screen when button is pressed', () => {
   const mockNavigate = jest.fn();
-  
+
   // Mock the navigation hook
   jest.mock('@react-navigation/native', () => {
     return {
@@ -436,12 +436,12 @@ test('navigates to pricing screen when button is pressed', () => {
       }),
     };
   });
-  
+
   const { getByText } = render(<TestNavigator component={DashboardScreen} />);
-  
+
   // Trigger navigation
   fireEvent.press(getByText('View Pricing'));
-  
+
   // Verify navigation was triggered
   expect(mockNavigate).toHaveBeenCalledWith('PricingScreen');
 });
@@ -461,4 +461,4 @@ In the next chapter, we'll dive into state management with Supabase and Context 
 2. Implement a custom transition animation for navigating to the Success screen.
 3. Create a nested navigation stack within one of the existing tabs.
 4. Add TypeScript types for a new screen that accepts complex parameters.
-5. Implement deep linking to allow direct navigation to the Leaderboard screen. 
+5. Implement deep linking to allow direct navigation to the Leaderboard screen.

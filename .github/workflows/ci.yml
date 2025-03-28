@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, productionize ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint-and-typecheck:
+    name: Lint and Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Show environment info
+        run: |
+          npm --version
+          node --version
+          ls -la
+          echo "Node modules:"
+          ls -la node_modules || echo "No node_modules directory"
+          echo "ESlint config:"
+          cat .eslintrc.js || echo "No .eslintrc.js file"
+
+      - name: Run ESLint
+        run: npm run lint -- --debug
+
+      - name: Check TypeScript version
+        run: npx tsc --version
+
+      - name: Run TypeScript check
+        run: npm run tsc
+
+      - name: Check for console.log statements
+        run: |
+          if grep -r "console\.log" --include="*.ts" --include="*.tsx" ./app/; then
+            echo "⚠️ Warning: console.log statements found. Consider removing them before deploying to production."
+          else
+            echo "✅ No console.log statements found."
+          fi
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test

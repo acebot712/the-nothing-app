@@ -9,14 +9,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'luxury-gold': '#D4AF37',
-        'luxury-platinum': '#E5E4E2',
-        'luxury-black': '#0D0D0D',
-        'luxury-dark': '#1A1A1A',
-        'luxury-gray': '#333333',
-      }
+        "luxury-gold": "#D4AF37",
+        "luxury-platinum": "#E5E4E2",
+        "luxury-black": "#0D0D0D",
+        "luxury-dark": "#1A1A1A",
+        "luxury-gray": "#333333",
+      },
     },
   },
   plugins: [],
-}
-
+};

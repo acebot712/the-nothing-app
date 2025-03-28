@@ -1,0 +1,148 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Jest tests
+        run: npm test -- --ci --coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: coverage/
+          retention-days: 7
+
+  component-tests:
+    name: Component Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run component tests
+        run: npm run test:components
+
+      - name: Upload component test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: component-test-results
+          path: tests/components/results/
+          retention-days: 7
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: |
+          # Check bundle size
+          npm run build:web
+          echo "Analyzing bundle size..."
+          SIZE=$(du -s dist | cut -f1)
+          echo "Bundle size: $SIZE KB"
+
+          if [ $SIZE -gt 5000 ]; then
+            echo "::warning::Bundle size is over 5MB, consider optimizing"
+          fi
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-metrics
+          path: dist/metrics/
+          retention-days: 7
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test, component-tests, performance-tests]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Generate test summary
+        run: |
+          echo "# Test Results Summary" > summary.md
+          echo "" >> summary.md
+          echo "## Unit Tests" >> summary.md
+          if [ -d "artifacts/code-coverage-report" ]; then
+            echo "✅ Unit tests completed successfully" >> summary.md
+            echo "Coverage report available in artifacts" >> summary.md
+          else
+            echo "❌ Unit tests failed or were not run" >> summary.md
+          fi
+
+          echo "" >> summary.md
+          echo "## Component Tests" >> summary.md
+          if [ -d "artifacts/component-test-results" ]; then
+            echo "✅ Component tests completed successfully" >> summary.md
+          else
+            echo "❌ Component tests failed or were not run" >> summary.md
+          fi
+
+          echo "" >> summary.md
+          echo "## Performance Tests" >> summary.md
+          if [ -d "artifacts/performance-metrics" ]; then
+            echo "✅ Performance tests completed successfully" >> summary.md
+          else
+            echo "❌ Performance tests failed or were not run" >> summary.md
+          fi
+
+          cat summary.md
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: summary.md
+          retention-days: 7

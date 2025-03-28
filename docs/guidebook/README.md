@@ -8,8 +8,8 @@ Welcome to "The Nothing App" tutorial series! This mini-book provides a first-pr
 
 "The Nothing App" is a luxury mobile application that sells, well, nothing—but with style. The app's premium tiers and exclusive features showcase modern mobile development patterns, including:
 
-- React Native with TypeScript for type-safe development
-- Expo for cross-platform building and deployment
+- React Native with TypeScript for type-safe developmen
+- Expo for cross-platform building and deploymen
 - Supabase for backend services and real-time data
 - Stripe for payment processing
 - Authentication, navigation, state management, and more
@@ -49,7 +49,7 @@ Focuses on performance optimization and the deployment process. Covers component
 
 To get the most out of this tutorial, you should have:
 
-- Basic understanding of JavaScript and React
+- Basic understanding of JavaScript and Reac
 - Node.js and npm/yarn installed
 - Familiarity with terminal/command line interfaces
 - A code editor (VS Code recommended)
@@ -63,4 +63,4 @@ Happy coding!
 
 ## License
 
-This tutorial and the associated codebase are provided under the MIT License. Feel free to use the knowledge and code for your own projects. 
+This tutorial and the associated codebase are provided under the MIT License. Feel free to use the knowledge and code for your own projects.

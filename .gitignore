@@ -27,10 +27,19 @@ yarn-error.*
 
 # macOS
 .DS_Store
+**/.DS_Store
 *.pem
 
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
+app/.env
+app/.env.*
+!app/.env.example
+server/.env
+server/.env.*
+!server/.env.example
 
 # typescript
 *.tsbuildinfo
@@ -77,4 +86,7 @@ local.properties
 /android/
 /ios/
 
+# Service account keys and credentials
 gen-lang-client-*.json
+*-f93f2c9f7124.json
+*-service-account.json

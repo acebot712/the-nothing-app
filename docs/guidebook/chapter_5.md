@@ -1,4 +1,4 @@
-# Chapter 5: Optimization and Deployment
+# Chapter 5: Optimization and Deploymen
 
 ## Introduction
 
@@ -12,20 +12,20 @@ Before deploying to production, optimizing your app's performance is essential f
 
 The first step in optimization is establishing reliable metrics:
 
-```typescript
+```typescrip
 // app/utils/performance.ts
 import { InteractionManager } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
 export function measureRenderTime(componentName: string) {
   const startTime = Date.now();
-  
+
   return () => {
     const endTime = Date.now();
     const duration = endTime - startTime;
-    
+
     console.debug(`[Performance] ${componentName} rendered in ${duration}ms`);
-    
+
     // Report to analytics for significant renders
     if (duration > 500) {
       Sentry.addBreadcrumb({
@@ -34,7 +34,7 @@ export function measureRenderTime(componentName: string) {
         level: 'warning',
       });
     }
-    
+
     return duration;
   };
 }
@@ -44,7 +44,7 @@ export function deferTask(task: () => void, description = 'deferred task') {
     const startTime = Date.now();
     task();
     const duration = Date.now() - startTime;
-    
+
     console.debug(`[Performance] Completed ${description} in ${duration}ms`);
   });
 }
@@ -59,7 +59,7 @@ export function deferTask(task: () => void, description = 'deferred task') {
 function ExpensiveComponent({ data, onPress }) {
   // This component re-renders whenever any prop changes
   const processedData = expensiveCalculation(data);
-  
+
   return (
     <View>
       {processedData.map(item => (
@@ -76,12 +76,12 @@ const ExpensiveComponent = React.memo(
   function ExpensiveComponent({ data, onPress }) {
     // Memoize expensive calculations
     const processedData = useMemo(() => expensiveCalculation(data), [data]);
-    
+
     // Memoize callback functions
     const handlePress = useCallback((item) => {
       onPress(item);
     }, [onPress]);
-    
+
     return (
       <View>
         {processedData.map(item => (
@@ -94,7 +94,7 @@ const ExpensiveComponent = React.memo(
   },
   // Custom comparison function for props
   (prevProps, nextProps) => {
-    return isEqual(prevProps.data, nextProps.data) && 
+    return isEqual(prevProps.data, nextProps.data) &&
            prevProps.onPress === nextProps.onPress;
   }
 );
@@ -121,11 +121,11 @@ function UserList({ users }) {
   const renderItem = useCallback(({ item }) => {
     return <UserItem user={item} />;
   }, []);
-  
+
   const keyExtractor = useCallback((item) => item.id, []);
-  
+
   return (
-    <FlatList
+    <FlatLis
       data={users}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
@@ -174,25 +174,25 @@ export function OptimizedImage({
 
   React.useEffect(() => {
     let isMounted = true;
-    
+
     const optimizeImage = async () => {
       try {
         setLoading(true);
-        
+
         // Skip optimization for local assets
         if (!source.uri || source.uri.startsWith('file://') || source.uri.startsWith('asset://')) {
           setOptimizedSource(source);
           setLoading(false);
           return;
         }
-        
+
         // Optimize the image
         const manipResult = await manipulateAsync(
           source.uri,
           [{ resize: { width: maxWidth } }],
           { compress: quality, format: SaveFormat.JPEG }
         );
-        
+
         if (isMounted) {
           setOptimizedSource({ uri: manipResult.uri });
           setLoading(false);
@@ -206,9 +206,9 @@ export function OptimizedImage({
         }
       }
     };
-    
+
     optimizeImage();
-    
+
     return () => {
       isMounted = false;
     };
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
 
 Efficient API calls significantly improve perceived performance:
 
-```typescript
+```typescrip
 // app/services/api.ts
 import { createClient } from './client';
 
@@ -261,15 +261,15 @@ let isProcessingQueue = false;
 // Process queued requests when the app is idle
 function processQueue() {
   if (isProcessingQueue || requestQueue.length === 0) return;
-  
+
   isProcessingQueue = true;
-  
+
   const request = requestQueue.shift();
-  
+
   request.execute()
     .finally(() => {
       isProcessingQueue = false;
-      processQueue(); // Process next request
+      processQueue(); // Process next reques
     });
 }
 
@@ -278,17 +278,17 @@ export async function fetchCriticalData(endpoint, params) {
   // Add retry logic for critical requests
   let attempts = 0;
   const maxAttempts = 3;
-  
+
   while (attempts < maxAttempts) {
     try {
       return await client.get(endpoint, { params });
     } catch (error) {
       attempts++;
-      
+
       if (attempts >= maxAttempts) {
         throw error;
       }
-      
+
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts)));
     }
@@ -307,7 +307,7 @@ export function queueBackgroundRequest(endpoint, params, callback) {
       }
     },
   });
-  
+
   processQueue();
 }
 ```
@@ -316,7 +316,7 @@ export function queueBackgroundRequest(endpoint, params, callback) {
 
 Optimizing how we manage application state:
 
-```typescript
+```typescrip
 // app/contexts/OptimizedUserContext.tsx
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 
@@ -343,59 +343,59 @@ function userReducer(state, action) {
   switch (action.type) {
     case ACTIONS.SET_USER:
       return { ...state, user: action.payload, loading: false };
-      
+
     case ACTIONS.UPDATE_PROFILE:
       return { ...state, profile: { ...state.profile, ...action.payload } };
-      
+
     case ACTIONS.SET_LOADING:
       return { ...state, loading: action.payload };
-      
+
     case ACTIONS.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
-      
+
     case ACTIONS.CLEAR_ERROR:
       return { ...state, error: null };
-      
+
     case ACTIONS.LOGOUT:
       return { ...initialState };
-      
+
     default:
       return state;
   }
 }
 
-// Create the context
+// Create the contex
 const UserContext = createContext(null);
 
-// Provider component
+// Provider componen
 export function UserProvider({ children }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
-  
+
   // Memoized action creators
   const setUser = useCallback((user) => {
     dispatch({ type: ACTIONS.SET_USER, payload: user });
   }, []);
-  
+
   const updateProfile = useCallback((profileData) => {
     dispatch({ type: ACTIONS.UPDATE_PROFILE, payload: profileData });
   }, []);
-  
+
   const setLoading = useCallback((isLoading) => {
     dispatch({ type: ACTIONS.SET_LOADING, payload: isLoading });
   }, []);
-  
+
   const setError = useCallback((error) => {
     dispatch({ type: ACTIONS.SET_ERROR, payload: error });
   }, []);
-  
+
   const clearError = useCallback(() => {
     dispatch({ type: ACTIONS.CLEAR_ERROR });
   }, []);
-  
+
   const logout = useCallback(() => {
     dispatch({ type: ACTIONS.LOGOUT });
   }, []);
-  
+
   // Memoize the context value to prevent unnecessary re-renders
   const value = React.useMemo(() => ({
     ...state,
@@ -406,7 +406,7 @@ export function UserProvider({ children }) {
     clearError,
     logout,
   }), [state, setUser, updateProfile, setLoading, setError, clearError, logout]);
-  
+
   return (
     <UserContext.Provider value={value}>
       {children}
@@ -432,64 +432,64 @@ Preventing memory leaks is essential for long app sessions:
 // Before optimization
 function ProfileScreen({ userId }) {
   const [profile, setProfile] = useState(null);
-  
+
   useEffect(() => {
     // This might cause a memory leak if the component unmounts
     // before the fetch completes
     fetchUserProfile(userId).then(data => {
       setProfile(data);
     });
-    
+
     // Subscribe to real-time updates
     const subscription = subscribeToProfileUpdates(userId, (data) => {
       setProfile(data);
     });
-    
+
     // Missing cleanup function
   }, [userId]);
-  
+
   // Component code...
 }
 
 // After optimization
 function ProfileScreen({ userId }) {
   const [profile, setProfile] = useState(null);
-  
+
   useEffect(() => {
     let isMounted = true;
-    
+
     fetchUserProfile(userId).then(data => {
       // Only update state if component is still mounted
       if (isMounted) {
         setProfile(data);
       }
     });
-    
+
     // Subscribe to real-time updates
     const subscription = subscribeToProfileUpdates(userId, (data) => {
       if (isMounted) {
         setProfile(data);
       }
     });
-    
+
     // Proper cleanup function
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
   }, [userId]);
-  
+
   // Component code...
 }
 ```
 
-## Preparing for Deployment
+## Preparing for Deploymen
 
 ### Environment-Specific Configuration
 
 "The Nothing App" uses different configurations for development, staging, and production:
 
-```javascript
+```javascrip
 // app.config.js
 const packageJson = require('./package.json');
 
@@ -603,7 +603,7 @@ module.exports = {
 
 "The Nothing App" implements feature flags to safely roll out new features:
 
-```typescript
+```typescrip
 // app/utils/featureFlags.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -641,19 +641,19 @@ export async function initFeatureFlags(userProfile) {
         USER_SEGMENT = 'regular';
       }
     }
-    
+
     // Try to load cached flags
     const cachedFlags = await AsyncStorage.getItem('featureFlags');
     if (cachedFlags) {
       REMOTE_FLAGS = JSON.parse(cachedFlags);
     }
-    
+
     // Fetch fresh flags from backend
     const response = await fetch(`${apiUrl}/feature-flags?segment=${USER_SEGMENT}&platform=${Platform.OS}`);
     const freshFlags = await response.json();
-    
+
     REMOTE_FLAGS = freshFlags;
-    
+
     // Cache the flags
     await AsyncStorage.setItem('featureFlags', JSON.stringify(freshFlags));
   } catch (error) {
@@ -668,8 +668,8 @@ export function isFeatureEnabled(featureName) {
   if (__DEV__ && AsyncStorage.getItem(`debug_${featureName}`) === 'true') {
     return true;
   }
-  
-  // Check remote flag first, fall back to default
+
+  // Check remote flag first, fall back to defaul
   return REMOTE_FLAGS[featureName] !== undefined
     ? REMOTE_FLAGS[featureName]
     : DEFAULT_FLAGS[featureName] || false;
@@ -680,7 +680,7 @@ export function isFeatureEnabled(featureName) {
 
 Implementing robust error monitoring for production:
 
-```typescript
+```typescrip
 // app/utils/errorReporting.ts
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
@@ -688,7 +688,7 @@ import Constants from 'expo-constants';
 // Initialize Sentry
 export function initErrorReporting() {
   const { environment } = Constants.expoConfig?.extra || {};
-  
+
   Sentry.init({
     dsn: 'https://your-sentry-dsn@sentry.io/project',
     environment,
@@ -709,13 +709,13 @@ export function reportError(error, context = {}) {
   if (__DEV__) {
     console.error('Error:', error, 'Context:', context);
   }
-  
+
   Sentry.captureException(error, {
     extra: context,
   });
 }
 
-// Create error boundary component
+// Create error boundary componen
 export const ErrorBoundary = Sentry.withErrorBoundary(
   ({ children }) => children,
   {
@@ -789,8 +789,8 @@ Expo Application Services (EAS) provides powerful tools for building and deployi
 ### Building for Different Platforms
 
 ```bash
-# Build for iOS development
-eas build --platform ios --profile development
+# Build for iOS developmen
+eas build --platform ios --profile developmen
 
 # Build for Android internal testing
 eas build --platform android --profile preview
@@ -818,7 +818,7 @@ on:
 jobs:
   build:
     name: Install and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-lates
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -832,7 +832,7 @@ jobs:
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: lates
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
@@ -840,7 +840,7 @@ jobs:
 
       - name: Run lint and type checking
         run: |
-          npm run lint
+          npm run lin
           npm run typecheck
 
       - name: Determine build profile
@@ -866,7 +866,7 @@ The final step is submitting your application to the app stores:
 
 Before submitting to Apple's App Store:
 
-1. Create an app entry in App Store Connect
+1. Create an app entry in App Store Connec
 2. Prepare marketing materials (screenshots, descriptions)
 3. Configure pricing and availability
 4. Set up privacy information and permissions
@@ -881,7 +881,7 @@ Before submitting to Google Play:
 4. Complete the content rating questionnaire
 5. Set up privacy policy
 
-### EAS Submit
+### EAS Submi
 
 Using EAS to submit builds to the app stores:
 
@@ -897,7 +897,7 @@ eas submit --platform android --profile production
 
 After deployment, monitoring the app's performance in production is crucial:
 
-```typescript
+```typescrip
 // app/utils/analytics.ts
 import Analytics from '@segment/analytics-react-native';
 import * as Sentry from '@sentry/react-native';
@@ -910,7 +910,7 @@ export function initAnalytics(userId = null) {
     trackAppLifecycleEvents: true,
     recordScreenViews: true,
   });
-  
+
   if (userId) {
     Analytics.identify(userId, {
       platform: Platform.OS,
@@ -930,7 +930,7 @@ export function trackScreen(screenName, properties = {}) {
 // Track custom events
 export function trackEvent(eventName, properties = {}) {
   Analytics.track(eventName, properties);
-  
+
   // Also add breadcrumb to Sentry for debugging
   Sentry.addBreadcrumb({
     category: 'analytics',
@@ -948,13 +948,13 @@ export function trackPerformance(name, durationMs) {
       operation: name,
       durationMs,
     });
-    
+
     Sentry.captureMessage(`Slow operation: ${name} (${durationMs}ms)`, {
       level: 'warning',
       tags: { performance: 'slow' },
     });
   }
-  
+
   // Always track performance data
   trackEvent('Performance Metric', {
     operation: name,
@@ -967,7 +967,7 @@ export function trackPerformance(name, durationMs) {
 
 One of Expo's most powerful features is the ability to push updates without going through the app stores using EAS Update:
 
-```typescript
+```typescrip
 // app/utils/updates.ts
 import * as Updates from 'expo-updates';
 import { Alert } from 'react-native';
@@ -979,23 +979,23 @@ export async function checkForUpdates() {
     console.log('Updates not configured');
     return false;
   }
-  
+
   try {
     const update = await Updates.checkForUpdateAsync();
-    
+
     if (update.isAvailable) {
       trackEvent('Update Available', {
         channel: Updates.channel,
         currentVersion: Updates.manifest?.version,
       });
-      
+
       await fetchAndApplyUpdate();
       return true;
     }
   } catch (error) {
     console.error('Failed to check for updates:', error);
   }
-  
+
   return false;
 }
 
@@ -1004,13 +1004,13 @@ async function fetchAndApplyUpdate() {
   try {
     // Download the update
     const { isNew } = await Updates.fetchUpdateAsync();
-    
+
     if (isNew) {
       trackEvent('Update Downloaded', {
         channel: Updates.channel,
       });
-      
-      // Prompt the user to restart
+
+      // Prompt the user to restar
       Alert.alert(
         'Update Available',
         'A new version is available. Restart now to apply updates?',
@@ -1086,4 +1086,4 @@ In our final chapter, we'll explore advanced patterns and future directions for 
 2. Set up a GitHub Actions workflow for continuous integration that runs linting and type checking.
 3. Create a performance monitoring system that tracks render times for key components.
 4. Implement feature flags for a new experimental feature in the app.
-5. Configure and test an over-the-air update for a small bug fix. 
+5. Configure and test an over-the-air update for a small bug fix.

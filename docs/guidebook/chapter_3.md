@@ -10,7 +10,7 @@ Before diving into specific implementations, let's understand the core principle
 
 ### Types of State
 
-1. **Local Component State**: Managed with `useState` and confined to a single component
+1. **Local Component State**: Managed with `useState` and confined to a single componen
 2. **Shared Application State**: Data needed across multiple components
 3. **Server State**: Data that originates from and syncs with a backend
 4. **Navigation State**: The current screen hierarchy and parameters
@@ -18,7 +18,7 @@ Before diving into specific implementations, let's understand the core principle
 
 Understanding which type of state you're dealing with helps determine the appropriate management approach.
 
-## React's Built-in State Management
+## React's Built-in State Managemen
 
 React provides several mechanisms for managing state:
 
@@ -29,7 +29,7 @@ The most basic form of state management:
 ```jsx
 function Counter() {
   const [count, setCount] = useState(0);
-  
+
   return (
     <View>
       <Text>Count: {count}</Text>
@@ -59,7 +59,7 @@ function reducer(state, action) {
 
 function Counter() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  
+
   return (
     <View>
       <Text>Count: {state.count}</Text>
@@ -75,13 +75,13 @@ function Counter() {
 For sharing state across the component tree:
 
 ```jsx
-// Create a context
+// Create a contex
 const ThemeContext = createContext('light');
 
-// Provider component
+// Provider componen
 function App() {
   const [theme, setTheme] = useState('light');
-  
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <MainNavigator />
@@ -89,10 +89,10 @@ function App() {
   );
 }
 
-// Consumer component
+// Consumer componen
 function ThemedButton() {
   const { theme, setTheme } = useContext(ThemeContext);
-  
+
   return (
     <Button
       title="Toggle Theme"
@@ -139,19 +139,19 @@ export function UserProvider({ children }) {
       const { data } = await supabase.auth.getSession();
       setUser(data?.session?.user ?? null);
       setLoading(false);
-      
+
       // Set up listener for auth changes
       const { data: authListener } = supabase.auth.onAuthStateChange(
         (event, session) => {
           setUser(session?.user ?? null);
         }
       );
-      
+
       return () => {
         authListener?.subscription.unsubscribe();
       };
     };
-    
+
     fetchUser();
   }, []);
 
@@ -172,7 +172,7 @@ export function UserProvider({ children }) {
   );
 }
 
-// Custom hook for using the context
+// Custom hook for using the contex
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
@@ -189,14 +189,14 @@ Supabase is an open-source Firebase alternative that provides:
 1. **PostgreSQL Database**: A powerful relational database
 2. **Authentication**: Built-in user management with multiple providers
 3. **Real-time Subscriptions**: Live data updates via WebSockets
-4. **Storage**: File storage and management
+4. **Storage**: File storage and managemen
 5. **Edge Functions**: Serverless functions for custom logic
 
 ### Setting Up Supabase in "The Nothing App"
 
 The app initializes Supabase in a dedicated client:
 
-```javascript
+```javascrip
 // lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -261,13 +261,13 @@ The app uses several patterns to interact with Supabase:
 
 #### Basic CRUD Operations
 
-```typescript
+```typescrip
 // Create a new profile
 const createProfile = async (userId: string, username: string) => {
   const { data, error } = await supabase
     .from('profiles')
     .insert([{ id: userId, username }]);
-    
+
   if (error) throw error;
   return data;
 };
@@ -279,7 +279,7 @@ const getProfile = async (userId: string) => {
     .select('*')
     .eq('id', userId)
     .single();
-    
+
   if (error) throw error;
   return data;
 };
@@ -290,7 +290,7 @@ const updateProfile = async (userId: string, updates: any) => {
     .from('profiles')
     .update(updates)
     .eq('id', userId);
-    
+
   if (error) throw error;
   return data;
 };
@@ -301,14 +301,14 @@ const deleteAchievement = async (achievementId: string) => {
     .from('achievements')
     .delete()
     .eq('id', achievementId);
-    
+
   if (error) throw error;
 };
 ```
 
 #### Real-time Subscriptions
 
-```typescript
+```typescrip
 // Subscribe to profile changes
 const subscribeToProfile = (userId: string, callback: (profile: any) => void) => {
   const subscription = supabase
@@ -317,7 +317,7 @@ const subscribeToProfile = (userId: string, callback: (profile: any) => void) =>
       callback(payload.new);
     })
     .subscribe();
-    
+
   return () => {
     subscription.unsubscribe();
   };
@@ -330,7 +330,7 @@ const subscribeToProfile = (userId: string, callback: (profile: any) => void) =>
 
 "The Nothing App" encapsulates Supabase interactions in custom hooks:
 
-```typescript
+```typescrip
 // hooks/useProfile.ts
 export function useProfile(userId: string) {
   const [profile, setProfile] = useState(null);
@@ -339,7 +339,7 @@ export function useProfile(userId: string) {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchProfile = async () => {
       try {
         setLoading(true);
@@ -348,7 +348,7 @@ export function useProfile(userId: string) {
           .select('*')
           .eq('id', userId)
           .single();
-          
+
         if (error) throw error;
         if (isMounted) setProfile(data);
       } catch (err) {
@@ -357,9 +357,9 @@ export function useProfile(userId: string) {
         if (isMounted) setLoading(false);
       }
     };
-    
+
     fetchProfile();
-    
+
     // Set up real-time subscription
     const subscription = supabase
       .from(`profiles:id=eq.${userId}`)
@@ -367,7 +367,7 @@ export function useProfile(userId: string) {
         if (isMounted) setProfile(payload.new);
       })
       .subscribe();
-      
+
     return () => {
       isMounted = false;
       subscription?.unsubscribe();
@@ -382,7 +382,7 @@ export function useProfile(userId: string) {
 
 The app implements a caching strategy for improved performance:
 
-```typescript
+```typescrip
 // Cache manager
 const cache = new Map();
 
@@ -392,16 +392,16 @@ export async function fetchWithCache(key, fetchFn) {
   if (cachedData && Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
     return cachedData.data;
   }
-  
+
   // Fetch fresh data
   const data = await fetchFn();
-  
+
   // Update cache
   cache.set(key, {
     data,
     timestamp: Date.now(),
   });
-  
+
   return data;
 }
 
@@ -414,7 +414,7 @@ const getUserAchievements = async (userId) => {
         .from('achievements')
         .select('*')
         .eq('user_id', userId);
-        
+
       if (error) throw error;
       return data;
     }
@@ -426,52 +426,52 @@ const getUserAchievements = async (userId) => {
 
 ### Sign Up
 
-```typescript
+```typescrip
 const signUp = async (email: string, password: string, username: string) => {
   // Create the user in Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
   });
-  
+
   if (authError) throw authError;
-  
+
   // Create the user profile
   if (authData.user) {
     const { error: profileError } = await supabase
       .from('profiles')
       .insert([{ id: authData.user.id, username }]);
-      
+
     if (profileError) {
       // Clean up: delete the auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authData.user.id);
       throw profileError;
     }
   }
-  
+
   return authData;
 };
 ```
 
 ### Social Authentication
 
-```typescript
+```typescrip
 const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
   });
-  
+
   if (error) throw error;
   return data;
 };
 ```
 
-## Error Handling and Offline Support
+## Error Handling and Offline Suppor
 
 "The Nothing App" implements robust error handling:
 
-```typescript
-// API wrapper with error handling and offline support
+```typescrip
+// API wrapper with error handling and offline suppor
 export async function safelyExecuteQuery(queryFn) {
   try {
     // Check for internet connection
@@ -479,19 +479,19 @@ export async function safelyExecuteQuery(queryFn) {
     if (!netInfo.isConnected) {
       throw new Error('No internet connection');
     }
-    
+
     // Execute the query
     return await queryFn();
   } catch (error) {
     // Log the error
     console.error('Database operation failed:', error);
-    
+
     // Store failed operation for retry if appropriate
     if (isRetryableError(error)) {
       await storeForRetry(queryFn);
     }
-    
-    // Rethrow with more context
+
+    // Rethrow with more contex
     throw new AppError('Database operation failed', {
       originalError: error,
       isOffline: !netInfo.isConnected,
@@ -505,13 +505,13 @@ export async function safelyExecuteQuery(queryFn) {
 
 The app includes comprehensive tests for database operations:
 
-```typescript
+```typescrip
 // __tests__/profile.test.ts
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../lib/supabase';
 
-// Mock Supabase client
+// Mock Supabase clien
 jest.mock('../lib/supabase', () => ({
   supabase: {
     from: jest.fn(),
@@ -522,7 +522,7 @@ describe('useProfile hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
-  
+
   test('fetches profile data', async () => {
     // Mock Supabase response
     const mockSelect = jest.fn().mockReturnValue({
@@ -533,34 +533,34 @@ describe('useProfile hook', () => {
         }),
       }),
     });
-    
+
     const mockSubscribe = jest.fn().mockReturnValue({
       unsubscribe: jest.fn(),
     });
-    
+
     const mockOn = jest.fn().mockReturnValue({
       subscribe: mockSubscribe,
     });
-    
+
     supabase.from.mockReturnValue({
       select: mockSelect,
       on: mockOn,
     });
-    
+
     // Render the hook
     const { result, waitForNextUpdate } = renderHook(() => useProfile('123'));
-    
+
     // Initially loading
     expect(result.current.loading).toBe(true);
-    
+
     // Wait for the hook to update
     await waitForNextUpdate();
-    
-    // Check the result
+
+    // Check the resul
     expect(result.current.loading).toBe(false);
     expect(result.current.profile).toEqual({ id: '123', username: 'testuser' });
     expect(result.current.error).toBe(null);
-    
+
     // Verify Supabase was called correctly
     expect(supabase.from).toHaveBeenCalledWith('profiles');
     expect(mockSelect).toHaveBeenCalledWith('*');
@@ -611,7 +611,7 @@ BEGIN
   SET tier = new_tier,
       updated_at = now()
   WHERE id = user_id;
-  
+
   -- Record the transaction
   INSERT INTO public.transactions (
     user_id,
@@ -626,7 +626,7 @@ BEGIN
     'completed',
     'stripe'
   );
-  
+
   -- Grant achievement if applicable
   IF new_tier = 'god' THEN
     INSERT INTO public.achievements (
@@ -655,4 +655,4 @@ In the next chapter, we'll explore payment processing with Stripe, examining how
 2. Add offline support to an existing database operation using AsyncStorage for temporary data storage.
 3. Create a leaderboard feature that uses Supabase to track and display user statistics.
 4. Implement a caching mechanism for frequently accessed data to improve performance.
-5. Add error handling and loading states to an existing component that uses Supabase data. 
+5. Add error handling and loading states to an existing component that uses Supabase data.
