@@ -7,12 +7,22 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
+  Image,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as SplashScreen from "expo-splash-screen";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlexBadge from "./app/components/FlexBadge";
 import { haptics } from "./app/utils/animations";
+import {
+  signInWithOAuth,
+  signOut,
+  getCurrentUser,
+  fetchOrCreateUserProfile,
+  setupAuthListener,
+} from "./utils/supabase";
+import * as Linking from "expo-linking";
 
 // Keep the splash screen visible while we initialize the app
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -25,6 +35,9 @@ const COLORS = {
   DARKER: "#000000",
   GOLD: "#D4AF37",
   WHITE: "#FFFFFF",
+  GOOGLE: "#DB4437",
+  GITHUB: "#24292e",
+  APPLE: "#000000",
 };
 
 // Define User type
@@ -35,6 +48,8 @@ interface User {
   purchase_amount: number;
   serial_number: string;
   created_at: string;
+  email?: string;
+  avatar_url?: string;
 }
 
 // Root component
@@ -43,19 +58,62 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize app
+  // Handle deep links for auth
+  useEffect(() => {
+    const handleDeepLink = (event: { url: string }) => {
+      // Handle auth callback URLs
+      if (event.url.includes("auth/callback")) {
+        // Supabase auth will handle this automatically
+      }
+    };
+
+    // Add event listener for deep links
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+
+    // Get the initial URL
+    Linking.getInitialURL().then((url: string | null) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // Initialize app and setup auth listener
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Check if user is logged in
-        const userJson = await AsyncStorage.getItem("@user");
-        if (userJson) {
-          const parsedUser = JSON.parse(userJson) as User;
-          setUser(parsedUser);
+        // Set up auth state listener
+        const subscription = setupAuthListener(async (session) => {
+          if (session?.user) {
+            // Fetch or create user profile
+            const userProfile = await fetchOrCreateUserProfile(session.user);
+            setUser(userProfile);
+            setIsAuthenticated(true);
+          } else {
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        });
+
+        // Check initial auth state
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          // Fetch or create user profile
+          const userProfile = await fetchOrCreateUserProfile(currentUser);
+          setUser(userProfile);
           setIsAuthenticated(true);
         }
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error("Error initializing app:", error);
+        Alert.alert("Error", "Failed to initialize the app. Please try again.");
       } finally {
         setIsLoading(false);
         // Hide the splash screen
@@ -71,43 +129,37 @@ export default function App() {
     initializeApp();
   }, []);
 
-  const handleLogin = async () => {
+  // Handle sign in with OAuth
+  const handleSignInWithOAuth = async (
+    provider: "google" | "github" | "apple",
+  ) => {
     haptics.medium();
 
     try {
-      // Create dummy user
-      const newUser: User = {
-        id: `user_${Math.random().toString(36).substring(2, 11)}`,
-        username: "Special User",
-        tier: "elite",
-        purchase_amount: 9999,
-        serial_number: `BADGE-${Math.floor(Math.random() * 1000000)}`,
-        created_at: new Date().toISOString(),
-      };
-
-      // Save user to storage
-      await AsyncStorage.setItem("@user", JSON.stringify(newUser));
-
-      // Update state
-      setUser(newUser);
-      setIsAuthenticated(true);
+      setIsLoading(true);
+      await signInWithOAuth(provider);
+      // Auth state listener will handle the rest
     } catch (error) {
-      console.error("Error logging in:", error);
+      console.error(`Error signing in with ${provider}:`, error);
+      Alert.alert("Login Failed", "Could not sign in with " + provider);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Handle logout
   const handleLogout = async () => {
     haptics.medium();
 
     try {
-      // Clear user from storage
-      await AsyncStorage.removeItem("@user");
-
-      // Update state
-      setUser(null);
-      setIsAuthenticated(false);
+      setIsLoading(true);
+      await signOut();
+      // Auth state listener will handle the rest
     } catch (error) {
       console.error("Error logging out:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,6 +195,12 @@ export default function App() {
         <View style={styles.content}>
           {isAuthenticated && user ? (
             <View style={styles.badgeContainer}>
+              {user.avatar_url && (
+                <Image
+                  source={{ uri: user.avatar_url }}
+                  style={styles.avatar}
+                />
+              )}
               <FlexBadge
                 username={user.username}
                 tier={user.tier}
@@ -159,11 +217,27 @@ export default function App() {
                 Login to see your special badge
               </Text>
               <TouchableOpacity
-                style={styles.loginButton}
-                onPress={handleLogin}
+                style={[styles.loginButton, styles.googleButton]}
+                onPress={() => handleSignInWithOAuth("google")}
               >
-                <Text style={styles.buttonText}>LOGIN</Text>
+                <Text style={styles.buttonText}>LOGIN WITH GOOGLE</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.loginButton, styles.githubButton]}
+                onPress={() => handleSignInWithOAuth("github")}
+              >
+                <Text style={styles.buttonText}>LOGIN WITH GITHUB</Text>
+              </TouchableOpacity>
+
+              {Platform.OS === "ios" && (
+                <TouchableOpacity
+                  style={[styles.loginButton, styles.appleButton]}
+                  onPress={() => handleSignInWithOAuth("apple")}
+                >
+                  <Text style={styles.buttonText}>LOGIN WITH APPLE</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -222,10 +296,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loginButton: {
-    backgroundColor: COLORS.GOLD,
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 8,
+    marginBottom: 15,
+    width: "80%",
+    alignItems: "center",
+  },
+  googleButton: {
+    backgroundColor: COLORS.GOOGLE,
+  },
+  githubButton: {
+    backgroundColor: COLORS.GITHUB,
+  },
+  appleButton: {
+    backgroundColor: COLORS.APPLE,
   },
   button: {
     backgroundColor: COLORS.GOLD,
@@ -235,9 +320,17 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   buttonText: {
-    color: COLORS.DARK,
+    color: COLORS.WHITE,
     fontSize: 16,
     letterSpacing: 1,
     fontWeight: "bold",
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: COLORS.GOLD,
   },
 });
